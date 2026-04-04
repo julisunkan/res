@@ -75,6 +75,15 @@
             </a>
         </div>
     </div>
+
+    <!-- Featured Jobs Widget -->
+    <div id="featuredJobsSection" style="display:none;margin-top:36px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <div class="section-heading" style="margin-bottom:0;">🌐 Featured Jobs</div>
+            <a href="/job-board" style="font-size:13px;color:#818cf8;text-decoration:none;">View all jobs →</a>
+        </div>
+        <div id="featuredJobsList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;"></div>
+    </div>
 </div>
 
 {% if ads.sidebar.enabled and ads.sidebar.slot and ads.publisher_id %}
@@ -118,5 +127,30 @@ function animateNum(id, target) {
 }
 
 loadStats();
+loadFeaturedJobs();
+
+async function loadFeaturedJobs() {
+    try {
+        const res = await fetch('/api/jobboard/featured');
+        const jobs = await res.json();
+        if (!jobs || !jobs.length) return;
+        const section = document.getElementById('featuredJobsSection');
+        const list = document.getElementById('featuredJobsList');
+        section.style.display = 'block';
+        list.innerHTML = jobs.map(j => `
+            <a href="/job-board/${j.id}" style="display:block;background:#12121f;border:1px solid #1e1e3a;border-radius:12px;padding:16px;text-decoration:none;color:inherit;transition:border-color .15s;" onmouseover="this.style.borderColor='#4f46e5'" onmouseout="this.style.borderColor='#1e1e3a'">
+                <div style="font-size:14px;font-weight:600;color:#e2e8f0;margin-bottom:4px;">${esc(j.title)}</div>
+                <div style="font-size:12px;color:#818cf8;margin-bottom:8px;">${esc(j.company||'')}</div>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                    ${j.location ? `<span style="font-size:11px;padding:2px 8px;border-radius:8px;background:rgba(79,70,229,.1);color:#818cf8;">${esc(j.location)}</span>` : ''}
+                    ${j.job_type ? `<span style="font-size:11px;padding:2px 8px;border-radius:8px;background:rgba(16,185,129,.08);color:#34d399;">${esc(j.job_type)}</span>` : ''}
+                </div>
+            </a>`).join('');
+    } catch(e) {}
+}
+
+function esc(s) {
+    return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
 </script>
 {% endblock %}

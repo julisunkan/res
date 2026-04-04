@@ -26,6 +26,7 @@ def create_app():
     from routes.chat import chat_bp
     from routes.linkedin import linkedin_bp
     from routes.admin import admin_bp
+    from routes.job_board import job_board_bp
 
     app.register_blueprint(resume_bp, url_prefix='/api/resume')
     app.register_blueprint(jobs_bp, url_prefix='/api/jobs')
@@ -33,6 +34,7 @@ def create_app():
     app.register_blueprint(chat_bp, url_prefix='/api/chat')
     app.register_blueprint(linkedin_bp, url_prefix='/api/linkedin')
     app.register_blueprint(admin_bp, url_prefix='/julisunkan')
+    app.register_blueprint(job_board_bp)
 
     @app.route('/')
     def index():
@@ -78,6 +80,16 @@ def create_app():
     def about():
         return render_template('about.html')
 
+    @app.route('/job-board')
+    def job_board():
+        return render_template('job_board.html')
+
+    @app.route('/job-board/<int:post_id>')
+    def job_board_detail(post_id):
+        from models.job_post import JobPost
+        post = JobPost.query.filter_by(id=post_id, status='published').first_or_404()
+        return render_template('job_board_detail.html', post=post)
+
     @app.route('/ads.txt')
     def ads_txt():
         from flask import Response
@@ -121,6 +133,7 @@ def create_app():
         import models.resume
         import models.job
         import models.settings
+        import models.job_post
         db.create_all()
 
     return app

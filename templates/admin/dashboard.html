@@ -182,6 +182,7 @@
         <button class="nav-item" onclick="show('ai')"><span class="icon">🤖</span> AI Config</button>
         <button class="nav-item" onclick="show('resumes')"><span class="icon">📄</span> Resumes</button>
         <button class="nav-item" onclick="show('jobs')"><span class="icon">💼</span> Job Applications</button>
+        <button class="nav-item" onclick="show('jobboard')"><span class="icon">🌐</span> Job Board</button>
         <button class="nav-item" onclick="show('monetization')"><span class="icon">💰</span> Monetization</button>
         <button class="nav-item" onclick="show('security')"><span class="icon">🔐</span> Security</button>
     </nav>
@@ -350,6 +351,134 @@
                         <tbody id="jobsTbody"></tbody>
                     </table>
                 </div>
+            </div>
+        </div>
+
+        <!-- ── JOB BOARD ── -->
+        <div class="panel" id="panel-jobboard">
+            <div id="jbAlert" class="alert"></div>
+
+            <!-- Stats Row -->
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;" id="jbStatsRow">
+                <div class="stat-card"><div class="stat-value" id="jbCountDraft">—</div><div class="stat-label">Drafts</div></div>
+                <div class="stat-card"><div class="stat-value" id="jbCountPublished">—</div><div class="stat-label">Published</div></div>
+                <div class="stat-card"><div class="stat-value" id="jbCountArchived">—</div><div class="stat-label">Archived</div></div>
+                <div class="stat-card"><div class="stat-value" id="jbCountTotal">—</div><div class="stat-label">Total</div></div>
+            </div>
+
+            <!-- Fetch Card -->
+            <div class="card" style="margin-bottom:16px;">
+                <div class="card-title"><span class="icon">🔄</span> Fetch New Jobs</div>
+                <p style="font-size:13px;color:var(--muted);margin-bottom:16px;">Pull fresh job postings from external sources. Duplicate posts are automatically skipped. New posts are saved as drafts for your review.</p>
+                <div style="display:flex;flex-wrap:wrap;gap:14px;margin-bottom:16px;">
+                    <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;">
+                        <input type="checkbox" id="src_remotive" checked> Remotive <span style="font-size:11px;color:var(--muted);">(remote tech)</span>
+                    </label>
+                    <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;">
+                        <input type="checkbox" id="src_arbeitnow" checked> Arbeitnow <span style="font-size:11px;color:var(--muted);">(global)</span>
+                    </label>
+                    <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;">
+                        <input type="checkbox" id="src_remoteok" checked> RemoteOK <span style="font-size:11px;color:var(--muted);">(remote)</span>
+                    </label>
+                    <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;">
+                        <input type="checkbox" id="src_adzuna"> Adzuna <span style="font-size:11px;color:var(--muted);">(requires API key)</span>
+                    </label>
+                </div>
+                <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px;">
+                    <input type="text" id="jbFetchSearch" placeholder='Search keyword (e.g. "python developer")' style="max-width:280px;">
+                    <select id="jbFetchLimit" style="max-width:140px;">
+                        <option value="10">10 per source</option>
+                        <option value="15" selected>15 per source</option>
+                        <option value="20">20 per source</option>
+                        <option value="30">30 per source</option>
+                    </select>
+                    <button class="btn btn-primary" onclick="fetchJobsNow()" id="fetchBtn">🔄 Fetch Jobs</button>
+                </div>
+                <div style="border-top:1px solid var(--border);padding-top:12px;margin-top:4px;">
+                    <div style="font-size:12px;color:var(--muted);margin-bottom:8px;">Adzuna API (optional — for premium listings)</div>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                        <input type="text" id="s-adzuna_app_id" placeholder="Adzuna App ID" style="max-width:200px;">
+                        <input type="text" id="s-adzuna_app_key" placeholder="Adzuna App Key" style="max-width:200px;">
+                        <button class="btn btn-secondary btn-sm" onclick="saveSettings(['adzuna_app_id','adzuna_app_key'])">Save Keys</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab Bar -->
+            <div style="display:flex;gap:6px;margin-bottom:14px;">
+                <button class="btn btn-sm" id="tab-draft" onclick="loadJobBoard('draft')" style="background:rgba(79,70,229,.2);color:#818cf8;">Drafts</button>
+                <button class="btn btn-secondary btn-sm" id="tab-published" onclick="loadJobBoard('published')">Published</button>
+                <button class="btn btn-secondary btn-sm" id="tab-archived" onclick="loadJobBoard('archived')">Archived</button>
+                <button class="btn btn-secondary btn-sm" id="tab-all" onclick="loadJobBoard('all')">All</button>
+                <div style="flex:1;"></div>
+                <button class="btn btn-danger btn-sm" onclick="bulkJobBoardAction('delete')">Delete Selected</button>
+                <button class="btn btn-secondary btn-sm" onclick="bulkJobBoardAction('publish')">Publish Selected</button>
+            </div>
+
+            <div class="card" style="padding:0;overflow:hidden;">
+                <div class="tbl-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th><input type="checkbox" id="jbSelectAll" onchange="jbToggleAll()"></th>
+                                <th>#</th>
+                                <th>Title</th>
+                                <th>Company</th>
+                                <th>Source</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                                <th>AI</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="jbTbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Job Board Edit Modal -->
+        <div class="modal" id="jbModal">
+            <div class="modal-content" style="max-width:780px;max-height:90vh;overflow-y:auto;">
+                <div class="modal-header">
+                    <div class="modal-title">Edit Job Post</div>
+                    <button class="modal-close" onclick="closeModal('jbModal')">✕</button>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+                    <div class="form-group"><label>Job Title</label><input type="text" id="jbEditTitle"></div>
+                    <div class="form-group"><label>Company</label><input type="text" id="jbEditCompany"></div>
+                    <div class="form-group"><label>Location</label><input type="text" id="jbEditLocation"></div>
+                    <div class="form-group"><label>Job Type</label>
+                        <select id="jbEditType">
+                            <option value="remote">Remote</option>
+                            <option value="full-time">Full-time</option>
+                            <option value="part-time">Part-time</option>
+                            <option value="contract">Contract</option>
+                            <option value="freelance">Freelance</option>
+                            <option value="internship">Internship</option>
+                        </select>
+                    </div>
+                    <div class="form-group"><label>Salary / Compensation</label><input type="text" id="jbEditSalary" placeholder="e.g. $80k–$120k"></div>
+                    <div class="form-group"><label>Apply URL</label><input type="text" id="jbEditUrl" placeholder="https://..."></div>
+                </div>
+                <div class="form-group"><label>Tags (comma-separated)</label><input type="text" id="jbEditTags" placeholder="Python, Remote, Backend"></div>
+                <div class="form-group">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                        <label>Description</label>
+                        <button class="btn btn-secondary btn-sm" onclick="rewriteJobPost()" id="rewriteBtn">✦ Rewrite with AI</button>
+                    </div>
+                    <textarea id="jbEditDesc" rows="18" style="font-family:inherit;font-size:13px;line-height:1.7;"></textarea>
+                </div>
+                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                    <button class="btn btn-success" onclick="saveJobPost('published')">✅ Save & Publish</button>
+                    <button class="btn btn-secondary" onclick="saveJobPost('draft')">💾 Save as Draft</button>
+                    <button class="btn btn-secondary" onclick="saveJobPost('archived')">📦 Archive</button>
+                    <label style="display:flex;align-items:center;gap:6px;font-size:13px;margin-left:auto;cursor:pointer;">
+                        <input type="checkbox" id="jbEditFeatured"> ⭐ Featured
+                    </label>
+                </div>
+                <div id="jbEditAlert" class="alert" style="margin-top:10px;"></div>
+                <input type="hidden" id="jbEditId">
             </div>
         </div>
 
@@ -592,8 +721,8 @@ let allJobs = [];
 let settings = {};
 
 // ── Navigation ──────────────────────────────────────────────────────────────
-const panelOrder = ['overview','settings','ai','resumes','jobs','monetization','security'];
-const panelTitles = { overview:'Overview', settings:'App Settings', ai:'AI Configuration', resumes:'Manage Resumes', jobs:'Job Applications', monetization:'Monetization & Analytics', security:'Security' };
+const panelOrder = ['overview','settings','ai','resumes','jobs','jobboard','monetization','security'];
+const panelTitles = { overview:'Overview', settings:'App Settings', ai:'AI Configuration', resumes:'Manage Resumes', jobs:'Job Applications', jobboard:'Job Board Manager', monetization:'Monetization & Analytics', security:'Security' };
 
 function show(name) {
     document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
@@ -604,6 +733,7 @@ function show(name) {
     currentPanel = name;
     if (name === 'resumes') loadResumes();
     if (name === 'jobs') loadJobs();
+    if (name === 'jobboard') loadJobBoard('draft');
     if (name === 'settings' || name === 'ai' || name === 'security' || name === 'monetization') loadSettings();
     if (name === 'monetization') { showAlert('monetizationAlert', '', true); loadAdsTxt(); }
 }
@@ -699,6 +829,192 @@ async function testGroq(fromAiPanel) {
         if (fromAiPanel) { resultEl.textContent = '❌ ' + data.error; resultEl.style.color = 'var(--danger)'; }
         else { document.getElementById('aiStatusPill').innerHTML = '<span class="dot dot-red"></span> Not Connected'; resultEl.textContent = data.error; }
     }
+}
+
+// ── Job Board ────────────────────────────────────────────────────────────────
+let jbCurrentStatus = 'draft';
+let jbAllPosts = [];
+let jbEditingId = null;
+
+async function loadJobBoard(status) {
+    jbCurrentStatus = status;
+    ['draft','published','archived','all'].forEach(s => {
+        const btn = document.getElementById('tab-' + s);
+        if (btn) {
+            btn.className = s === status
+                ? 'btn btn-sm'
+                : 'btn btn-secondary btn-sm';
+            if (s === status) btn.style.cssText = 'background:rgba(79,70,229,.2);color:#818cf8;';
+            else btn.style.cssText = '';
+        }
+    });
+    const res = await fetch('/api/jobboard/admin/posts?status=' + status);
+    const data = await res.json();
+    jbAllPosts = data.posts;
+    const c = data.counts;
+    document.getElementById('jbCountDraft').textContent = c.draft;
+    document.getElementById('jbCountPublished').textContent = c.published;
+    document.getElementById('jbCountArchived').textContent = c.archived;
+    document.getElementById('jbCountTotal').textContent = c.total;
+    renderJobBoardTable(jbAllPosts);
+}
+
+function renderJobBoardTable(posts) {
+    const tbody = document.getElementById('jbTbody');
+    if (!posts.length) {
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:32px;">
+            No ${jbCurrentStatus === 'all' ? '' : jbCurrentStatus} posts found.
+            ${jbCurrentStatus === 'draft' ? '<br><small>Use "Fetch Jobs" above to pull from external sources.</small>' : ''}
+        </td></tr>`;
+        return;
+    }
+    tbody.innerHTML = posts.map(p => {
+        const tags = Array.isArray(p.tags) ? p.tags.slice(0,2).join(', ') : '';
+        const statusColor = {draft:'var(--warning)',published:'var(--success)',archived:'var(--muted)'}[p.status]||'var(--muted)';
+        return `<tr>
+            <td><input type="checkbox" class="jb-check" data-id="${p.id}"></td>
+            <td style="color:var(--muted);font-size:12px;">${p.id}</td>
+            <td style="max-width:220px;">
+                <div style="font-weight:500;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${escHtmlAdmin(p.title)}">${escHtmlAdmin(p.title)}</div>
+                ${tags ? `<div style="font-size:11px;color:var(--muted);">${escHtmlAdmin(tags)}</div>` : ''}
+            </td>
+            <td style="font-size:13px;">${escHtmlAdmin(p.company||'—')}</td>
+            <td><span style="font-size:11px;background:rgba(100,116,139,.1);color:#94a3b8;padding:2px 8px;border-radius:8px;">${escHtmlAdmin(p.source)}</span></td>
+            <td style="font-size:12px;color:var(--muted);">${escHtmlAdmin(p.job_type||'—')}</td>
+            <td><span style="font-size:12px;color:${statusColor};font-weight:600;">${p.status}</span></td>
+            <td style="text-align:center;">${p.ai_rewritten ? '<span title="AI Rewritten" style="color:#a78bfa;">✦</span>' : '<span style="color:#1e1e3a;">—</span>'}</td>
+            <td>
+                <div style="display:flex;gap:4px;flex-wrap:wrap;">
+                    <button class="btn btn-secondary btn-sm" onclick="openJbEdit(${p.id})">Edit</button>
+                    ${p.status !== 'published' ? `<button class="btn btn-success btn-sm" onclick="jbQuickAction(${p.id},'published')">Publish</button>` : ''}
+                    ${p.status === 'published' ? `<button class="btn btn-secondary btn-sm" onclick="jbQuickAction(${p.id},'draft')">Unpublish</button>` : ''}
+                    <button class="btn btn-danger btn-sm" onclick="jbDelete(${p.id})">Del</button>
+                </div>
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+function jbToggleAll() {
+    const checked = document.getElementById('jbSelectAll').checked;
+    document.querySelectorAll('.jb-check').forEach(c => c.checked = checked);
+}
+
+async function jbQuickAction(id, status) {
+    await fetch('/api/jobboard/admin/posts/' + id, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({status}) });
+    loadJobBoard(jbCurrentStatus);
+}
+
+async function jbDelete(id) {
+    if (!confirm('Delete this job post permanently?')) return;
+    await fetch('/api/jobboard/admin/posts/' + id, { method:'DELETE' });
+    loadJobBoard(jbCurrentStatus);
+}
+
+async function bulkJobBoardAction(action) {
+    const ids = [...document.querySelectorAll('.jb-check:checked')].map(c => parseInt(c.dataset.id));
+    if (!ids.length) { showAlert('jbAlert', 'No posts selected.', false); return; }
+    if (action === 'delete' && !confirm(`Delete ${ids.length} post(s) permanently?`)) return;
+    const res = await fetch('/api/jobboard/admin/posts/bulk', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({action, ids}) });
+    const data = await res.json();
+    showAlert('jbAlert', data.success ? `✅ ${data.affected} post(s) ${action}d.` : '❌ Error: ' + data.error, data.success);
+    loadJobBoard(jbCurrentStatus);
+}
+
+async function openJbEdit(id) {
+    const res = await fetch('/api/jobboard/admin/posts/' + id);
+    const p = await res.json();
+    jbEditingId = id;
+    document.getElementById('jbEditId').value = id;
+    document.getElementById('jbEditTitle').value = p.title || '';
+    document.getElementById('jbEditCompany').value = p.company || '';
+    document.getElementById('jbEditLocation').value = p.location || '';
+    document.getElementById('jbEditType').value = p.job_type || 'remote';
+    document.getElementById('jbEditSalary').value = p.salary || '';
+    document.getElementById('jbEditUrl').value = p.apply_url || '';
+    const tags = Array.isArray(p.tags) ? p.tags.join(', ') : (p.tags || '');
+    document.getElementById('jbEditTags').value = tags;
+    document.getElementById('jbEditDesc').value = p.description_raw || p.description || '';
+    document.getElementById('jbEditFeatured').checked = !!p.featured;
+    document.getElementById('jbEditAlert').textContent = '';
+    document.getElementById('jbModal').classList.add('active');
+}
+
+async function saveJobPost(status) {
+    const id = document.getElementById('jbEditId').value;
+    const payload = {
+        title: document.getElementById('jbEditTitle').value,
+        company: document.getElementById('jbEditCompany').value,
+        location: document.getElementById('jbEditLocation').value,
+        job_type: document.getElementById('jbEditType').value,
+        salary: document.getElementById('jbEditSalary').value,
+        apply_url: document.getElementById('jbEditUrl').value,
+        tags: document.getElementById('jbEditTags').value,
+        description: document.getElementById('jbEditDesc').value,
+        featured: document.getElementById('jbEditFeatured').checked,
+        status,
+    };
+    const res = await fetch('/api/jobboard/admin/posts/' + id, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+    const data = await res.json();
+    if (data.success) {
+        closeModal('jbModal');
+        loadJobBoard(jbCurrentStatus);
+        showAlert('jbAlert', '✅ Post saved as ' + status + '.', true);
+    } else {
+        showAlert('jbEditAlert', '❌ Error saving post.', false);
+    }
+}
+
+async function rewriteJobPost() {
+    const id = document.getElementById('jbEditId').value;
+    const btn = document.getElementById('rewriteBtn');
+    btn.textContent = '⏳ Rewriting...';
+    btn.disabled = true;
+    const res = await fetch('/api/jobboard/admin/posts/' + id + '/rewrite', { method:'POST' });
+    const data = await res.json();
+    btn.textContent = '✦ Rewrite with AI';
+    btn.disabled = false;
+    if (data.success) {
+        document.getElementById('jbEditDesc').value = data.description;
+        showAlert('jbEditAlert', '✅ Description rewritten by AI. Review before publishing.', true);
+    } else {
+        showAlert('jbEditAlert', '❌ ' + (data.error || 'Rewrite failed.'), false);
+    }
+}
+
+async function fetchJobsNow() {
+    const btn = document.getElementById('fetchBtn');
+    btn.textContent = '⏳ Fetching...';
+    btn.disabled = true;
+    const sources = [];
+    if (document.getElementById('src_remotive').checked) sources.push('remotive');
+    if (document.getElementById('src_arbeitnow').checked) sources.push('arbeitnow');
+    if (document.getElementById('src_remoteok').checked) sources.push('remoteok');
+    if (document.getElementById('src_adzuna').checked) sources.push('adzuna');
+    if (!sources.length) { showAlert('jbAlert', 'Select at least one source.', false); btn.textContent='🔄 Fetch Jobs'; btn.disabled=false; return; }
+    const payload = {
+        sources,
+        search: document.getElementById('jbFetchSearch').value.trim(),
+        limit_per_source: parseInt(document.getElementById('jbFetchLimit').value),
+    };
+    try {
+        const res = await fetch('/api/jobboard/admin/fetch', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+        const data = await res.json();
+        if (data.success) {
+            showAlert('jbAlert', `✅ Fetched ${data.total} posts — ${data.added} new, ${data.skipped} duplicates skipped.`, true);
+            loadJobBoard('draft');
+        } else {
+            showAlert('jbAlert', '❌ Fetch error: ' + data.error, false);
+        }
+    } catch(e) {
+        showAlert('jbAlert', '❌ Network error: ' + e.message, false);
+    }
+    btn.textContent = '🔄 Fetch Jobs';
+    btn.disabled = false;
+}
+
+function escHtmlAdmin(s) {
+    return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 // ── Password ─────────────────────────────────────────────────────────────────
