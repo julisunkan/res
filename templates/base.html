@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}AI Resume & Cover Letter Creator{% endblock %}</title>
+    <meta name="description" content="AI-powered job application assistant for resumes, cover letters, and career prep.">
+    <meta name="theme-color" content="#4f46e5">
+    <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
+    <link rel="manifest" href="/static/manifest.json">
+    <link rel="apple-touch-icon" href="/static/images/icon-192.png">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <a href="/">
+                <span class="brand-icon">✦</span>
+                <span class="brand-name">AI Career Hub</span>
+            </a>
+        </div>
+        <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">☰</button>
+        <div class="nav-links" id="navLinks">
+            <a href="/" class="nav-link {% if request.path == '/' %}active{% endif %}">Dashboard</a>
+            <a href="/resume-builder" class="nav-link {% if request.path == '/resume-builder' %}active{% endif %}">Resume Builder</a>
+            <a href="/job-tracker" class="nav-link {% if request.path == '/job-tracker' %}active{% endif %}">Job Tracker</a>
+            <a href="/interview-prep" class="nav-link {% if request.path == '/interview-prep' %}active{% endif %}">Interview Prep</a>
+            <a href="/career-chat" class="nav-link {% if request.path == '/career-chat' %}active{% endif %}">Career Chat</a>
+            <a href="/linkedin-optimizer" class="nav-link {% if request.path == '/linkedin-optimizer' %}active{% endif %}">LinkedIn</a>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <script>
+        // PWA Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/static/service-worker.js')
+                    .then(reg => console.log('SW registered:', reg.scope))
+                    .catch(err => console.log('SW failed:', err));
+            });
+        }
+
+        // Nav toggle for mobile
+        const navToggle = document.getElementById('navToggle');
+        const navLinks = document.getElementById('navLinks');
+        navToggle.addEventListener('click', () => {
+            navLinks.classList.toggle('open');
+        });
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

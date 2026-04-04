@@ -1,0 +1,132 @@
+import os
+from groq import Groq
+
+_client = None
+
+def get_client():
+    global _client
+    if _client is None:
+        api_key = os.environ.get('GROQ_API_KEY')
+        if not api_key:
+            raise ValueError("GROQ_API_KEY environment variable is not set.")
+        _client = Groq(api_key=api_key)
+    return _client
+
+
+def ai_generate(system_prompt, user_prompt, max_tokens=4096, temperature=0.7):
+    client = get_client()
+    response = client.chat.completions.create(
+        model="llama3-70b-8192",
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt}
+        ],
+        max_tokens=max_tokens,
+        temperature=temperature,
+    )
+    return response.choices[0].message.content.strip()
+
+
+def optimize_resume(resume_text, job_description):
+    system = (
+        "You are an expert ATS resume optimizer and career coach. "
+        "Your task is to rewrite and optimize the provided resume to match the job description. "
+        "Make it ATS-friendly, keyword-rich, and impactful. "
+        "Return ONLY the optimized resume text, no commentary."
+    )
+    user = f"RESUME:\n{resume_text[:3000]}\n\nJOB DESCRIPTION:\n{job_description[:2000]}\n\nOptimize the resume to match this job description. Make it ATS-friendly."
+    return ai_generate(system, user)
+
+
+def generate_cover_letter(resume_text, job_description):
+    system = (
+        "You are a professional cover letter writer. "
+        "Write a compelling, personalized cover letter based on the resume and job description. "
+        "Return ONLY the cover letter text, no commentary."
+    )
+    user = f"RESUME:\n{resume_text[:2000]}\n\nJOB DESCRIPTION:\n{job_description[:2000]}\n\nWrite a tailored cover letter."
+    return ai_generate(system, user)
+
+
+def analyze_match(resume_text, job_description):
+    system = (
+        "You are a resume-job match analyzer. Analyze the resume against the job description and return a JSON object with these fields:\n"
+        "- score: number from 0-100 (match percentage)\n"
+        "- missing_keywords: array of important keywords from job description missing in resume\n"
+        "- suggestions: array of specific improvement suggestions\n"
+        "Return ONLY valid JSON, no markdown, no commentary."
+    )
+    user = f"RESUME:\n{resume_text[:2500]}\n\nJOB DESCRIPTION:\n{job_description[:1500]}\n\nAnalyze the match and return JSON."
+    return ai_generate(system, user, max_tokens=1000)
+
+
+def rewrite_section(section_text, section_name, job_description):
+    system = (
+        "You are an expert resume writer. Rewrite the given resume section to be more impactful, "
+        "quantified, and relevant to the job description. "
+        "Return ONLY the rewritten section, no commentary."
+    )
+    user = f"SECTION ({section_name}):\n{section_text[:1500]}\n\nJOB DESCRIPTION:\n{job_description[:1000]}\n\nRewrite this section."
+    return ai_generate(system, user, max_tokens=800)
+
+
+def generate_interview_questions(job_description):
+    system = (
+        "You are an interview preparation expert. Generate 10 likely interview questions based on the job description. "
+        "For each question, also provide a sample answer. "
+        "Return a JSON array of objects with 'question' and 'sample_answer' fields. "
+        "Return ONLY valid JSON array."
+    )
+    user = f"JOB DESCRIPTION:\n{job_description[:2000]}\n\nGenerate 10 interview questions with sample answers."
+    return ai_generate(system, user, max_tokens=3000)
+
+
+def analyze_job_description(job_description):
+    system = (
+        "You are a job description analyzer. Analyze the job description and return a JSON object with:\n"
+        "- required_skills: array of required technical and soft skills\n"
+        "- keywords: array of important ATS keywords\n"
+        "- experience_level: string (entry/junior/mid/senior/lead)\n"
+        "- key_responsibilities: array of main responsibilities\n"
+        "Return ONLY valid JSON."
+    )
+    user = f"JOB DESCRIPTION:\n{job_description[:2500]}\n\nAnalyze and return JSON."
+    return ai_generate(system, user, max_tokens=1500)
+
+
+def chat_with_career_assistant(messages):
+    system = (
+        "You are an expert AI career assistant. You help users with resume writing, job searching, "
+        "interview preparation, career advice, salary negotiation, and professional development. "
+        "Be helpful, specific, and encouraging."
+    )
+    client = get_client()
+    all_messages = [{"role": "system", "content": system}] + messages
+    response = client.chat.completions.create(
+        model="llama3-70b-8192",
+        messages=all_messages,
+        max_tokens=1500,
+        temperature=0.7,
+    )
+    return response.choices[0].message.content.strip()
+
+
+def optimize_linkedin_profile(headline, about, job_title, industry):
+    system = (
+        "You are a LinkedIn profile optimization expert. "
+        "Improve the LinkedIn headline and About section to be more compelling and keyword-rich. "
+        "Return a JSON object with 'headline' and 'about' fields. "
+        "Return ONLY valid JSON."
+    )
+    user = f"CURRENT HEADLINE: {headline}\nCURRENT ABOUT: {about[:1000]}\nTARGET JOB TITLE: {job_title}\nINDUSTRY: {industry}\n\nOptimize the LinkedIn profile."
+    return ai_generate(system, user, max_tokens=800)
+
+
+def generate_resume_from_skills(name, skills, education, experience_notes):
+    system = (
+        "You are an expert resume writer specializing in helping students and career changers. "
+        "Create a professional resume from the provided information. Focus on skills, education, projects, and potential. "
+        "Return ONLY the resume text in a clean, professional format."
+    )
+    user = f"NAME: {name}\nSKILLS: {skills}\nEDUCATION: {education}\nEXPERIENCE/NOTES: {experience_notes}\n\nCreate a professional resume."
+    return ai_generate(system, user, max_tokens=2000)

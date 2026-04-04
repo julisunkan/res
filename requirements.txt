@@ -1,0 +1,10 @@
+flask
+flask-sqlalchemy
+flask-cors
+pdfplumber
+python-docx
+groq
+gunicorn
+werkzeug
+reportlab
+python-dotenv

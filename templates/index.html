@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - AI Career Hub{% endblock %}
+{% block content %}
+<div class="hero">
+    <div class="hero-title">AI Career Hub</div>
+    <p class="hero-subtitle">Your intelligent job application assistant — from resume to offer letter.</p>
+    <div class="hero-actions">
+        <a href="/resume-builder" class="btn btn-primary btn-lg">✦ Build My Resume</a>
+        <a href="/job-tracker" class="btn btn-secondary btn-lg">Track Applications</a>
+    </div>
+</div>
+
+<div id="statsSection">
+    <h2 style="font-size:18px;font-weight:600;margin-bottom:16px;">Application Overview</h2>
+    <div class="grid grid-4" id="statsGrid">
+        <div class="stat-card"><div class="stat-value" id="statTotal">—</div><div class="stat-label">Total Applications</div></div>
+        <div class="stat-card"><div class="stat-value" id="statInterview">—</div><div class="stat-label">Interviews</div></div>
+        <div class="stat-card"><div class="stat-value" id="statOffer">—</div><div class="stat-label">Offers</div></div>
+        <div class="stat-card"><div class="stat-value" id="statRate" style="color:var(--success)">—</div><div class="stat-label">Interview Rate</div></div>
+    </div>
+</div>
+
+<div style="margin-top:40px;">
+    <h2 style="font-size:18px;font-weight:600;margin-bottom:16px;">Quick Actions</h2>
+    <div class="grid grid-3">
+        <a href="/resume-builder" class="quick-action-card">
+            <div class="quick-action-icon">📄</div>
+            <div class="quick-action-label">Resume Builder</div>
+            <div class="quick-action-desc">Optimize your resume with AI</div>
+        </a>
+        <a href="/job-tracker" class="quick-action-card">
+            <div class="quick-action-icon">📊</div>
+            <div class="quick-action-label">Job Tracker</div>
+            <div class="quick-action-desc">Manage your applications</div>
+        </a>
+        <a href="/interview-prep" class="quick-action-card">
+            <div class="quick-action-icon">🎯</div>
+            <div class="quick-action-label">Interview Prep</div>
+            <div class="quick-action-desc">Practice with AI questions</div>
+        </a>
+        <a href="/career-chat" class="quick-action-card">
+            <div class="quick-action-icon">💬</div>
+            <div class="quick-action-label">Career Chat</div>
+            <div class="quick-action-desc">Ask an AI career advisor</div>
+        </a>
+        <a href="/linkedin-optimizer" class="quick-action-card">
+            <div class="quick-action-icon">🔗</div>
+            <div class="quick-action-label">LinkedIn Optimizer</div>
+            <div class="quick-action-desc">Improve your profile</div>
+        </a>
+        <div class="quick-action-card" style="cursor:default;opacity:0.6;">
+            <div class="quick-action-icon">📈</div>
+            <div class="quick-action-label">More Coming Soon</div>
+            <div class="quick-action-desc">Stay tuned for updates</div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+async function loadStats() {
+    try {
+        const res = await fetch('/api/jobs/stats');
+        const data = await res.json();
+        document.getElementById('statTotal').textContent = data.total;
+        document.getElementById('statInterview').textContent = data.interview;
+        document.getElementById('statOffer').textContent = data.offer;
+        document.getElementById('statRate').textContent = data.interview_rate + '%';
+    } catch(e) { console.log('Stats unavailable'); }
+}
+loadStats();
+</script>
+{% endblock %}

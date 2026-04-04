@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}Career Chat - AI Career Hub{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div class="page-title">💬 AI Career Assistant</div>
+    <div class="page-subtitle">Get personalized career advice, resume tips, and job search strategies.</div>
+</div>
+
+<div class="card" style="max-width:800px;margin:0 auto;">
+    <div class="chat-wrap">
+        <div class="chat-messages" id="chatMessages">
+            <div class="chat-bubble assistant">
+                👋 Hi! I'm your AI career assistant. I can help you with resume writing, interview preparation, job searching strategies, salary negotiation, career transitions, and much more. What would you like to work on today?
+            </div>
+        </div>
+        <div class="chat-input-row">
+            <input type="text" class="form-control chat-input" id="chatInput" placeholder="Ask me anything about your career..." onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault();sendMessage();}">
+            <button class="btn btn-primary" onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+</div>
+
+<div style="max-width:800px;margin:20px auto 0;">
+    <div style="font-size:14px;color:var(--text-muted);margin-bottom:12px;">Suggested questions:</div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;">
+        <button class="btn btn-secondary btn-sm" onclick="suggest('How do I write a strong resume summary?')">Resume summary tips</button>
+        <button class="btn btn-secondary btn-sm" onclick="suggest('How should I negotiate my salary?')">Salary negotiation</button>
+        <button class="btn btn-secondary btn-sm" onclick="suggest('What are the best ways to find a job in tech?')">Job search strategies</button>
+        <button class="btn btn-secondary btn-sm" onclick="suggest('How do I prepare for behavioral interviews?')">Behavioral interviews</button>
+        <button class="btn btn-secondary btn-sm" onclick="suggest('How do I switch careers with no experience?')">Career transitions</button>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+let messages = [];
+
+function suggest(text) {
+    document.getElementById('chatInput').value = text;
+    sendMessage();
+}
+
+function addBubble(content, role) {
+    const container = document.getElementById('chatMessages');
+    const div = document.createElement('div');
+    div.className = 'chat-bubble ' + role;
+    div.textContent = content;
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+}
+
+function addTyping() {
+    const container = document.getElementById('chatMessages');
+    const div = document.createElement('div');
+    div.className = 'chat-bubble assistant';
+    div.id = 'typingIndicator';
+    div.innerHTML = '<span class="spinner"></span>';
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+    return div;
+}
+
+async function sendMessage() {
+    const input = document.getElementById('chatInput');
+    const text = input.value.trim();
+    if (!text) return;
+    input.value = '';
+    input.disabled = true;
+
+    addBubble(text, 'user');
+    messages.push({ role: 'user', content: text });
+
+    const typing = addTyping();
+
+    try {
+        const res = await fetch('/api/chat/message', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({ messages })
+        });
+        const data = await res.json();
+        typing.remove();
+
+        if (data.error) {
+            addBubble('Sorry, I encountered an error: ' + data.error, 'assistant');
+        } else {
+            addBubble(data.response, 'assistant');
+            messages.push({ role: 'assistant', content: data.response });
+        }
+    } catch(e) {
+        typing.remove();
+        addBubble('Connection error. Please try again.', 'assistant');
+    }
+    input.disabled = false;
+    input.focus();
+}
+</script>
+{% endblock %}

@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}LinkedIn Optimizer - AI Career Hub{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div class="page-title">🔗 LinkedIn Profile Optimizer</div>
+    <div class="page-subtitle">Improve your LinkedIn headline and About section to attract more recruiters.</div>
+</div>
+
+<div class="grid grid-2" style="align-items:start;">
+    <div class="card">
+        <div class="card-title" style="margin-bottom:16px;">Your LinkedIn Profile</div>
+        <div class="form-group">
+            <label class="form-label">Current Headline</label>
+            <input type="text" class="form-control" id="liHeadline" placeholder="e.g. Software Engineer | Python | React">
+        </div>
+        <div class="form-group">
+            <label class="form-label">Current About Section</label>
+            <textarea class="form-control" id="liAbout" rows="8" placeholder="Paste your current LinkedIn About section..."></textarea>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Target Job Title</label>
+            <input type="text" class="form-control" id="liJobTitle" placeholder="e.g. Senior Product Manager">
+        </div>
+        <div class="form-group">
+            <label class="form-label">Industry</label>
+            <input type="text" class="form-control" id="liIndustry" placeholder="e.g. Technology, Finance, Healthcare">
+        </div>
+        <button class="btn btn-primary btn-lg" onclick="optimizeLinkedIn()">✦ Optimize My Profile</button>
+    </div>
+
+    <div>
+        <div id="liResult" style="display:none;">
+            <div class="card">
+                <div class="card-title" style="margin-bottom:12px;">✅ Optimized Headline</div>
+                <div class="result-box" id="liResultHeadline" style="max-height:100px;"></div>
+                <button class="btn btn-secondary btn-sm" style="margin-top:10px;" onclick="copyText('liResultHeadline')">Copy</button>
+            </div>
+            <div class="card" style="margin-top:16px;">
+                <div class="card-title" style="margin-bottom:12px;">✅ Optimized About Section</div>
+                <div class="result-box" id="liResultAbout"></div>
+                <button class="btn btn-secondary btn-sm" style="margin-top:10px;" onclick="copyText('liResultAbout')">Copy</button>
+            </div>
+        </div>
+
+        <div id="liPlaceholder" class="card" style="text-align:center;color:var(--text-muted);">
+            <div style="font-size:40px;margin-bottom:12px;">🔗</div>
+            <p>Fill in your profile details and click "Optimize" to get AI-powered improvements that attract recruiters.</p>
+            <div style="margin-top:20px;text-align:left;">
+                <div style="font-weight:600;margin-bottom:10px;">Tips for a strong LinkedIn profile:</div>
+                <div class="tag-list">
+                    <span class="tag">Use keywords from job postings</span>
+                    <span class="tag">Quantify achievements</span>
+                    <span class="tag">Show personality</span>
+                    <span class="tag">Clear headline</span>
+                    <span class="tag">Call to action in About</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner" style="width:40px;height:40px;"></div>
+    <div class="loading-text">Optimizing your LinkedIn profile...</div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+async function optimizeLinkedIn() {
+    const headline = document.getElementById('liHeadline').value.trim();
+    const about = document.getElementById('liAbout').value.trim();
+    if (!headline && !about) { alert('Please enter your headline or About section.'); return; }
+    document.getElementById('loadingOverlay').classList.add('active');
+    try {
+        const res = await fetch('/api/linkedin/optimize', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({
+                headline, about,
+                job_title: document.getElementById('liJobTitle').value,
+                industry: document.getElementById('liIndustry').value,
+            })
+        });
+        const data = await res.json();
+        document.getElementById('loadingOverlay').classList.remove('active');
+        if (data.error) { alert('Error: '+data.error); return; }
+        document.getElementById('liResultHeadline').textContent = data.headline || '';
+        document.getElementById('liResultAbout').textContent = data.about || '';
+        document.getElementById('liResult').style.display = 'block';
+        document.getElementById('liPlaceholder').style.display = 'none';
+    } catch(e) {
+        document.getElementById('loadingOverlay').classList.remove('active');
+        alert('Error: '+e.message);
+    }
+}
+
+function copyText(id) {
+    const text = document.getElementById(id).textContent;
+    navigator.clipboard.writeText(text).then(() => alert('Copied!'));
+}
+</script>
+{% endblock %}

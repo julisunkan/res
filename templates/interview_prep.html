@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}Interview Prep - AI Career Hub{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div class="page-title">🎯 Interview Preparation</div>
+    <div class="page-subtitle">Generate likely interview questions and sample answers from any job description.</div>
+</div>
+
+<div class="grid grid-2" style="align-items:start;">
+    <div class="card">
+        <div class="card-title" style="margin-bottom:16px;">Job Description</div>
+        <div class="form-group">
+            <label class="form-label">Paste the job description you're preparing for:</label>
+            <textarea class="form-control" id="interviewJd" rows="14" placeholder="Paste the full job description here..."></textarea>
+        </div>
+        <button class="btn btn-primary btn-lg" onclick="generateQuestions()">✦ Generate Interview Questions</button>
+    </div>
+
+    <div>
+        <div id="questionsContainer">
+            <div class="card" style="text-align:center;color:var(--text-muted);">
+                <div style="font-size:40px;margin-bottom:12px;">🎯</div>
+                <p>Enter a job description and click "Generate" to get AI-powered interview questions with sample answers.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner" style="width:40px;height:40px;"></div>
+    <div class="loading-text">Generating interview questions...</div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+async function generateQuestions() {
+    const jd = document.getElementById('interviewJd').value.trim();
+    if (!jd) { alert('Please paste a job description.'); return; }
+    document.getElementById('loadingOverlay').classList.add('active');
+    try {
+        const res = await fetch('/api/interview/generate', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({job_description: jd})});
+        const data = await res.json();
+        document.getElementById('loadingOverlay').classList.remove('active');
+        if (data.error) { alert('Error: '+data.error); return; }
+        const questions = data.questions || [];
+        const html = questions.map((q, i) => `
+            <div class="accordion-item">
+                <div class="accordion-header" onclick="toggleAccordion(this)">
+                    <span>${i+1}. ${q.question}</span>
+                    <span>▼</span>
+                </div>
+                <div class="accordion-body">
+                    <strong style="color:var(--primary-light);">Sample Answer:</strong>
+                    <p style="margin-top:8px;">${q.sample_answer}</p>
+                </div>
+            </div>
+        `).join('');
+        document.getElementById('questionsContainer').innerHTML = `
+            <div class="card" style="margin-bottom:16px;">
+                <div class="card-title">${questions.length} Interview Questions</div>
+                <p style="color:var(--text-muted);font-size:13px;margin-top:4px;">Click each question to reveal the sample answer.</p>
+            </div>
+            ${html}
+        `;
+    } catch(e) {
+        document.getElementById('loadingOverlay').classList.remove('active');
+        alert('Error: '+e.message);
+    }
+}
+
+function toggleAccordion(header) {
+    const body = header.nextElementSibling;
+    const isOpen = body.classList.contains('open');
+    document.querySelectorAll('.accordion-body').forEach(b => b.classList.remove('open'));
+    if (!isOpen) body.classList.add('open');
+}
+</script>
+{% endblock %}

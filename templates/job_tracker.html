@@ -1,0 +1,271 @@
+{% extends "base.html" %}
+{% block title %}Job Tracker - AI Career Hub{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div class="page-title">📊 Job Tracker</div>
+    <div class="page-subtitle">Track every application, interview, and outcome in one place.</div>
+</div>
+
+<div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('tracker')">Applications</button>
+    <button class="tab-btn" onclick="switchTab('analyzer')">Job Analyzer</button>
+    <button class="tab-btn" onclick="switchTab('analytics')">Analytics</button>
+</div>
+
+<!-- TAB: Tracker -->
+<div class="tab-content active" id="tab-tracker">
+    <div class="card" style="margin-bottom:20px;">
+        <div class="card-title" style="margin-bottom:16px;">Add Application</div>
+        <div class="grid grid-2">
+            <div class="form-group">
+                <label class="form-label">Company *</label>
+                <input type="text" class="form-control" id="jobCompany" placeholder="Google">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Position *</label>
+                <input type="text" class="form-control" id="jobPosition" placeholder="Software Engineer">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Status</label>
+                <select class="form-select" id="jobStatus">
+                    <option>Applied</option>
+                    <option>Interview</option>
+                    <option>Offer</option>
+                    <option>Rejected</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Notes</label>
+                <input type="text" class="form-control" id="jobNotes" placeholder="Any notes...">
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Job Description (optional)</label>
+            <textarea class="form-control" id="jobJd" rows="3" placeholder="Paste the job description..."></textarea>
+        </div>
+        <button class="btn btn-primary" onclick="addJob()">+ Add Application</button>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">My Applications</div>
+            <input type="text" class="form-control" id="searchInput" placeholder="Search..." style="width:200px;" oninput="filterJobs()">
+        </div>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Company</th>
+                        <th>Position</th>
+                        <th>Status</th>
+                        <th>Date Applied</th>
+                        <th>Notes</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="jobsTable">
+                    <tr><td colspan="6" style="text-align:center;color:var(--text-muted);">Loading...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- TAB: Job Analyzer -->
+<div class="tab-content" id="tab-analyzer">
+    <div class="card" style="max-width:700px;">
+        <div class="card-title" style="margin-bottom:16px;">Job Description Analyzer</div>
+        <p style="color:var(--text-muted);font-size:14px;margin-bottom:16px;">Extract required skills, keywords, and experience level from any job description.</p>
+        <div class="form-group">
+            <label class="form-label">Paste Job Description</label>
+            <textarea class="form-control" id="analyzeJd" rows="10" placeholder="Paste job description here..."></textarea>
+        </div>
+        <button class="btn btn-primary" onclick="analyzeJd()">✦ Analyze</button>
+        <div id="jdResult" style="display:none;margin-top:20px;">
+            <div class="grid grid-2">
+                <div>
+                    <div style="font-weight:600;margin-bottom:8px;">Required Skills</div>
+                    <div class="tag-list" id="jdSkills"></div>
+                </div>
+                <div>
+                    <div style="font-weight:600;margin-bottom:8px;">ATS Keywords</div>
+                    <div class="tag-list" id="jdKeywords"></div>
+                </div>
+            </div>
+            <div style="margin-top:16px;">
+                <span style="font-weight:600;">Experience Level:</span>
+                <span id="jdLevel" style="color:var(--primary-light);margin-left:8px;"></span>
+            </div>
+            <div style="margin-top:16px;">
+                <div style="font-weight:600;margin-bottom:8px;">Key Responsibilities</div>
+                <div id="jdResponsibilities" style="font-size:14px;color:var(--text-muted);"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- TAB: Analytics -->
+<div class="tab-content" id="tab-analytics">
+    <div class="grid grid-4" id="analyticsStats">
+        <div class="stat-card"><div class="stat-value" id="aTotal">—</div><div class="stat-label">Total Applications</div></div>
+        <div class="stat-card"><div class="stat-value" id="aInterview" style="color:var(--warning)">—</div><div class="stat-label">Interviews</div></div>
+        <div class="stat-card"><div class="stat-value" id="aOffer" style="color:var(--success)">—</div><div class="stat-label">Offers</div></div>
+        <div class="stat-card"><div class="stat-value" id="aRate" style="color:var(--secondary)">—</div><div class="stat-label">Interview Rate</div></div>
+    </div>
+    <div class="card" style="margin-top:20px;">
+        <div class="card-title" style="margin-bottom:16px;">Status Breakdown</div>
+        <div id="statusBreakdown"></div>
+    </div>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal-overlay" id="editModal">
+    <div class="modal">
+        <div class="modal-header">
+            <div class="modal-title">Edit Application</div>
+            <button class="modal-close" onclick="closeModal()">✕</button>
+        </div>
+        <input type="hidden" id="editId">
+        <div class="form-group"><label class="form-label">Company</label><input type="text" class="form-control" id="editCompany"></div>
+        <div class="form-group"><label class="form-label">Position</label><input type="text" class="form-control" id="editPosition"></div>
+        <div class="form-group"><label class="form-label">Status</label>
+            <select class="form-select" id="editStatus"><option>Applied</option><option>Interview</option><option>Offer</option><option>Rejected</option></select>
+        </div>
+        <div class="form-group"><label class="form-label">Notes</label><textarea class="form-control" id="editNotes" rows="3"></textarea></div>
+        <button class="btn btn-primary" onclick="saveEdit()">Save Changes</button>
+    </div>
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script>
+let allJobs = [];
+function switchTab(tab) {
+    document.querySelectorAll('.tab-btn').forEach((b,i) => {
+        const tabs = ['tracker','analyzer','analytics'];
+        b.classList.toggle('active', tabs[i] === tab);
+    });
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.getElementById('tab-'+tab).classList.add('active');
+    if (tab === 'analytics') loadAnalytics();
+}
+
+function statusBadge(status) {
+    const cls = {'Applied':'badge-applied','Interview':'badge-interview','Offer':'badge-offer','Rejected':'badge-rejected'}[status]||'badge-applied';
+    return `<span class="badge ${cls}">${status}</span>`;
+}
+
+function renderJobs(jobs) {
+    const tbody = document.getElementById('jobsTable');
+    if (!jobs.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);">No applications yet.</td></tr>'; return; }
+    tbody.innerHTML = jobs.map(j => `
+        <tr>
+            <td><strong>${j.company}</strong></td>
+            <td>${j.position}</td>
+            <td>${statusBadge(j.status)}</td>
+            <td style="color:var(--text-muted);font-size:13px;">${j.applied_date ? new Date(j.applied_date).toLocaleDateString() : '—'}</td>
+            <td style="color:var(--text-muted);font-size:13px;">${j.notes||'—'}</td>
+            <td>
+                <button class="btn btn-secondary btn-sm" onclick="openEdit(${j.id})">Edit</button>
+                <button class="btn btn-danger btn-sm" onclick="deleteJob(${j.id})">Del</button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+async function loadJobs() {
+    const res = await fetch('/api/jobs/');
+    allJobs = await res.json();
+    renderJobs(allJobs);
+}
+
+function filterJobs() {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    renderJobs(allJobs.filter(j => j.company.toLowerCase().includes(q) || j.position.toLowerCase().includes(q)));
+}
+
+async function addJob() {
+    const company = document.getElementById('jobCompany').value.trim();
+    const position = document.getElementById('jobPosition').value.trim();
+    if (!company || !position) { alert('Company and position are required.'); return; }
+    const res = await fetch('/api/jobs/', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({
+        company, position, status: document.getElementById('jobStatus').value,
+        notes: document.getElementById('jobNotes').value, job_description: document.getElementById('jobJd').value
+    })});
+    if (res.ok) {
+        document.getElementById('jobCompany').value='';
+        document.getElementById('jobPosition').value='';
+        document.getElementById('jobNotes').value='';
+        document.getElementById('jobJd').value='';
+        loadJobs();
+    }
+}
+
+async function deleteJob(id) {
+    if (!confirm('Delete this application?')) return;
+    await fetch('/api/jobs/'+id, {method:'DELETE'});
+    loadJobs();
+}
+
+function openEdit(id) {
+    const job = allJobs.find(j => j.id===id);
+    if (!job) return;
+    document.getElementById('editId').value = id;
+    document.getElementById('editCompany').value = job.company;
+    document.getElementById('editPosition').value = job.position;
+    document.getElementById('editStatus').value = job.status;
+    document.getElementById('editNotes').value = job.notes||'';
+    document.getElementById('editModal').classList.add('active');
+}
+function closeModal() { document.getElementById('editModal').classList.remove('active'); }
+
+async function saveEdit() {
+    const id = document.getElementById('editId').value;
+    await fetch('/api/jobs/'+id, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({
+        company: document.getElementById('editCompany').value,
+        position: document.getElementById('editPosition').value,
+        status: document.getElementById('editStatus').value,
+        notes: document.getElementById('editNotes').value,
+    })});
+    closeModal(); loadJobs();
+}
+
+async function analyzeJd() {
+    const jd = document.getElementById('analyzeJd').value.trim();
+    if (!jd) { alert('Please paste a job description.'); return; }
+    const btn = document.querySelector('#tab-analyzer .btn-primary');
+    btn.disabled = true; btn.textContent = 'Analyzing...';
+    try {
+        const res = await fetch('/api/jobs/analyze-jd', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({job_description:jd})});
+        const data = await res.json();
+        if (data.error) { alert('Error: '+data.error); return; }
+        document.getElementById('jdSkills').innerHTML = (data.required_skills||[]).map(s=>`<span class="tag">${s}</span>`).join('');
+        document.getElementById('jdKeywords').innerHTML = (data.keywords||[]).map(k=>`<span class="tag tag-warning">${k}</span>`).join('');
+        document.getElementById('jdLevel').textContent = data.experience_level||'Unknown';
+        document.getElementById('jdResponsibilities').innerHTML = (data.key_responsibilities||[]).map(r=>`<p style="margin-bottom:6px;">• ${r}</p>`).join('');
+        document.getElementById('jdResult').style.display='block';
+    } catch(e) { alert('Error: '+e.message); }
+    btn.disabled=false; btn.textContent='✦ Analyze';
+}
+
+async function loadAnalytics() {
+    const res = await fetch('/api/jobs/stats');
+    const d = await res.json();
+    document.getElementById('aTotal').textContent = d.total;
+    document.getElementById('aInterview').textContent = d.interview;
+    document.getElementById('aOffer').textContent = d.offer;
+    document.getElementById('aRate').textContent = d.interview_rate+'%';
+    const statuses = [{label:'Applied',val:d.applied,color:'var(--primary-light)'},{label:'Interview',val:d.interview,color:'var(--warning)'},{label:'Offer',val:d.offer,color:'var(--success)'},{label:'Rejected',val:d.rejected,color:'var(--danger)'}];
+    document.getElementById('statusBreakdown').innerHTML = statuses.map(s=>`
+        <div style="margin-bottom:12px;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:14px;">
+                <span>${s.label}</span><span style="color:${s.color};font-weight:600;">${s.val}</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" style="width:${d.total?s.val/d.total*100:0}%;background:${s.color}"></div></div>
+        </div>
+    `).join('');
+}
+
+loadJobs();
+</script>
+{% endblock %}

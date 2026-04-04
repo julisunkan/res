@@ -1,0 +1,148 @@
+Build a full-stack Progressive Web App (PWA) using Python Flask called **"AI Resume & Cover Letter Creator"**.
+
+The app should function as a complete **AI Job Application Assistant** with the following features:
+
+---
+
+### CORE FEATURES
+
+1. Users can upload a resume (PDF or DOCX)
+2. Users can paste a job description
+3. Extract text from uploaded files
+4. Generate:
+
+   * ATS-optimized resume
+   * Tailored cover letter
+5. Show:
+
+   * Match score (%)
+   * Missing keywords
+   * Resume improvement suggestions
+
+---
+
+### ADVANCED FEATURES
+
+6. Resume section editor (rewrite specific sections)
+
+7. Multiple resume versions (save and label resumes)
+
+8. Job application tracker:
+
+   * Add jobs
+   * Track status (Applied, Interview, Rejected)
+   * Store notes
+
+9. Interview preparation:
+
+   * Generate interview questions from job description
+   * Provide sample answers
+
+10. Job description analyzer:
+
+* Extract required skills
+* Identify keywords
+* Experience level
+
+11. AI career assistant chat (chatbot interface)
+
+12. LinkedIn profile optimizer:
+
+* Improve headline
+* Rewrite "About" section
+
+13. Student / No-experience mode:
+
+* Generate resume from skills + education
+
+14. Export:
+
+* Download resume and cover letter as PDF
+
+15. Analytics dashboard:
+
+* Number of applications
+* Interview rate
+* Resume score trends
+
+---
+
+### TECHNICAL REQUIREMENTS
+
+Backend:
+
+* Python Flask
+* SQLite database
+* Modular structure using Blueprints
+
+AI Integration:
+
+* Use Groq API (llama3-70b-8192 model)
+* Create reusable AI utility functions
+
+File Handling:
+
+* pdfplumber for PDF
+* python-docx for DOCX
+
+Frontend:
+
+* HTML, CSS (Tailwind optional), JavaScript
+* Multi-page dashboard UI
+
+---
+
+### PWA REQUIREMENTS
+
+* Include manifest.json
+* Include service-worker.js
+* Enable installable app
+* Cache static files for offline use
+
+---
+
+### PROJECT STRUCTURE
+
+* app.py
+* /routes (resume, jobs, interview, chat, linkedin)
+* /utils (parser, ai_engine, analyzer)
+* /models (User, Job, Resume)
+* /templates (HTML pages)
+* /static (JS, CSS, manifest, service worker)
+
+---
+
+### UI PAGES
+
+* Dashboard
+* Resume Builder
+* Job Tracker
+* Interview Prep
+* Career Chat
+* LinkedIn Optimizer
+
+---
+
+### ADDITIONAL REQUIREMENTS
+
+* Clean, modern UI (simple but professional)
+* Fast performance (limit input size)
+* Basic caching system
+* Error handling for file uploads and API calls
+
+---
+
+### OUTPUT EXPECTATION
+
+Generate:
+
+* Full working Flask app
+* All necessary files and folders
+* Backend + frontend code
+* Example templates
+* Service worker + manifest
+* Clear instructions to run locally
+
+---
+
+The final app should be fully functional, structured, and ready to deploy on Replit.
