@@ -1,74 +1,95 @@
 {% extends "base.html" %}
 {% block title %}Dashboard - AI Resume & Cover Letter Creator{% endblock %}
 {% block content %}
-<div class="hero">
-    <div class="hero-title">
-        <span class="gradient-text">AI Resume & Cover Letter Creator</span>
+{% from '_macros.html' import ad_slot %}
+
+<div class="dashboard-layout {% if ads.sidebar.enabled and ads.sidebar.slot and ads.publisher_id %}has-sidebar{% endif %}">
+
+<div class="dashboard-main">
+    <div class="hero">
+        <div class="hero-title">
+            <span class="gradient-text">AI Resume & Cover Letter Creator</span>
+        </div>
+        <p class="hero-subtitle">Your intelligent job application assistant — from resume to offer letter, powered by AI.</p>
+        <div class="hero-actions">
+            <a href="/resume-builder" class="btn btn-primary btn-xl">✦ Build My Resume</a>
+            <a href="/job-tracker" class="btn btn-success btn-xl">📊 Track Applications</a>
+            <a href="/career-chat" class="btn btn-warning btn-lg">💬 Chat with AI</a>
+        </div>
     </div>
-    <p class="hero-subtitle">Your intelligent job application assistant — from resume to offer letter, powered by AI.</p>
-    <div class="hero-actions">
-        <a href="/resume-builder" class="btn btn-primary btn-xl">✦ Build My Resume</a>
-        <a href="/job-tracker" class="btn btn-success btn-xl">📊 Track Applications</a>
-        <a href="/career-chat" class="btn btn-warning btn-lg">💬 Chat with AI</a>
+
+    <div style="margin-bottom:36px;">
+        <div class="section-heading">📈 Application Overview</div>
+        <div class="grid grid-4 stagger" id="statsGrid">
+            <div class="stat-card">
+                <div class="stat-value" id="statTotal">0</div>
+                <div class="stat-label">Total Applications</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="statInterview">0</div>
+                <div class="stat-label">Interviews</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="statOffer">0</div>
+                <div class="stat-label">Offers Received</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="statRate">0%</div>
+                <div class="stat-label">Interview Rate</div>
+            </div>
+        </div>
+    </div>
+
+    <div>
+        <div class="section-heading">🚀 Quick Actions</div>
+        <div class="grid grid-3 stagger">
+            <a href="/resume-builder" class="quick-action-card">
+                <span class="quick-action-icon">📄</span>
+                <div class="quick-action-label">Resume Builder</div>
+                <div class="quick-action-desc">Optimize with AI · Match scoring · PDF export</div>
+            </a>
+            <a href="/job-tracker" class="quick-action-card">
+                <span class="quick-action-icon">💼</span>
+                <div class="quick-action-label">Job Tracker</div>
+                <div class="quick-action-desc">Track status · Analytics · Notes</div>
+            </a>
+            <a href="/interview-prep" class="quick-action-card">
+                <span class="quick-action-icon">🎯</span>
+                <div class="quick-action-label">Interview Prep</div>
+                <div class="quick-action-desc">AI questions · Sample answers</div>
+            </a>
+            <a href="/career-chat" class="quick-action-card">
+                <span class="quick-action-icon">💬</span>
+                <div class="quick-action-label">Career Chat</div>
+                <div class="quick-action-desc">AI advisor · Salary tips · Strategies</div>
+            </a>
+            <a href="/linkedin-optimizer" class="quick-action-card">
+                <span class="quick-action-icon">🔗</span>
+                <div class="quick-action-label">LinkedIn Optimizer</div>
+                <div class="quick-action-desc">Headline · About section · Keywords</div>
+            </a>
+            <a href="/resume-builder#student" class="quick-action-card">
+                <span class="quick-action-icon">🎓</span>
+                <div class="quick-action-label">Student Mode</div>
+                <div class="quick-action-desc">No experience? Generate from skills</div>
+            </a>
+        </div>
     </div>
 </div>
 
-<div style="margin-bottom:36px;">
-    <div class="section-heading">📈 Application Overview</div>
-    <div class="grid grid-4 stagger" id="statsGrid">
-        <div class="stat-card">
-            <div class="stat-value" id="statTotal">0</div>
-            <div class="stat-label">Total Applications</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-value" id="statInterview">0</div>
-            <div class="stat-label">Interviews</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-value" id="statOffer">0</div>
-            <div class="stat-label">Offers Received</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-value" id="statRate">0%</div>
-            <div class="stat-label">Interview Rate</div>
-        </div>
-    </div>
-</div>
+{% if ads.sidebar.enabled and ads.sidebar.slot and ads.publisher_id %}
+<aside class="ad-slot ad-slot-sidebar">
+    <span class="ad-label">Advertisement</span>
+    <ins class="adsbygoogle"
+        style="display:block"
+        data-ad-client="{{ ads.publisher_id }}"
+        data-ad-slot="{{ ads.sidebar.slot }}"
+        data-ad-format="vertical"
+        data-full-width-responsive="true"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+</aside>
+{% endif %}
 
-<div>
-    <div class="section-heading">🚀 Quick Actions</div>
-    <div class="grid grid-3 stagger">
-        <a href="/resume-builder" class="quick-action-card">
-            <span class="quick-action-icon">📄</span>
-            <div class="quick-action-label">Resume Builder</div>
-            <div class="quick-action-desc">Optimize with AI · Match scoring · PDF export</div>
-        </a>
-        <a href="/job-tracker" class="quick-action-card">
-            <span class="quick-action-icon">💼</span>
-            <div class="quick-action-label">Job Tracker</div>
-            <div class="quick-action-desc">Track status · Analytics · Notes</div>
-        </a>
-        <a href="/interview-prep" class="quick-action-card">
-            <span class="quick-action-icon">🎯</span>
-            <div class="quick-action-label">Interview Prep</div>
-            <div class="quick-action-desc">AI questions · Sample answers</div>
-        </a>
-        <a href="/career-chat" class="quick-action-card">
-            <span class="quick-action-icon">💬</span>
-            <div class="quick-action-label">Career Chat</div>
-            <div class="quick-action-desc">AI advisor · Salary tips · Strategies</div>
-        </a>
-        <a href="/linkedin-optimizer" class="quick-action-card">
-            <span class="quick-action-icon">🔗</span>
-            <div class="quick-action-label">LinkedIn Optimizer</div>
-            <div class="quick-action-desc">Headline · About section · Keywords</div>
-        </a>
-        <a href="/resume-builder#student" class="quick-action-card">
-            <span class="quick-action-icon">🎓</span>
-            <div class="quick-action-label">Student Mode</div>
-            <div class="quick-action-desc">No experience? Generate from skills</div>
-        </a>
-    </div>
 </div>
 {% endblock %}
 {% block scripts %}

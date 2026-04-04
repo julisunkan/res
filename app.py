@@ -90,14 +90,32 @@ def create_app():
         from datetime import datetime
         try:
             from models.settings import Setting
+            pub_id = Setting.get('adsense_publisher_id', '')
+            ads = dict(
+                publisher_id=pub_id,
+                top_banner=dict(
+                    enabled=Setting.get('ad_top_banner_enabled', '0') == '1',
+                    slot=Setting.get('ad_top_banner_slot', ''),
+                ),
+                results=dict(
+                    enabled=Setting.get('ad_results_enabled', '0') == '1',
+                    slot=Setting.get('ad_results_slot', ''),
+                ),
+                sidebar=dict(
+                    enabled=Setting.get('ad_sidebar_enabled', '0') == '1',
+                    slot=Setting.get('ad_sidebar_slot', ''),
+                ),
+            )
             return dict(
                 site_analytics_id=Setting.get('analytics_id', ''),
-                site_adsense_id=Setting.get('adsense_publisher_id', ''),
+                site_adsense_id=pub_id,
                 site_app_name=Setting.get('app_name', 'AI Resume & Cover Letter Creator'),
                 current_year=datetime.utcnow().year,
+                ads=ads,
             )
         except Exception:
-            return dict(site_analytics_id='', site_adsense_id='', site_app_name='AI Resume & Cover Letter Creator', current_year=datetime.utcnow().year)
+            empty_ads = dict(publisher_id='', top_banner=dict(enabled=False, slot=''), results=dict(enabled=False, slot=''), sidebar=dict(enabled=False, slot=''))
+            return dict(site_analytics_id='', site_adsense_id='', site_app_name='AI Resume & Cover Letter Creator', current_year=datetime.utcnow().year, ads=empty_ads)
 
     with app.app_context():
         import models.resume

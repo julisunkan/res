@@ -385,6 +385,92 @@
             </div>
 
             <div class="card">
+                <div class="card-title"><span class="icon">📍</span> Ad Placements</div>
+                <p style="font-size:13px;color:var(--muted);margin-bottom:18px;">
+                    Control where ads appear on the site. Each placement requires a unique Ad Unit Slot ID from your AdSense account.
+                    Your Publisher ID must be set above for ads to display.
+                </p>
+
+                <style>
+                    .placement-row { display:flex; align-items:flex-start; gap:16px; padding:16px 0; border-bottom:1px solid var(--border); }
+                    .placement-row:last-child { border-bottom:none; padding-bottom:0; }
+                    .placement-info { flex:1; }
+                    .placement-name { font-size:14px; font-weight:600; color:var(--text); margin-bottom:3px; }
+                    .placement-desc { font-size:12px; color:var(--muted); line-height:1.6; margin-bottom:10px; }
+                    .toggle-wrap { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+                    .toggle { position:relative; width:40px; height:22px; flex-shrink:0; }
+                    .toggle input { opacity:0; width:0; height:0; }
+                    .slider { position:absolute; cursor:pointer; inset:0; background:#2d2d4e; border-radius:22px; transition:.2s; }
+                    .slider:before { content:''; position:absolute; height:16px; width:16px; left:3px; bottom:3px; background:#64748b; border-radius:50%; transition:.2s; }
+                    .toggle input:checked + .slider { background:rgba(79,70,229,0.4); }
+                    .toggle input:checked + .slider:before { transform:translateX(18px); background:var(--primary-l); }
+                    .toggle-label { font-size:13px; color:var(--muted); }
+                    .slot-input-wrap { display:flex; gap:8px; }
+                    .slot-input-wrap input { flex:1; }
+                    .placement-preview { font-size:11px; color:var(--muted); margin-top:8px; }
+                </style>
+
+                <div class="placement-row">
+                    <div style="font-size:24px;flex-shrink:0;width:36px;text-align:center;">🏷️</div>
+                    <div class="placement-info">
+                        <div class="placement-name">Top Banner — All Pages</div>
+                        <div class="placement-desc">Full-width banner displayed at the top of every page, just below the navigation bar. High visibility for all visitors.</div>
+                        <div class="toggle-wrap">
+                            <label class="toggle">
+                                <input type="checkbox" id="ad_top_banner_enabled" onchange="saveAdPlacement('top_banner')">
+                                <span class="slider"></span>
+                            </label>
+                            <span class="toggle-label" id="lbl_top_banner">Disabled</span>
+                        </div>
+                        <div class="slot-input-wrap">
+                            <input type="text" id="ad_top_banner_slot" placeholder="Ad Unit Slot ID (e.g. 1234567890)" oninput="clearPlacementTimer('top_banner')">
+                            <button class="btn btn-secondary btn-sm" onclick="saveAdPlacement('top_banner')">Save</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="placement-row">
+                    <div style="font-size:24px;flex-shrink:0;width:36px;text-align:center;">📄</div>
+                    <div class="placement-info">
+                        <div class="placement-name">Between Resume & Cover Letter — Resume Builder</div>
+                        <div class="placement-desc">Displayed between the Optimized Resume and Cover Letter results after the AI processes the user's submission. Shown at a high-engagement moment.</div>
+                        <div class="toggle-wrap">
+                            <label class="toggle">
+                                <input type="checkbox" id="ad_results_enabled" onchange="saveAdPlacement('results')">
+                                <span class="slider"></span>
+                            </label>
+                            <span class="toggle-label" id="lbl_results">Disabled</span>
+                        </div>
+                        <div class="slot-input-wrap">
+                            <input type="text" id="ad_results_slot" placeholder="Ad Unit Slot ID (e.g. 1234567890)" oninput="clearPlacementTimer('results')">
+                            <button class="btn btn-secondary btn-sm" onclick="saveAdPlacement('results')">Save</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="placement-row">
+                    <div style="font-size:24px;flex-shrink:0;width:36px;text-align:center;">📌</div>
+                    <div class="placement-info">
+                        <div class="placement-name">Sidebar — Dashboard</div>
+                        <div class="placement-desc">Sticky vertical ad unit shown in the right sidebar of the Dashboard page. Visible while users browse their application stats and quick actions.</div>
+                        <div class="toggle-wrap">
+                            <label class="toggle">
+                                <input type="checkbox" id="ad_sidebar_enabled" onchange="saveAdPlacement('sidebar')">
+                                <span class="slider"></span>
+                            </label>
+                            <span class="toggle-label" id="lbl_sidebar">Disabled</span>
+                        </div>
+                        <div class="slot-input-wrap">
+                            <input type="text" id="ad_sidebar_slot" placeholder="Ad Unit Slot ID (e.g. 1234567890)" oninput="clearPlacementTimer('sidebar')">
+                            <button class="btn btn-secondary btn-sm" onclick="saveAdPlacement('sidebar')">Save</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="placementsAlert" class="alert" style="margin-top:14px;"></div>
+            </div>
+
+            <div class="card">
                 <div class="card-title"><span class="icon">📄</span> ads.txt File</div>
                 <p style="font-size:13px;color:var(--muted);margin-bottom:14px;">
                     The <code style="background:rgba(255,255,255,0.06);padding:2px 6px;border-radius:4px;">ads.txt</code> file is required by Google AdSense to authorize your publisher account.
@@ -530,6 +616,43 @@ async function loadSettings() {
         const el = document.getElementById('s-'+k);
         if (el) el.value = v;
     }
+    loadAdPlacements(settings);
+}
+
+// ── Ad Placements ────────────────────────────────────────────────────────────
+function loadAdPlacements(s) {
+    const placements = ['top_banner', 'results', 'sidebar'];
+    placements.forEach(p => {
+        const enabledKey = 'ad_' + p + '_enabled';
+        const slotKey = 'ad_' + p + '_slot';
+        const cb = document.getElementById(enabledKey);
+        const slotEl = document.getElementById(slotKey);
+        const lbl = document.getElementById('lbl_' + p);
+        if (cb) {
+            const isEnabled = (s[enabledKey] || '0') === '1';
+            cb.checked = isEnabled;
+            if (lbl) lbl.textContent = isEnabled ? 'Enabled' : 'Disabled';
+        }
+        if (slotEl) slotEl.value = s[slotKey] || '';
+    });
+}
+
+function clearPlacementTimer(p) {}
+
+async function saveAdPlacement(p) {
+    const enabledKey = 'ad_' + p + '_enabled';
+    const slotKey = 'ad_' + p + '_slot';
+    const cb = document.getElementById(enabledKey);
+    const slotEl = document.getElementById(slotKey);
+    const lbl = document.getElementById('lbl_' + p);
+    const payload = {};
+    payload[enabledKey] = (cb && cb.checked) ? '1' : '0';
+    payload[slotKey] = slotEl ? slotEl.value.trim() : '';
+    if (lbl) lbl.textContent = (cb && cb.checked) ? 'Enabled' : 'Disabled';
+    const res = await fetch('/julisunkan/api/settings', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+    const data = await res.json();
+    showAlert('placementsAlert', data.success ? '✅ Placement saved successfully.' : '❌ Error saving placement.', data.success);
+    setTimeout(() => { const a=document.getElementById('placementsAlert'); if(a) a.textContent=''; }, 3000);
 }
 
 async function saveSettings(keys) {

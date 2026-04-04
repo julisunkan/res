@@ -77,6 +77,12 @@ def get_settings():
         ADMIN_PASSWORD_KEY: '',
         'analytics_id': '',
         'adsense_publisher_id': '',
+        'ad_top_banner_enabled': '0',
+        'ad_top_banner_slot': '',
+        'ad_results_enabled': '0',
+        'ad_results_slot': '',
+        'ad_sidebar_enabled': '0',
+        'ad_sidebar_slot': '',
     }
     for k, v in defaults.items():
         if k not in result:

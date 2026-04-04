@@ -30,6 +30,58 @@
     {% endif %}
 
     <style>
+        /* Ad Slots */
+        .ad-slot {
+            width: 100%;
+            text-align: center;
+            margin: 0;
+            position: relative;
+        }
+        .ad-label {
+            display: block;
+            font-size: 10px;
+            color: #475569;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 4px;
+        }
+        .ad-slot-top_banner {
+            background: #0a0a14;
+            border-bottom: 1px solid #1e1e3a;
+            padding: 8px 16px 8px;
+        }
+        .ad-slot-results {
+            padding: 20px 0;
+            border-top: 1px solid #1e1e3a;
+            border-bottom: 1px solid #1e1e3a;
+            margin: 8px 0;
+            background: rgba(79,70,229,0.03);
+            border-radius: 10px;
+        }
+        .ad-slot-sidebar {
+            background: #12121f;
+            border: 1px solid #1e1e3a;
+            border-radius: 12px;
+            padding: 16px;
+            position: sticky;
+            top: 80px;
+        }
+        .dashboard-layout {
+            display: block;
+        }
+        .dashboard-layout.has-sidebar {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 24px;
+            align-items: start;
+        }
+        @media (max-width: 900px) {
+            .dashboard-layout.has-sidebar {
+                grid-template-columns: 1fr;
+            }
+            .ad-slot-sidebar { display: none; }
+        }
+
         .site-footer {
             background: #0d0d1a;
             border-top: 1px solid #1e1e3a;
@@ -166,6 +218,20 @@
             <a href="/linkedin-optimizer" class="nav-link {% if request.path == '/linkedin-optimizer' %}active{% endif %}">LinkedIn</a>
         </div>
     </nav>
+
+    {% from '_macros.html' import ad_slot %}
+    {% if ads.top_banner.enabled and ads.top_banner.slot and ads.publisher_id %}
+    <div class="ad-slot ad-slot-top_banner">
+        <span class="ad-label">Advertisement</span>
+        <ins class="adsbygoogle"
+            style="display:block"
+            data-ad-client="{{ ads.publisher_id }}"
+            data-ad-slot="{{ ads.top_banner.slot }}"
+            data-ad-format="auto"
+            data-full-width-responsive="true"></ins>
+        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+    </div>
+    {% endif %}
 
     <main class="main-content">
         {% block content %}{% endblock %}

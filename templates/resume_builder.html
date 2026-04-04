@@ -72,21 +72,34 @@
     </div>
 
     <div id="optimizeResults" style="display:none;" class="animate-fade-up">
-        <div class="grid grid-2">
-            <div class="card card-blue">
-                <div class="card-header">
-                    <div class="card-title">✅ Optimized Resume</div>
-                    <button class="btn btn-success btn-sm" onclick="downloadDoc('resume')">⬇ PDF</button>
-                </div>
-                <div class="result-box" id="optimizedText"></div>
+        <div class="card card-blue">
+            <div class="card-header">
+                <div class="card-title">✅ Optimized Resume</div>
+                <button class="btn btn-success btn-sm" onclick="downloadDoc('resume')">⬇ PDF</button>
             </div>
-            <div class="card card-green">
-                <div class="card-header">
-                    <div class="card-title">✉️ Cover Letter</div>
-                    <button class="btn btn-success btn-sm" onclick="downloadDoc('cover_letter')">⬇ PDF</button>
-                </div>
-                <div class="result-box" id="coverLetterText"></div>
+            <div class="result-box" id="optimizedText"></div>
+        </div>
+
+        {% from '_macros.html' import ad_slot %}
+        {% if ads.results.enabled and ads.results.slot and ads.publisher_id %}
+        <div class="ad-slot ad-slot-results">
+            <span class="ad-label">Advertisement</span>
+            <ins class="adsbygoogle"
+                style="display:block"
+                data-ad-client="{{ ads.publisher_id }}"
+                data-ad-slot="{{ ads.results.slot }}"
+                data-ad-format="auto"
+                data-full-width-responsive="true"></ins>
+            <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+        </div>
+        {% endif %}
+
+        <div class="card card-green">
+            <div class="card-header">
+                <div class="card-title">✉️ Cover Letter</div>
+                <button class="btn btn-success btn-sm" onclick="downloadDoc('cover_letter')">⬇ PDF</button>
             </div>
+            <div class="result-box" id="coverLetterText"></div>
         </div>
     </div>
 </div>
