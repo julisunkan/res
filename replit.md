@@ -69,6 +69,20 @@ static/
 - `GROQ_API_KEY` (required) — Groq API key for all AI features. Get one free at https://console.groq.com
 - `SECRET_KEY` (optional) — Flask secret key (defaults to a dev key)
 
+## Admin Panel
+
+Hidden admin panel at `/julisunkan` — not linked anywhere on the public site.
+
+**Default password:** `admin123` — change it immediately in the Security tab.
+
+### Admin capabilities:
+- **Overview** — live stats and AI connection status
+- **AI Config** — enter Groq API key, select model, set max tokens
+- **App Settings** — change app name, tagline, upload limits
+- **Resumes** — view, edit, delete all saved resumes (bulk delete supported)
+- **Job Applications** — view, edit, delete all tracked jobs
+- **Security** — change admin password, nuke all content
+
 ## Running
 
 The app starts automatically via the "Start application" workflow on port 5000.

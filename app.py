@@ -1,4 +1,5 @@
 import os
+from datetime import timedelta
 from flask import Flask, render_template
 from flask_cors import CORS
 from extensions import db
@@ -8,11 +9,12 @@ def create_app():
     app = Flask(__name__)
     CORS(app)
 
-    app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-prod')
+    app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'julisunkan-super-secret-key-2024')
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///resume_app.db'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024  # 10MB max upload
+    app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024  # 10MB
     app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(__file__), 'uploads')
+    app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=8)
 
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
@@ -23,12 +25,14 @@ def create_app():
     from routes.interview import interview_bp
     from routes.chat import chat_bp
     from routes.linkedin import linkedin_bp
+    from routes.admin import admin_bp
 
     app.register_blueprint(resume_bp, url_prefix='/api/resume')
     app.register_blueprint(jobs_bp, url_prefix='/api/jobs')
     app.register_blueprint(interview_bp, url_prefix='/api/interview')
     app.register_blueprint(chat_bp, url_prefix='/api/chat')
     app.register_blueprint(linkedin_bp, url_prefix='/api/linkedin')
+    app.register_blueprint(admin_bp, url_prefix='/julisunkan')
 
     @app.route('/')
     def index():
@@ -57,6 +61,7 @@ def create_app():
     with app.app_context():
         import models.resume
         import models.job
+        import models.settings
         db.create_all()
 
     return app

@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel — AI Career Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --bg: #0a0a14;
+            --bg2: #12121f;
+            --bg3: #0f0f1a;
+            --border: #1e1e3a;
+            --primary: #4f46e5;
+            --primary-l: #818cf8;
+            --text: #e2e8f0;
+            --muted: #64748b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --sidebar-w: 220px;
+        }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: var(--sidebar-w);
+            background: var(--bg2);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0; left: 0; bottom: 0;
+            z-index: 50;
+        }
+        .sidebar-brand {
+            padding: 20px 18px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .brand-icon { font-size: 20px; }
+        .brand-text { font-size: 14px; font-weight: 700; line-height: 1.3; }
+        .brand-sub { font-size: 11px; color: var(--muted); font-weight: 400; }
+        .sidebar-nav { flex: 1; padding: 12px 8px; display: flex; flex-direction: column; gap: 2px; }
+        .nav-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 9px 12px; border-radius: 8px;
+            font-size: 14px; font-weight: 500; color: var(--muted);
+            cursor: pointer; transition: all 0.15s; border: none; background: none; width: 100%; text-align: left;
+        }
+        .nav-item:hover { background: rgba(79,70,229,0.08); color: var(--text); }
+        .nav-item.active { background: rgba(79,70,229,0.15); color: var(--primary-l); }
+        .nav-item .icon { font-size: 16px; width: 20px; text-align: center; }
+        .sidebar-footer { padding: 12px 8px; border-top: 1px solid var(--border); }
+        .back-link { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; text-decoration: none; padding: 8px 12px; border-radius: 8px; transition: all 0.15s; }
+        .back-link:hover { background: rgba(255,255,255,0.04); color: var(--text); }
+
+        /* MAIN */
+        .main { margin-left: var(--sidebar-w); flex: 1; min-height: 100vh; }
+        .topbar {
+            background: var(--bg2);
+            border-bottom: 1px solid var(--border);
+            padding: 0 28px;
+            height: 58px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky; top: 0; z-index: 40;
+        }
+        .topbar-title { font-size: 16px; font-weight: 600; }
+        .topbar-right { display: flex; align-items: center; gap: 12px; }
+        .badge-admin { background: rgba(79,70,229,0.15); color: var(--primary-l); padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+        .content { padding: 28px; }
+
+        /* PANELS */
+        .panel { display: none; }
+        .panel.active { display: block; }
+
+        /* CARDS */
+        .card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 22px; margin-bottom: 18px; }
+        .card-title { font-size: 15px; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+        .card-title .icon { font-size: 18px; }
+
+        /* STATS ROW */
+        .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 22px; }
+        .stat { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 18px; text-align: center; }
+        .stat-val { font-size: 30px; font-weight: 700; color: var(--primary-l); }
+        .stat-lbl { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+        /* FORMS */
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .form-group { margin-bottom: 14px; }
+        label { display: block; font-size: 13px; font-weight: 500; color: var(--muted); margin-bottom: 5px; }
+        input[type="text"], input[type="password"], input[type="number"], select, textarea {
+            width: 100%; padding: 9px 12px; background: var(--bg3); border: 1px solid var(--border);
+            border-radius: 8px; color: var(--text); font-size: 13px; font-family: inherit;
+            outline: none; transition: border-color 0.2s;
+        }
+        input:focus, select:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79,70,229,0.12); }
+        textarea { resize: vertical; min-height: 90px; }
+        .input-row { display: flex; gap: 8px; }
+        .input-row input { flex: 1; }
+
+        /* BUTTONS */
+        .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 7px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; font-family: inherit; transition: all 0.15s; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: #3730a3; }
+        .btn-secondary { background: rgba(79,70,229,0.1); color: var(--primary-l); border: 1px solid rgba(79,70,229,0.25); }
+        .btn-secondary:hover { background: rgba(79,70,229,0.2); }
+        .btn-success { background: var(--success); color: white; }
+        .btn-danger { background: transparent; color: var(--danger); border: 1px solid rgba(239,68,68,0.4); }
+        .btn-danger:hover { background: rgba(239,68,68,0.08); }
+        .btn-sm { padding: 5px 11px; font-size: 12px; }
+        .btn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+        /* TABLE */
+        .tbl-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { text-align: left; padding: 9px 14px; color: var(--muted); font-weight: 600; border-bottom: 1px solid var(--border); white-space: nowrap; }
+        td { padding: 11px 14px; border-bottom: 1px solid rgba(30,30,58,0.7); vertical-align: middle; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: rgba(79,70,229,0.03); }
+        .tbl-actions { display: flex; gap: 6px; }
+
+        /* BADGE */
+        .badge { display: inline-flex; align-items: center; padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+        .badge-applied { background: rgba(79,70,229,0.15); color: var(--primary-l); }
+        .badge-interview { background: rgba(245,158,11,0.15); color: var(--warning); }
+        .badge-offer { background: rgba(16,185,129,0.15); color: var(--success); }
+        .badge-rejected { background: rgba(239,68,68,0.15); color: var(--danger); }
+
+        /* ALERT */
+        .alert { padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-bottom: 14px; display: none; }
+        .alert-ok { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); color: #6ee7b7; }
+        .alert-err { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: #fca5a5; }
+        .alert-show { display: block; }
+
+        /* SECTION DIVIDER */
+        .section-title { font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; margin: 22px 0 12px; }
+
+        /* MODAL */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 200; align-items: center; justify-content: center; }
+        .modal-overlay.open { display: flex; }
+        .modal { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 26px; width: 90%; max-width: 580px; max-height: 85vh; overflow-y: auto; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+        .modal-close { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 18px; }
+
+        /* CHECKBOX */
+        input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--primary); cursor: pointer; }
+
+        /* PILL STATUS */
+        .pill { display: inline-flex; align-items: center; gap: 5px; }
+        .dot { width: 7px; height: 7px; border-radius: 50%; }
+        .dot-green { background: var(--success); }
+        .dot-red { background: var(--danger); }
+        .dot-yellow { background: var(--warning); }
+
+        .text-muted { color: var(--muted); }
+        .text-truncate { max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block; vertical-align: middle; }
+
+        @media (max-width: 680px) {
+            .sidebar { display: none; }
+            .main { margin-left: 0; }
+            .form-row { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+    <div class="sidebar-brand">
+        <div class="brand-icon">⚙️</div>
+        <div class="brand-text">Admin Panel<div class="brand-sub">AI Career Hub</div></div>
+    </div>
+    <nav class="sidebar-nav">
+        <button class="nav-item active" onclick="show('overview')"><span class="icon">📊</span> Overview</button>
+        <button class="nav-item" onclick="show('settings')"><span class="icon">⚙️</span> Settings</button>
+        <button class="nav-item" onclick="show('ai')"><span class="icon">🤖</span> AI Config</button>
+        <button class="nav-item" onclick="show('resumes')"><span class="icon">📄</span> Resumes</button>
+        <button class="nav-item" onclick="show('jobs')"><span class="icon">💼</span> Job Applications</button>
+        <button class="nav-item" onclick="show('security')"><span class="icon">🔐</span> Security</button>
+    </nav>
+    <div class="sidebar-footer">
+        <a href="/" class="back-link" target="_blank">← View Website</a>
+        <button class="nav-item" style="margin-top:4px;" onclick="doLogout()"><span class="icon">🚪</span> Log Out</button>
+    </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+    <div class="topbar">
+        <div class="topbar-title" id="topbarTitle">Overview</div>
+        <div class="topbar-right">
+            <span class="badge-admin">🔐 Admin</span>
+        </div>
+    </div>
+
+    <div class="content">
+
+        <!-- ── OVERVIEW ── -->
+        <div class="panel active" id="panel-overview">
+            <div class="stats-row" id="overviewStats">
+                <div class="stat"><div class="stat-val" id="ov-resumes">—</div><div class="stat-lbl">Saved Resumes</div></div>
+                <div class="stat"><div class="stat-val" id="ov-jobs">—</div><div class="stat-lbl">Job Applications</div></div>
+                <div class="stat"><div class="stat-val" id="ov-interviews" style="color:var(--warning)">—</div><div class="stat-lbl">Interviews</div></div>
+                <div class="stat"><div class="stat-val" id="ov-offers" style="color:var(--success)">—</div><div class="stat-lbl">Offers</div></div>
+            </div>
+
+            <div class="card">
+                <div class="card-title"><span class="icon">🤖</span> AI Engine Status</div>
+                <div id="aiStatusRow" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+                    <span id="aiStatusPill" class="pill"><span class="dot dot-yellow"></span> Checking...</span>
+                    <button class="btn btn-secondary btn-sm" onclick="testGroq()">Test Connection</button>
+                </div>
+                <div id="aiStatusMsg" style="font-size:13px;color:var(--muted);margin-top:10px;"></div>
+            </div>
+
+            <div class="card">
+                <div class="card-title"><span class="icon">🔗</span> Quick Links</div>
+                <div style="display:flex;flex-wrap:wrap;gap:8px;">
+                    <a href="/resume-builder" target="_blank" class="btn btn-secondary btn-sm">Resume Builder</a>
+                    <a href="/job-tracker" target="_blank" class="btn btn-secondary btn-sm">Job Tracker</a>
+                    <a href="/interview-prep" target="_blank" class="btn btn-secondary btn-sm">Interview Prep</a>
+                    <a href="/career-chat" target="_blank" class="btn btn-secondary btn-sm">Career Chat</a>
+                    <a href="/linkedin-optimizer" target="_blank" class="btn btn-secondary btn-sm">LinkedIn Optimizer</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── SETTINGS ── -->
+        <div class="panel" id="panel-settings">
+            <div id="settingsAlert" class="alert"></div>
+            <div class="card">
+                <div class="card-title"><span class="icon">🏷️</span> App Branding</div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>App Name</label>
+                        <input type="text" id="s-app_name" placeholder="AI Career Hub">
+                    </div>
+                    <div class="form-group">
+                        <label>App Tagline</label>
+                        <input type="text" id="s-app_tagline" placeholder="Your AI job assistant">
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="saveSettings(['app_name','app_tagline'])">Save Branding</button>
+            </div>
+
+            <div class="card">
+                <div class="card-title"><span class="icon">⚡</span> Performance</div>
+                <div class="form-group">
+                    <label>Max Upload Size (MB)</label>
+                    <input type="number" id="s-max_upload_mb" min="1" max="50" placeholder="10">
+                </div>
+                <button class="btn btn-primary" onclick="saveSettings(['max_upload_mb'])">Save</button>
+            </div>
+        </div>
+
+        <!-- ── AI CONFIG ── -->
+        <div class="panel" id="panel-ai">
+            <div id="aiAlert" class="alert"></div>
+            <div class="card">
+                <div class="card-title"><span class="icon">🔑</span> Groq API Key</div>
+                <p style="font-size:13px;color:var(--muted);margin-bottom:14px;">Get a free API key at <a href="https://console.groq.com" target="_blank" style="color:var(--primary-l);">console.groq.com</a></p>
+                <div class="form-group">
+                    <label>API Key</label>
+                    <div class="input-row">
+                        <input type="password" id="s-groq_api_key" placeholder="gsk_...">
+                        <button class="btn btn-secondary btn-sm" onclick="toggleApiKey()">👁</button>
+                    </div>
+                </div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                    <button class="btn btn-primary" onclick="saveGroqKey()">Save API Key</button>
+                    <button class="btn btn-secondary" onclick="testGroq(true)">Test Connection</button>
+                </div>
+                <div id="groqTestResult" style="margin-top:12px;font-size:13px;display:none;"></div>
+            </div>
+
+            <div class="card">
+                <div class="card-title"><span class="icon">🧠</span> Model Settings</div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>AI Model</label>
+                        <select id="s-ai_model">
+                            <option value="llama3-70b-8192">llama3-70b-8192 (Recommended)</option>
+                            <option value="llama3-8b-8192">llama3-8b-8192 (Faster)</option>
+                            <option value="mixtral-8x7b-32768">mixtral-8x7b-32768</option>
+                            <option value="gemma2-9b-it">gemma2-9b-it</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Max Tokens per Response</label>
+                        <input type="number" id="s-ai_max_tokens" min="256" max="8192" step="256" placeholder="4096">
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="saveSettings(['ai_model','ai_max_tokens'])">Save Model Settings</button>
+            </div>
+        </div>
+
+        <!-- ── RESUMES ── -->
+        <div class="panel" id="panel-resumes">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+                <input type="text" id="resumeSearch" placeholder="Search resumes..." style="max-width:240px;" oninput="filterResumes()">
+                <button class="btn btn-danger btn-sm" onclick="bulkDeleteResumes()">Delete Selected</button>
+            </div>
+            <div class="card" style="padding:0;overflow:hidden;">
+                <div class="tbl-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th><input type="checkbox" id="resumeSelectAll" onchange="toggleAll('resume')"></th>
+                                <th>#</th>
+                                <th>Label</th>
+                                <th>Match Score</th>
+                                <th>Saved</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resumesTbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── JOBS ── -->
+        <div class="panel" id="panel-jobs">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+                <input type="text" id="jobSearch" placeholder="Search jobs..." style="max-width:240px;" oninput="filterJobs()">
+                <button class="btn btn-danger btn-sm" onclick="bulkDeleteJobs()">Delete Selected</button>
+            </div>
+            <div class="card" style="padding:0;overflow:hidden;">
+                <div class="tbl-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th><input type="checkbox" id="jobSelectAll" onchange="toggleAll('job')"></th>
+                                <th>#</th>
+                                <th>Company</th>
+                                <th>Position</th>
+                                <th>Status</th>
+                                <th>Applied</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="jobsTbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── SECURITY ── -->
+        <div class="panel" id="panel-security">
+            <div id="secAlert" class="alert"></div>
+            <div class="card" style="max-width:500px;">
+                <div class="card-title"><span class="icon">🔑</span> Change Admin Password</div>
+                <p style="font-size:13px;color:var(--muted);margin-bottom:16px;">Default password is <code style="background:rgba(255,255,255,0.06);padding:2px 6px;border-radius:4px;">admin123</code> — change it immediately.</p>
+                <div class="form-group">
+                    <label>Current Password</label>
+                    <input type="password" id="currentPw" placeholder="Current password">
+                </div>
+                <div class="form-group">
+                    <label>New Password</label>
+                    <input type="password" id="newPw" placeholder="Min. 8 characters">
+                </div>
+                <div class="form-group">
+                    <label>Confirm New Password</label>
+                    <input type="password" id="confirmPw" placeholder="Repeat new password">
+                </div>
+                <button class="btn btn-primary" onclick="changePassword()">Update Password</button>
+            </div>
+
+            <div class="card" style="max-width:500px;margin-top:0;">
+                <div class="card-title"><span class="icon">⚠️</span> Danger Zone</div>
+                <p style="font-size:13px;color:var(--muted);margin-bottom:14px;">Permanently delete all user-generated content from the database.</p>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                    <button class="btn btn-danger btn-sm" onclick="nukeResumes()">Delete All Resumes</button>
+                    <button class="btn btn-danger btn-sm" onclick="nukeJobs()">Delete All Jobs</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- RESUME DETAIL MODAL -->
+<div class="modal-overlay" id="resumeModal">
+    <div class="modal">
+        <div class="modal-header">
+            <div style="font-size:15px;font-weight:600;">Edit Resume</div>
+            <button class="modal-close" onclick="closeModal('resumeModal')">✕</button>
+        </div>
+        <input type="hidden" id="editResumeId">
+        <div class="form-group"><label>Label</label><input type="text" id="editResumeLabel"></div>
+        <div class="form-group"><label>Match Score (%)</label><input type="number" id="editResumeScore" min="0" max="100"></div>
+        <div class="form-group"><label>Optimized Resume Text</label><textarea id="editResumeText" rows="8"></textarea></div>
+        <div class="form-group"><label>Cover Letter Text</label><textarea id="editResumeCover" rows="6"></textarea></div>
+        <div class="form-group"><label>Suggestions (JSON array or plain text)</label><textarea id="editResumeSuggestions" rows="3"></textarea></div>
+        <button class="btn btn-primary" onclick="saveResume()">Save Changes</button>
+    </div>
+</div>
+
+<!-- JOB DETAIL MODAL -->
+<div class="modal-overlay" id="jobModal">
+    <div class="modal">
+        <div class="modal-header">
+            <div style="font-size:15px;font-weight:600;">Edit Job Application</div>
+            <button class="modal-close" onclick="closeModal('jobModal')">✕</button>
+        </div>
+        <input type="hidden" id="editJobId">
+        <div class="form-row">
+            <div class="form-group"><label>Company</label><input type="text" id="editJobCompany"></div>
+            <div class="form-group"><label>Position</label><input type="text" id="editJobPosition"></div>
+        </div>
+        <div class="form-group"><label>Status</label>
+            <select id="editJobStatus"><option>Applied</option><option>Interview</option><option>Offer</option><option>Rejected</option></select>
+        </div>
+        <div class="form-group"><label>Notes</label><textarea id="editJobNotes" rows="3"></textarea></div>
+        <div class="form-group"><label>Job Description</label><textarea id="editJobJd" rows="5"></textarea></div>
+        <button class="btn btn-primary" onclick="saveJob()">Save Changes</button>
+    </div>
+</div>
+
+<script>
+// ── State ───────────────────────────────────────────────────────────────────
+let currentPanel = 'overview';
+let allResumes = [];
+let allJobs = [];
+let settings = {};
+
+// ── Navigation ──────────────────────────────────────────────────────────────
+const panelTitles = { overview:'Overview', settings:'App Settings', ai:'AI Configuration', resumes:'Manage Resumes', jobs:'Job Applications', security:'Security' };
+
+function show(name) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('panel-'+name).classList.add('active');
+    document.querySelectorAll('.nav-item')[['overview','settings','ai','resumes','jobs','security'].indexOf(name)].classList.add('active');
+    document.getElementById('topbarTitle').textContent = panelTitles[name];
+    currentPanel = name;
+    if (name === 'resumes') loadResumes();
+    if (name === 'jobs') loadJobs();
+    if (name === 'settings' || name === 'ai' || name === 'security') loadSettings();
+}
+
+// ── Settings ────────────────────────────────────────────────────────────────
+async function loadSettings() {
+    const res = await fetch('/julisunkan/api/settings');
+    settings = await res.json();
+    for (const [k,v] of Object.entries(settings)) {
+        const el = document.getElementById('s-'+k);
+        if (el) el.value = v;
+    }
+}
+
+async function saveSettings(keys) {
+    const payload = {};
+    for (const k of keys) {
+        const el = document.getElementById('s-'+k);
+        if (el) payload[k] = el.value;
+    }
+    const res = await fetch('/julisunkan/api/settings', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+    const data = await res.json();
+    showAlert('settingsAlert', data.success ? 'Settings saved.' : 'Error saving settings.', data.success);
+}
+
+async function saveGroqKey() {
+    const key = document.getElementById('s-groq_api_key').value.trim();
+    if (!key || key === '••••••••') { showAlert('aiAlert', 'Please enter a valid API key.', false); return; }
+    const res = await fetch('/julisunkan/api/settings', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ groq_api_key: key }) });
+    const data = await res.json();
+    if (data.success) {
+        document.getElementById('s-groq_api_key').value = '••••••••';
+        showAlert('aiAlert', '✅ API key saved successfully.', true);
+    } else {
+        showAlert('aiAlert', 'Error saving API key.', false);
+    }
+}
+
+function toggleApiKey() {
+    const inp = document.getElementById('s-groq_api_key');
+    inp.type = inp.type === 'password' ? 'text' : 'password';
+}
+
+async function testGroq(fromAiPanel) {
+    const resultEl = fromAiPanel ? document.getElementById('groqTestResult') : document.getElementById('aiStatusMsg');
+    if (fromAiPanel) { resultEl.style.display = 'block'; resultEl.textContent = 'Testing...'; resultEl.style.color = 'var(--muted)'; }
+    else { document.getElementById('aiStatusPill').innerHTML = '<span class="dot dot-yellow"></span> Testing...'; }
+    const res = await fetch('/julisunkan/api/settings/test-groq', { method:'POST' });
+    const data = await res.json();
+    if (data.success) {
+        if (fromAiPanel) { resultEl.textContent = '✅ Connection OK — Model responded: "' + data.response + '"'; resultEl.style.color = 'var(--success)'; }
+        else { document.getElementById('aiStatusPill').innerHTML = '<span class="dot dot-green"></span> Connected'; resultEl.textContent = 'Groq API is working correctly.'; }
+    } else {
+        if (fromAiPanel) { resultEl.textContent = '❌ ' + data.error; resultEl.style.color = 'var(--danger)'; }
+        else { document.getElementById('aiStatusPill').innerHTML = '<span class="dot dot-red"></span> Not Connected'; resultEl.textContent = data.error; }
+    }
+}
+
+// ── Password ─────────────────────────────────────────────────────────────────
+async function changePassword() {
+    const current = document.getElementById('currentPw').value;
+    const newPw = document.getElementById('newPw').value;
+    const confirm = document.getElementById('confirmPw').value;
+    if (!current || !newPw) { showAlert('secAlert', 'All fields are required.', false); return; }
+    if (newPw !== confirm) { showAlert('secAlert', 'New passwords do not match.', false); return; }
+    if (newPw.length < 6) { showAlert('secAlert', 'Password must be at least 6 characters.', false); return; }
+    // Verify current password then save new
+    const verRes = await fetch('/julisunkan/login', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ password: current }) });
+    const verData = await verRes.json();
+    if (!verData.success) { showAlert('secAlert', 'Current password is incorrect.', false); return; }
+    const res = await fetch('/julisunkan/api/settings', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ admin_password: newPw }) });
+    const data = await res.json();
+    if (data.success) {
+        showAlert('secAlert', '✅ Password updated successfully.', true);
+        document.getElementById('currentPw').value='';
+        document.getElementById('newPw').value='';
+        document.getElementById('confirmPw').value='';
+    } else {
+        showAlert('secAlert', 'Error updating password.', false);
+    }
+}
+
+// ── Resumes ──────────────────────────────────────────────────────────────────
+async function loadResumes() {
+    const res = await fetch('/julisunkan/api/resumes');
+    allResumes = await res.json();
+    renderResumes(allResumes);
+}
+
+function renderResumes(list) {
+    const tbody = document.getElementById('resumesTbody');
+    if (!list.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px;">No resumes saved yet.</td></tr>'; return; }
+    tbody.innerHTML = list.map(r => `
+        <tr>
+            <td><input type="checkbox" class="resume-cb" data-id="${r.id}"></td>
+            <td class="text-muted">${r.id}</td>
+            <td><strong>${r.label || 'Unnamed'}</strong></td>
+            <td><span style="color:${scoreColor(r.match_score)}">${r.match_score != null ? Math.round(r.match_score)+'%' : '—'}</span></td>
+            <td class="text-muted">${r.created_at ? new Date(r.created_at).toLocaleDateString() : '—'}</td>
+            <td>
+                <div class="tbl-actions">
+                    <button class="btn btn-secondary btn-sm" onclick="openResumeModal(${r.id})">Edit</button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteResume(${r.id})">Del</button>
+                </div>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function scoreColor(s) {
+    if (!s) return 'var(--muted)';
+    return s >= 70 ? 'var(--success)' : s >= 40 ? 'var(--warning)' : 'var(--danger)';
+}
+
+function filterResumes() {
+    const q = document.getElementById('resumeSearch').value.toLowerCase();
+    renderResumes(allResumes.filter(r => (r.label||'').toLowerCase().includes(q)));
+}
+
+function openResumeModal(id) {
+    const r = allResumes.find(x => x.id===id);
+    if (!r) return;
+    document.getElementById('editResumeId').value = id;
+    document.getElementById('editResumeLabel').value = r.label || '';
+    document.getElementById('editResumeScore').value = r.match_score || '';
+    document.getElementById('editResumeText').value = r.optimized_text || '';
+    document.getElementById('editResumeCover').value = r.cover_letter || '';
+    document.getElementById('editResumeSuggestions').value = r.suggestions || '';
+    document.getElementById('resumeModal').classList.add('open');
+}
+
+async function saveResume() {
+    const id = document.getElementById('editResumeId').value;
+    const payload = {
+        label: document.getElementById('editResumeLabel').value,
+        match_score: parseFloat(document.getElementById('editResumeScore').value) || 0,
+        optimized_text: document.getElementById('editResumeText').value,
+        cover_letter: document.getElementById('editResumeCover').value,
+        suggestions: document.getElementById('editResumeSuggestions').value,
+    };
+    await fetch('/julisunkan/api/resumes/'+id, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+    closeModal('resumeModal');
+    loadResumes();
+}
+
+async function deleteResume(id) {
+    if (!confirm('Delete this resume permanently?')) return;
+    await fetch('/julisunkan/api/resumes/'+id, { method:'DELETE' });
+    loadResumes();
+}
+
+async function bulkDeleteResumes() {
+    const ids = [...document.querySelectorAll('.resume-cb:checked')].map(c => parseInt(c.dataset.id));
+    if (!ids.length) { alert('Select at least one resume.'); return; }
+    if (!confirm(`Delete ${ids.length} resume(s) permanently?`)) return;
+    await fetch('/julisunkan/api/resumes/bulk-delete', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ ids }) });
+    loadResumes();
+}
+
+async function nukeResumes() {
+    if (!confirm('⚠️ This will permanently delete ALL resumes. Are you sure?')) return;
+    const ids = allResumes.map(r => r.id);
+    if (ids.length) await fetch('/julisunkan/api/resumes/bulk-delete', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ ids }) });
+    loadResumes();
+    showAlert('secAlert', `Deleted ${ids.length} resumes.`, true);
+}
+
+// ── Jobs ──────────────────────────────────────────────────────────────────────
+async function loadJobs() {
+    const res = await fetch('/julisunkan/api/jobs');
+    allJobs = await res.json();
+    renderJobs(allJobs);
+}
+
+function renderJobs(list) {
+    const tbody = document.getElementById('jobsTbody');
+    if (!list.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px;">No job applications yet.</td></tr>'; return; }
+    const statusClass = { Applied:'badge-applied', Interview:'badge-interview', Offer:'badge-offer', Rejected:'badge-rejected' };
+    tbody.innerHTML = list.map(j => `
+        <tr>
+            <td><input type="checkbox" class="job-cb" data-id="${j.id}"></td>
+            <td class="text-muted">${j.id}</td>
+            <td><strong>${j.company}</strong></td>
+            <td><span class="text-truncate">${j.position}</span></td>
+            <td><span class="badge ${statusClass[j.status]||'badge-applied'}">${j.status}</span></td>
+            <td class="text-muted">${j.applied_date ? new Date(j.applied_date).toLocaleDateString() : '—'}</td>
+            <td>
+                <div class="tbl-actions">
+                    <button class="btn btn-secondary btn-sm" onclick="openJobModal(${j.id})">Edit</button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteJob(${j.id})">Del</button>
+                </div>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function filterJobs() {
+    const q = document.getElementById('jobSearch').value.toLowerCase();
+    renderJobs(allJobs.filter(j => j.company.toLowerCase().includes(q) || j.position.toLowerCase().includes(q)));
+}
+
+function openJobModal(id) {
+    const j = allJobs.find(x => x.id===id);
+    if (!j) return;
+    document.getElementById('editJobId').value = id;
+    document.getElementById('editJobCompany').value = j.company || '';
+    document.getElementById('editJobPosition').value = j.position || '';
+    document.getElementById('editJobStatus').value = j.status || 'Applied';
+    document.getElementById('editJobNotes').value = j.notes || '';
+    document.getElementById('editJobJd').value = j.job_description || '';
+    document.getElementById('jobModal').classList.add('open');
+}
+
+async function saveJob() {
+    const id = document.getElementById('editJobId').value;
+    const payload = {
+        company: document.getElementById('editJobCompany').value,
+        position: document.getElementById('editJobPosition').value,
+        status: document.getElementById('editJobStatus').value,
+        notes: document.getElementById('editJobNotes').value,
+        job_description: document.getElementById('editJobJd').value,
+    };
+    await fetch('/julisunkan/api/jobs/'+id, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+    closeModal('jobModal');
+    loadJobs();
+}
+
+async function deleteJob(id) {
+    if (!confirm('Delete this job application?')) return;
+    await fetch('/julisunkan/api/jobs/'+id, { method:'DELETE' });
+    loadJobs();
+}
+
+async function bulkDeleteJobs() {
+    const ids = [...document.querySelectorAll('.job-cb:checked')].map(c => parseInt(c.dataset.id));
+    if (!ids.length) { alert('Select at least one job.'); return; }
+    if (!confirm(`Delete ${ids.length} job(s)?`)) return;
+    await fetch('/julisunkan/api/jobs/bulk-delete', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ ids }) });
+    loadJobs();
+}
+
+async function nukeJobs() {
+    if (!confirm('⚠️ Delete ALL job applications?')) return;
+    const ids = allJobs.map(j => j.id);
+    if (ids.length) await fetch('/julisunkan/api/jobs/bulk-delete', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ ids }) });
+    loadJobs();
+    showAlert('secAlert', `Deleted ${ids.length} job applications.`, true);
+}
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+function toggleAll(type) {
+    const checked = document.getElementById(type+'SelectAll').checked;
+    document.querySelectorAll('.'+type+'-cb').forEach(cb => cb.checked = checked);
+}
+
+function closeModal(id) {
+    document.getElementById(id).classList.remove('open');
+}
+
+function showAlert(id, msg, ok) {
+    const el = document.getElementById(id);
+    el.textContent = msg;
+    el.className = 'alert alert-show ' + (ok ? 'alert-ok' : 'alert-err');
+    setTimeout(() => { el.classList.remove('alert-show'); }, 4000);
+}
+
+async function doLogout() {
+    await fetch('/julisunkan/logout', { method:'POST' });
+    window.location.href = '/julisunkan';
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+async function init() {
+    // Load stats
+    try {
+        const res = await fetch('/julisunkan/api/stats');
+        const d = await res.json();
+        document.getElementById('ov-resumes').textContent = d.resumes;
+        document.getElementById('ov-jobs').textContent = d.jobs;
+        document.getElementById('ov-interviews').textContent = d.interviews;
+        document.getElementById('ov-offers').textContent = d.offers;
+    } catch(e) {}
+    testGroq(false);
+}
+init();
+</script>
+</body>
+</html>

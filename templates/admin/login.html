@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Access</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a14;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .login-box {
+            background: #12121f;
+            border: 1px solid #1e1e3a;
+            border-radius: 16px;
+            padding: 48px 40px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+        }
+        .lock-icon {
+            text-align: center;
+            font-size: 40px;
+            margin-bottom: 12px;
+        }
+        h1 {
+            text-align: center;
+            font-size: 20px;
+            font-weight: 700;
+            color: #e2e8f0;
+            margin-bottom: 4px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #475569;
+            font-size: 13px;
+            margin-bottom: 32px;
+        }
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: #64748b;
+            margin-bottom: 6px;
+        }
+        input {
+            width: 100%;
+            padding: 12px 16px;
+            background: #0a0a14;
+            border: 1px solid #1e1e3a;
+            border-radius: 8px;
+            color: #e2e8f0;
+            font-size: 15px;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        input:focus { border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79,70,229,0.15); }
+        .btn {
+            width: 100%;
+            padding: 13px;
+            background: #4f46e5;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            font-family: inherit;
+            transition: background 0.2s;
+        }
+        .btn:hover { background: #3730a3; }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .error {
+            background: rgba(239,68,68,0.1);
+            border: 1px solid rgba(239,68,68,0.3);
+            color: #fca5a5;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            margin-top: 14px;
+            display: none;
+        }
+        .pw-wrap { position: relative; }
+        .toggle-pw {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #64748b;
+            cursor: pointer;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-box">
+        <div class="lock-icon">🔐</div>
+        <h1>Admin Access</h1>
+        <p class="subtitle">Restricted area — authorised personnel only</p>
+        <form onsubmit="event.preventDefault(); login();">
+            <label for="password">Password</label>
+            <div class="pw-wrap">
+                <input type="password" id="password" placeholder="Enter admin password" autocomplete="current-password">
+                <button class="toggle-pw" type="button" onclick="togglePw()">👁</button>
+            </div>
+            <button class="btn" id="loginBtn" type="submit">Enter</button>
+        </form>
+        <div class="error" id="errorMsg"></div>
+    </div>
+    <script>
+        function togglePw() {
+            const inp = document.getElementById('password');
+            inp.type = inp.type === 'password' ? 'text' : 'password';
+        }
+        async function login() {
+            const pw = document.getElementById('password').value;
+            const btn = document.getElementById('loginBtn');
+            const err = document.getElementById('errorMsg');
+            if (!pw) return;
+            btn.disabled = true; btn.textContent = 'Checking...';
+            err.style.display = 'none';
+            try {
+                const res = await fetch('/julisunkan/login', {
+                    method: 'POST',
+                    headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify({ password: pw })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    window.location.href = '/julisunkan/dashboard';
+                } else {
+                    err.textContent = data.error || 'Incorrect password';
+                    err.style.display = 'block';
+                    btn.disabled = false; btn.textContent = 'Enter';
+                }
+            } catch(e) {
+                err.textContent = 'Connection error. Try again.';
+                err.style.display = 'block';
+                btn.disabled = false; btn.textContent = 'Enter';
+            }
+        }
+    </script>
+</body>
+</html>

@@ -3,20 +3,49 @@ from groq import Groq
 
 _client = None
 
+
+def _get_api_key():
+    """Get API key: env var first, then database settings."""
+    key = os.environ.get('GROQ_API_KEY', '')
+    if not key:
+        try:
+            from models.settings import Setting
+            key = Setting.get('groq_api_key', '')
+        except Exception:
+            pass
+    return key
+
+
+def _get_model():
+    try:
+        from models.settings import Setting
+        return Setting.get('ai_model', 'llama3-70b-8192') or 'llama3-70b-8192'
+    except Exception:
+        return 'llama3-70b-8192'
+
+
+def _get_max_tokens():
+    try:
+        from models.settings import Setting
+        val = Setting.get('ai_max_tokens', '4096')
+        return int(val) if val else 4096
+    except Exception:
+        return 4096
+
+
 def get_client():
-    global _client
-    if _client is None:
-        api_key = os.environ.get('GROQ_API_KEY')
-        if not api_key:
-            raise ValueError("GROQ_API_KEY environment variable is not set.")
-        _client = Groq(api_key=api_key)
-    return _client
+    api_key = _get_api_key()
+    if not api_key:
+        raise ValueError("No Groq API key configured. Please add it in the Admin Panel at /julisunkan")
+    return Groq(api_key=api_key)
 
 
-def ai_generate(system_prompt, user_prompt, max_tokens=4096, temperature=0.7):
+def ai_generate(system_prompt, user_prompt, max_tokens=None, temperature=0.7):
     client = get_client()
+    if max_tokens is None:
+        max_tokens = _get_max_tokens()
     response = client.chat.completions.create(
-        model="llama3-70b-8192",
+        model=_get_model(),
         messages=[
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt}
@@ -103,7 +132,7 @@ def chat_with_career_assistant(messages):
     client = get_client()
     all_messages = [{"role": "system", "content": system}] + messages
     response = client.chat.completions.create(
-        model="llama3-70b-8192",
+        model=_get_model(),
         messages=all_messages,
         max_tokens=1500,
         temperature=0.7,
