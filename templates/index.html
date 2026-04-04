@@ -2,57 +2,72 @@
 {% block title %}Dashboard - AI Career Hub{% endblock %}
 {% block content %}
 <div class="hero">
-    <div class="hero-title">AI Career Hub</div>
-    <p class="hero-subtitle">Your intelligent job application assistant — from resume to offer letter.</p>
+    <div class="hero-title">
+        <span class="gradient-text">AI Career Hub</span>
+    </div>
+    <p class="hero-subtitle">Your intelligent job application assistant — from resume to offer letter, powered by AI.</p>
     <div class="hero-actions">
-        <a href="/resume-builder" class="btn btn-primary btn-lg">✦ Build My Resume</a>
-        <a href="/job-tracker" class="btn btn-secondary btn-lg">Track Applications</a>
+        <a href="/resume-builder" class="btn btn-primary btn-xl">✦ Build My Resume</a>
+        <a href="/job-tracker" class="btn btn-success btn-xl">📊 Track Applications</a>
+        <a href="/career-chat" class="btn btn-warning btn-lg">💬 Chat with AI</a>
     </div>
 </div>
 
-<div id="statsSection">
-    <h2 style="font-size:18px;font-weight:600;margin-bottom:16px;">Application Overview</h2>
-    <div class="grid grid-4" id="statsGrid">
-        <div class="stat-card"><div class="stat-value" id="statTotal">—</div><div class="stat-label">Total Applications</div></div>
-        <div class="stat-card"><div class="stat-value" id="statInterview">—</div><div class="stat-label">Interviews</div></div>
-        <div class="stat-card"><div class="stat-value" id="statOffer">—</div><div class="stat-label">Offers</div></div>
-        <div class="stat-card"><div class="stat-value" id="statRate" style="color:var(--success)">—</div><div class="stat-label">Interview Rate</div></div>
+<div style="margin-bottom:36px;">
+    <div class="section-heading">📈 Application Overview</div>
+    <div class="grid grid-4 stagger" id="statsGrid">
+        <div class="stat-card">
+            <div class="stat-value" id="statTotal">0</div>
+            <div class="stat-label">Total Applications</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="statInterview">0</div>
+            <div class="stat-label">Interviews</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="statOffer">0</div>
+            <div class="stat-label">Offers Received</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="statRate">0%</div>
+            <div class="stat-label">Interview Rate</div>
+        </div>
     </div>
 </div>
 
-<div style="margin-top:40px;">
-    <h2 style="font-size:18px;font-weight:600;margin-bottom:16px;">Quick Actions</h2>
-    <div class="grid grid-3">
+<div>
+    <div class="section-heading">🚀 Quick Actions</div>
+    <div class="grid grid-3 stagger">
         <a href="/resume-builder" class="quick-action-card">
-            <div class="quick-action-icon">📄</div>
+            <span class="quick-action-icon">📄</span>
             <div class="quick-action-label">Resume Builder</div>
-            <div class="quick-action-desc">Optimize your resume with AI</div>
+            <div class="quick-action-desc">Optimize with AI · Match scoring · PDF export</div>
         </a>
         <a href="/job-tracker" class="quick-action-card">
-            <div class="quick-action-icon">📊</div>
+            <span class="quick-action-icon">💼</span>
             <div class="quick-action-label">Job Tracker</div>
-            <div class="quick-action-desc">Manage your applications</div>
+            <div class="quick-action-desc">Track status · Analytics · Notes</div>
         </a>
         <a href="/interview-prep" class="quick-action-card">
-            <div class="quick-action-icon">🎯</div>
+            <span class="quick-action-icon">🎯</span>
             <div class="quick-action-label">Interview Prep</div>
-            <div class="quick-action-desc">Practice with AI questions</div>
+            <div class="quick-action-desc">AI questions · Sample answers</div>
         </a>
         <a href="/career-chat" class="quick-action-card">
-            <div class="quick-action-icon">💬</div>
+            <span class="quick-action-icon">💬</span>
             <div class="quick-action-label">Career Chat</div>
-            <div class="quick-action-desc">Ask an AI career advisor</div>
+            <div class="quick-action-desc">AI advisor · Salary tips · Strategies</div>
         </a>
         <a href="/linkedin-optimizer" class="quick-action-card">
-            <div class="quick-action-icon">🔗</div>
+            <span class="quick-action-icon">🔗</span>
             <div class="quick-action-label">LinkedIn Optimizer</div>
-            <div class="quick-action-desc">Improve your profile</div>
+            <div class="quick-action-desc">Headline · About section · Keywords</div>
         </a>
-        <div class="quick-action-card" style="cursor:default;opacity:0.6;">
-            <div class="quick-action-icon">📈</div>
-            <div class="quick-action-label">More Coming Soon</div>
-            <div class="quick-action-desc">Stay tuned for updates</div>
-        </div>
+        <a href="/resume-builder#student" class="quick-action-card">
+            <span class="quick-action-icon">🎓</span>
+            <div class="quick-action-label">Student Mode</div>
+            <div class="quick-action-desc">No experience? Generate from skills</div>
+        </a>
     </div>
 </div>
 {% endblock %}
@@ -62,12 +77,25 @@ async function loadStats() {
     try {
         const res = await fetch('/api/jobs/stats');
         const data = await res.json();
-        document.getElementById('statTotal').textContent = data.total;
-        document.getElementById('statInterview').textContent = data.interview;
-        document.getElementById('statOffer').textContent = data.offer;
+        animateNum('statTotal',    data.total);
+        animateNum('statInterview',data.interview);
+        animateNum('statOffer',    data.offer);
         document.getElementById('statRate').textContent = data.interview_rate + '%';
-    } catch(e) { console.log('Stats unavailable'); }
+    } catch(e) {}
 }
+
+function animateNum(id, target) {
+    const el = document.getElementById(id);
+    if (!el || target === 0) { if (el) el.textContent = '0'; return; }
+    let start = 0;
+    const step = Math.ceil(target / 30);
+    const iv = setInterval(() => {
+        start = Math.min(start + step, target);
+        el.textContent = start;
+        if (start >= target) clearInterval(iv);
+    }, 40);
+}
+
 loadStats();
 </script>
 {% endblock %}

@@ -2,84 +2,88 @@
 {% block title %}Resume Builder - AI Career Hub{% endblock %}
 {% block content %}
 <div class="page-header">
-    <div class="page-title">📄 Resume Builder</div>
-    <div class="page-subtitle">Upload your resume, paste a job description, and let AI optimize everything.</div>
+    <div class="page-title page-title-gradient">📄 Resume Builder</div>
+    <div class="page-subtitle">Upload your resume, paste a job description, and let AI do the heavy lifting.</div>
 </div>
 
 <div class="tabs">
-    <button class="tab-btn active" onclick="switchTab('optimize')">Optimize Resume</button>
-    <button class="tab-btn" onclick="switchTab('student')">Student Mode</button>
-    <button class="tab-btn" onclick="switchTab('section')">Section Editor</button>
-    <button class="tab-btn" onclick="switchTab('saved')">Saved Resumes</button>
+    <button class="tab-btn active" onclick="switchTab('optimize')">🔧 Optimize Resume</button>
+    <button class="tab-btn" onclick="switchTab('student')">🎓 Student Mode</button>
+    <button class="tab-btn" onclick="switchTab('section')">✏️ Section Editor</button>
+    <button class="tab-btn" onclick="switchTab('saved')">💾 Saved Resumes</button>
 </div>
 
 <!-- TAB: Optimize -->
 <div class="tab-content active" id="tab-optimize">
     <div class="grid grid-2">
-        <div class="card">
-            <div class="card-header"><div class="card-title">Your Resume</div></div>
+        <div class="card card-blue">
+            <div class="card-header">
+                <div class="card-title">📎 Your Resume</div>
+            </div>
             <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
                 <div class="upload-icon">📎</div>
                 <div class="upload-text">Click or drag & drop to upload</div>
-                <div class="upload-subtext">Supports PDF and DOCX — max 10MB</div>
+                <div class="upload-subtext">PDF and DOCX supported — max 10 MB</div>
             </div>
             <input type="file" id="fileInput" accept=".pdf,.docx" style="display:none">
-            <p id="uploadStatus" style="font-size:13px;color:var(--text-muted);margin-top:10px;"></p>
-            <div class="form-group" style="margin-top:16px;">
-                <label class="form-label">Or paste your resume text:</label>
-                <textarea class="form-control" id="resumeText" rows="10" placeholder="Paste resume content here..."></textarea>
+            <p id="uploadStatus" style="font-size:13px;margin-top:10px;min-height:18px;"></p>
+            <div class="form-group" style="margin-top:14px;">
+                <label class="form-label">Or paste resume text</label>
+                <textarea class="form-control" id="resumeText" rows="10" placeholder="Paste your full resume here..."></textarea>
             </div>
         </div>
-        <div class="card">
-            <div class="card-header"><div class="card-title">Job Description</div></div>
+        <div class="card card-green">
+            <div class="card-header">
+                <div class="card-title">💼 Job Description</div>
+            </div>
             <div class="form-group">
                 <label class="form-label">Resume Label (optional)</label>
-                <input type="text" class="form-control" id="resumeLabel" placeholder="e.g. Google SWE Application">
+                <input type="text" class="form-control" id="resumeLabel" placeholder="e.g. Google SWE — May 2025">
             </div>
             <div class="form-group">
-                <label class="form-label">Paste job description:</label>
-                <textarea class="form-control" id="jobDescription" rows="12" placeholder="Paste the full job description here..."></textarea>
+                <label class="form-label">Paste the job description</label>
+                <textarea class="form-control" id="jobDescription" rows="13" placeholder="Paste the full job posting here..."></textarea>
             </div>
         </div>
     </div>
 
-    <div style="display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap;">
+    <div style="display:flex;gap:12px;margin-bottom:28px;flex-wrap:wrap;">
         <button class="btn btn-primary btn-lg" onclick="runOptimize()">✦ Optimize My Resume</button>
-        <button class="btn btn-secondary" onclick="runAnalyzeOnly()">📊 Analyze Match Only</button>
+        <button class="btn btn-secondary btn-lg" onclick="runAnalyzeOnly()">📊 Analyze Match Only</button>
     </div>
 
-    <div id="analyzeResults" style="display:none;">
+    <div id="analyzeResults" style="display:none;" class="animate-fade-up">
         <div class="grid grid-2">
-            <div class="card">
-                <div class="card-title" style="margin-bottom:16px;">Match Score</div>
+            <div class="card card-yellow">
+                <div class="card-title" style="margin-bottom:16px;">🎯 Match Score</div>
                 <div class="score-ring" id="scoreRing">
                     <div class="score-number" id="scoreValue">0%</div>
                     <div class="score-label">Match</div>
                 </div>
                 <div class="progress-bar"><div class="progress-fill" id="scoreBar" style="width:0%"></div></div>
             </div>
-            <div class="card">
-                <div class="card-title" style="margin-bottom:12px;">Missing Keywords</div>
+            <div class="card card-red">
+                <div class="card-title" style="margin-bottom:12px;">⚠️ Missing Keywords</div>
                 <div class="tag-list" id="missingKeywords"></div>
-                <div class="card-title" style="margin:16px 0 12px;">Suggestions</div>
-                <div id="suggestions" style="font-size:14px;color:var(--text-muted);"></div>
+                <div class="card-title" style="margin:18px 0 10px;">💡 Suggestions</div>
+                <div id="suggestions" style="font-size:14px;color:var(--text-muted);line-height:1.8;"></div>
             </div>
         </div>
     </div>
 
-    <div id="optimizeResults" style="display:none;">
+    <div id="optimizeResults" style="display:none;" class="animate-fade-up">
         <div class="grid grid-2">
-            <div class="card">
+            <div class="card card-blue">
                 <div class="card-header">
-                    <div class="card-title">Optimized Resume</div>
-                    <button class="btn btn-secondary btn-sm" onclick="downloadDoc('resume')">⬇ Download PDF</button>
+                    <div class="card-title">✅ Optimized Resume</div>
+                    <button class="btn btn-success btn-sm" onclick="downloadDoc('resume')">⬇ PDF</button>
                 </div>
                 <div class="result-box" id="optimizedText"></div>
             </div>
-            <div class="card">
+            <div class="card card-green">
                 <div class="card-header">
-                    <div class="card-title">Cover Letter</div>
-                    <button class="btn btn-secondary btn-sm" onclick="downloadDoc('cover_letter')">⬇ Download PDF</button>
+                    <div class="card-title">✉️ Cover Letter</div>
+                    <button class="btn btn-success btn-sm" onclick="downloadDoc('cover_letter')">⬇ PDF</button>
                 </div>
                 <div class="result-box" id="coverLetterText"></div>
             </div>
@@ -89,27 +93,29 @@
 
 <!-- TAB: Student Mode -->
 <div class="tab-content" id="tab-student">
-    <div class="card" style="max-width:700px;">
-        <div class="card-title" style="margin-bottom:20px;">Student / No-Experience Mode</div>
-        <p style="color:var(--text-muted);font-size:14px;margin-bottom:20px;">Generate a professional resume from your skills and education — no work experience needed.</p>
-        <div class="form-group">
-            <label class="form-label">Full Name *</label>
-            <input type="text" class="form-control" id="stuName" placeholder="Jane Smith">
+    <div class="card card-brown" style="max-width:720px;">
+        <div class="card-title" style="margin-bottom:8px;">🎓 Student / No-Experience Mode</div>
+        <p style="color:var(--text-muted);font-size:14px;margin-bottom:22px;">Generate a professional, polished resume from just your skills and education — no work history needed.</p>
+        <div class="grid grid-2">
+            <div class="form-group">
+                <label class="form-label">Full Name *</label>
+                <input type="text" class="form-control" id="stuName" placeholder="Jane Doe">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Education</label>
+                <input type="text" class="form-control" id="stuEducation" placeholder="B.S. CS, State Univ, 2025. GPA: 3.8">
+            </div>
         </div>
         <div class="form-group">
             <label class="form-label">Skills *</label>
-            <textarea class="form-control" id="stuSkills" rows="4" placeholder="Python, JavaScript, React, SQL, Machine Learning, Problem-solving, Team collaboration..."></textarea>
+            <textarea class="form-control" id="stuSkills" rows="4" placeholder="Python, JavaScript, React, SQL, Machine Learning, Git, Agile..."></textarea>
         </div>
         <div class="form-group">
-            <label class="form-label">Education</label>
-            <textarea class="form-control" id="stuEducation" rows="3" placeholder="B.S. Computer Science, State University, 2024. GPA: 3.8..."></textarea>
+            <label class="form-label">Projects / Achievements / Notes</label>
+            <textarea class="form-control" id="stuNotes" rows="4" placeholder="Hackathon winner, open-source contributions, personal projects, volunteer work..."></textarea>
         </div>
-        <div class="form-group">
-            <label class="form-label">Projects / Notes</label>
-            <textarea class="form-control" id="stuNotes" rows="4" placeholder="Describe any projects, volunteer work, certifications, hobbies relevant to your career..."></textarea>
-        </div>
-        <button class="btn btn-primary" onclick="generateFromSkills()">✦ Generate My Resume</button>
-        <div id="stuResult" style="margin-top:20px;display:none;">
+        <button class="btn btn-brown btn-lg" onclick="generateFromSkills()">✦ Generate My Resume</button>
+        <div id="stuResult" style="margin-top:24px;display:none;">
             <div class="card-title" style="margin-bottom:10px;">Generated Resume</div>
             <div class="result-box" id="stuResultText"></div>
         </div>
@@ -118,25 +124,28 @@
 
 <!-- TAB: Section Editor -->
 <div class="tab-content" id="tab-section">
-    <div class="card" style="max-width:800px;">
-        <div class="card-title" style="margin-bottom:16px;">Resume Section Editor</div>
-        <p style="color:var(--text-muted);font-size:14px;margin-bottom:20px;">Rewrite specific sections of your resume to make them stronger and more relevant.</p>
-        <div class="form-group">
-            <label class="form-label">Section Name</label>
-            <input type="text" class="form-control" id="secName" placeholder="e.g. Work Experience, Summary, Skills">
+    <div class="card card-yellow" style="max-width:820px;">
+        <div class="card-title" style="margin-bottom:8px;">✏️ Resume Section Editor</div>
+        <p style="color:var(--text-muted);font-size:14px;margin-bottom:22px;">Paste any section of your resume and rewrite it to be stronger and more targeted.</p>
+        <div class="grid grid-2">
+            <div class="form-group">
+                <label class="form-label">Section Name</label>
+                <input type="text" class="form-control" id="secName" placeholder="e.g. Work Experience, Summary, Skills">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Target Job Description (optional)</label>
+                <textarea class="form-control" id="secJobDesc" rows="3" placeholder="Paste job posting to tailor the rewrite..."></textarea>
+            </div>
         </div>
         <div class="form-group">
-            <label class="form-label">Section Content</label>
-            <textarea class="form-control" id="secText" rows="8" placeholder="Paste the section text you want to improve..."></textarea>
+            <label class="form-label">Section Content *</label>
+            <textarea class="form-control" id="secText" rows="8" placeholder="Paste the resume section you want to improve..."></textarea>
         </div>
-        <div class="form-group">
-            <label class="form-label">Target Job Description (optional)</label>
-            <textarea class="form-control" id="secJobDesc" rows="4" placeholder="Paste job description to tailor the section..."></textarea>
-        </div>
-        <button class="btn btn-primary" onclick="rewriteSection()">✦ Rewrite Section</button>
-        <div id="secResult" style="margin-top:20px;display:none;">
+        <button class="btn btn-warning btn-lg" onclick="rewriteSection()">⚡ Rewrite Section</button>
+        <div id="secResult" style="margin-top:24px;display:none;">
             <div class="card-title" style="margin-bottom:10px;">Rewritten Section</div>
             <div class="result-box" id="secResultText"></div>
+            <button class="btn btn-secondary btn-sm" style="margin-top:10px;" onclick="copyText('secResultText')">📋 Copy</button>
         </div>
     </div>
 </div>
@@ -144,31 +153,30 @@
 <!-- TAB: Saved Resumes -->
 <div class="tab-content" id="tab-saved">
     <div id="savedList">
-        <p style="color:var(--text-muted);">Loading saved resumes...</p>
+        <div class="card" style="text-align:center;color:var(--text-muted);padding:40px;">
+            <div class="spinner"></div>
+            <p style="margin-top:12px;">Loading saved resumes...</p>
+        </div>
     </div>
 </div>
 
 <div class="loading-overlay" id="loadingOverlay">
-    <div class="spinner" style="width:40px;height:40px;"></div>
+    <div class="loading-spinner"></div>
     <div class="loading-text" id="loadingText">Processing with AI...</div>
 </div>
-
 {% endblock %}
 {% block scripts %}
 <script>
 let currentResumeId = null;
 
 function switchTab(tab) {
-    document.querySelectorAll('.tab-btn').forEach((b,i) => {
-        const tabs = ['optimize','student','section','saved'];
-        b.classList.toggle('active', tabs[i] === tab);
-    });
+    const tabs = ['optimize','student','section','saved'];
+    document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', tabs[i] === tab));
     document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
     document.getElementById('tab-'+tab).classList.add('active');
     if (tab === 'saved') loadSavedResumes();
 }
 
-// File upload
 const fileInput = document.getElementById('fileInput');
 const uploadZone = document.getElementById('uploadZone');
 uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('dragover'); });
@@ -179,16 +187,18 @@ fileInput.addEventListener('change', () => handleFile(fileInput.files[0]));
 async function handleFile(file) {
     if (!file) return;
     const status = document.getElementById('uploadStatus');
-    status.textContent = 'Extracting text...';
+    status.style.color = 'var(--yellow)';
+    status.textContent = '⏳ Extracting text from ' + file.name + '...';
     const fd = new FormData();
     fd.append('file', file);
     try {
         const res = await fetch('/api/resume/upload', { method: 'POST', body: fd });
         const data = await res.json();
-        if (data.error) { status.textContent = '❌ ' + data.error; return; }
+        if (data.error) { status.style.color='var(--red-light)'; status.textContent = '❌ ' + data.error; return; }
         document.getElementById('resumeText').value = data.text;
+        status.style.color = 'var(--green-light)';
         status.textContent = '✅ Text extracted from ' + file.name;
-    } catch(e) { status.textContent = '❌ Upload failed'; }
+    } catch(e) { status.style.color='var(--red-light)'; status.textContent = '❌ Upload failed: ' + e.message; }
 }
 
 function showLoading(msg) {
@@ -200,56 +210,62 @@ function hideLoading() { document.getElementById('loadingOverlay').classList.rem
 async function runAnalyzeOnly() {
     const resumeText = document.getElementById('resumeText').value.trim();
     const jobDescription = document.getElementById('jobDescription').value.trim();
-    if (!resumeText || !jobDescription) { alert('Please provide both resume and job description.'); return; }
-    showLoading('Analyzing match...');
+    if (!resumeText || !jobDescription) { showAlert('Please provide both resume and job description.'); return; }
+    showLoading('Analyzing match score...');
     try {
-        const res = await fetch('/api/resume/analyze', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ resume_text: resumeText, job_description: jobDescription }) });
+        const res = await fetch('/api/resume/analyze', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ resume_text: resumeText, job_description: jobDescription }) });
         const data = await res.json();
         hideLoading();
-        if (data.error) { alert('Error: ' + data.error); return; }
+        if (data.error) { showAlert('Error: ' + data.error, 'error'); return; }
         showAnalysis(data);
-    } catch(e) { hideLoading(); alert('Request failed: ' + e.message); }
+    } catch(e) { hideLoading(); showAlert('Request failed: ' + e.message, 'error'); }
 }
 
 async function runOptimize() {
     const resumeText = document.getElementById('resumeText').value.trim();
     const jobDescription = document.getElementById('jobDescription').value.trim();
-    if (!resumeText || !jobDescription) { alert('Please provide both resume and job description.'); return; }
+    if (!resumeText || !jobDescription) { showAlert('Please provide both resume and job description.'); return; }
     const label = document.getElementById('resumeLabel').value.trim() || 'Optimized Resume';
-    showLoading('Optimizing your resume with AI...');
+    showLoading('Optimizing your resume — this may take 20–40 seconds...');
     try {
-        const res = await fetch('/api/resume/optimize', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ resume_text: resumeText, job_description: jobDescription, label }) });
+        const res = await fetch('/api/resume/optimize', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ resume_text: resumeText, job_description: jobDescription, label }) });
         const data = await res.json();
         hideLoading();
-        if (data.error) { alert('Error: ' + data.error); return; }
+        if (data.error) { showAlert('Error: ' + data.error, 'error'); return; }
         currentResumeId = data.id;
         showAnalysis({ score: data.match_score, missing_keywords: data.missing_keywords, suggestions: data.suggestions });
         document.getElementById('optimizedText').textContent = data.optimized_text;
         document.getElementById('coverLetterText').textContent = data.cover_letter;
         document.getElementById('optimizeResults').style.display = 'block';
-    } catch(e) { hideLoading(); alert('Request failed: ' + e.message); }
+        document.getElementById('optimizeResults').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch(e) { hideLoading(); showAlert('Request failed: ' + e.message, 'error'); }
 }
 
 function showAnalysis(data) {
     const score = Math.round(data.score || 0);
     document.getElementById('scoreValue').textContent = score + '%';
-    document.getElementById('scoreBar').style.width = score + '%';
-    const scoreRing = document.getElementById('scoreRing');
-    scoreRing.style.borderColor = score >= 70 ? 'var(--success)' : score >= 40 ? 'var(--warning)' : 'var(--danger)';
+    setTimeout(() => { document.getElementById('scoreBar').style.width = score + '%'; }, 100);
+    const ring = document.getElementById('scoreRing');
+    ring.style.borderColor = score >= 70 ? 'var(--green)' : score >= 40 ? 'var(--yellow)' : 'var(--red)';
 
-    const keywords = data.missing_keywords || [];
+    const keywords = Array.isArray(data.missing_keywords) ? data.missing_keywords : [];
     document.getElementById('missingKeywords').innerHTML = keywords.length
-        ? keywords.map(k => `<span class="tag tag-warning">${k}</span>`).join('')
-        : '<span style="color:var(--text-muted);font-size:13px;">None missing — great match!</span>';
+        ? keywords.map(k => `<span class="tag tag-yellow">${k}</span>`).join('')
+        : '<span style="color:var(--green-light);font-size:13px;">✅ No missing keywords — great match!</span>';
 
-    const suggestions = data.suggestions || [];
-    document.getElementById('suggestions').innerHTML = suggestions.map(s => `<p style="margin-bottom:8px;">• ${s}</p>`).join('');
+    const suggestions = Array.isArray(data.suggestions) ? data.suggestions : [];
+    document.getElementById('suggestions').innerHTML = suggestions.map(s => `<p style="margin-bottom:8px;padding-left:12px;border-left:2px solid var(--yellow);">• ${s}</p>`).join('');
     document.getElementById('analyzeResults').style.display = 'block';
+    document.getElementById('analyzeResults').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function downloadDoc(type) {
-    if (!currentResumeId) { alert('Please optimize your resume first.'); return; }
+    if (!currentResumeId) { showAlert('Please optimize your resume first.'); return; }
     window.open(`/api/resume/export/${currentResumeId}/${type}`);
+}
+
+function showAlert(msg, type='warning') {
+    alert(msg);
 }
 
 async function generateFromSkills() {
@@ -258,7 +274,7 @@ async function generateFromSkills() {
     if (!name || !skills) { alert('Please enter your name and skills.'); return; }
     showLoading('Generating your resume...');
     try {
-        const res = await fetch('/api/resume/generate-from-skills', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ name, skills, education: document.getElementById('stuEducation').value, experience_notes: document.getElementById('stuNotes').value }) });
+        const res = await fetch('/api/resume/generate-from-skills', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ name, skills, education: document.getElementById('stuEducation').value, experience_notes: document.getElementById('stuNotes').value }) });
         const data = await res.json();
         hideLoading();
         if (data.error) { alert('Error: ' + data.error); return; }
@@ -271,9 +287,9 @@ async function rewriteSection() {
     const sectionText = document.getElementById('secText').value.trim();
     const sectionName = document.getElementById('secName').value.trim() || 'Section';
     if (!sectionText) { alert('Please enter section content.'); return; }
-    showLoading('Rewriting section...');
+    showLoading('Rewriting section with AI...');
     try {
-        const res = await fetch('/api/resume/rewrite-section', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ section_text: sectionText, section_name: sectionName, job_description: document.getElementById('secJobDesc').value }) });
+        const res = await fetch('/api/resume/rewrite-section', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ section_text: sectionText, section_name: sectionName, job_description: document.getElementById('secJobDesc').value }) });
         const data = await res.json();
         hideLoading();
         if (data.error) { alert('Error: ' + data.error); return; }
@@ -282,30 +298,43 @@ async function rewriteSection() {
     } catch(e) { hideLoading(); alert('Error: ' + e.message); }
 }
 
+function copyText(id) {
+    const text = document.getElementById(id).textContent;
+    navigator.clipboard.writeText(text).then(() => {
+        const btn = document.querySelector(`#${id} + button`) || document.querySelector('[onclick*="copyText"]');
+        const orig = btn ? btn.textContent : '';
+        if (btn) { btn.textContent = '✅ Copied!'; setTimeout(() => btn.textContent = orig, 2000); }
+    });
+}
+
 async function loadSavedResumes() {
     const container = document.getElementById('savedList');
     try {
         const res = await fetch('/api/resume/list');
         const resumes = await res.json();
-        if (!resumes.length) { container.innerHTML = '<p style="color:var(--text-muted);">No saved resumes yet. Optimize a resume to save it.</p>'; return; }
-        container.innerHTML = resumes.map(r => `
-            <div class="card" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
-                <div>
-                    <div style="font-weight:600;">${r.label}</div>
-                    <div style="font-size:13px;color:var(--text-muted);">Match score: <strong style="color:var(--primary-light)">${r.match_score}%</strong> — Saved ${new Date(r.created_at).toLocaleDateString()}</div>
+        if (!resumes.length) {
+            container.innerHTML = '<div class="card" style="text-align:center;color:var(--text-muted);padding:40px;">No saved resumes yet.<br><a href="#" onclick="switchTab(\'optimize\')" style="color:var(--blue-light);">Optimize a resume to save it →</a></div>';
+            return;
+        }
+        const scoreColor = s => s >= 70 ? 'var(--green-light)' : s >= 40 ? 'var(--yellow-light)' : 'var(--red-light)';
+        container.innerHTML = `<div class="grid grid-2 stagger">${resumes.map(r => `
+            <div class="card card-blue" style="margin-bottom:0;">
+                <div class="card-header">
+                    <div class="card-title" style="font-size:15px;">${r.label}</div>
+                    <span style="color:${scoreColor(r.match_score)};font-weight:700;font-size:18px;">${Math.round(r.match_score)}%</span>
                 </div>
+                <div style="font-size:12px;color:var(--text-muted);margin-bottom:14px;">Saved ${r.created_at ? new Date(r.created_at).toLocaleDateString() : '—'}</div>
                 <div style="display:flex;gap:8px;flex-wrap:wrap;">
-                    <button class="btn btn-secondary btn-sm" onclick="window.open('/api/resume/export/${r.id}/resume')">⬇ Resume PDF</button>
-                    <button class="btn btn-secondary btn-sm" onclick="window.open('/api/resume/export/${r.id}/cover_letter')">⬇ Cover Letter PDF</button>
-                    <button class="btn btn-danger btn-sm" onclick="deleteResume(${r.id})">Delete</button>
+                    <button class="btn btn-success btn-sm" onclick="window.open('/api/resume/export/${r.id}/resume')">⬇ Resume PDF</button>
+                    <button class="btn btn-secondary btn-sm" onclick="window.open('/api/resume/export/${r.id}/cover_letter')">⬇ Cover Letter</button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteResume(${r.id})">🗑 Delete</button>
                 </div>
-            </div>
-        `).join('');
-    } catch(e) { container.innerHTML = '<p style="color:var(--danger);">Failed to load resumes.</p>'; }
+            </div>`).join('')}</div>`;
+    } catch(e) { container.innerHTML = '<div class="card" style="color:var(--red-light);">Failed to load resumes.</div>'; }
 }
 
 async function deleteResume(id) {
-    if (!confirm('Delete this resume?')) return;
+    if (!confirm('Delete this resume permanently?')) return;
     await fetch('/api/resume/' + id, { method: 'DELETE' });
     loadSavedResumes();
 }

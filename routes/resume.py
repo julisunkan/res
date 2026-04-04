@@ -1,5 +1,5 @@
 import json
-from flask import Blueprint, request, jsonify, send_file
+from flask import Blueprint, request, jsonify, send_file, abort
 from extensions import db
 from models.resume import Resume
 from utils.parser import extract_text
@@ -10,6 +10,13 @@ from utils.pdf_exporter import generate_pdf
 resume_bp = Blueprint('resume', __name__)
 
 
+def get_or_404(model, id):
+    obj = db.session.get(model, id)
+    if obj is None:
+        abort(404)
+    return obj
+
+
 @resume_bp.route('/upload', methods=['POST'])
 def upload_resume():
     if 'file' not in request.files:
@@ -17,8 +24,13 @@ def upload_resume():
     file = request.files['file']
     if not file.filename:
         return jsonify({'error': 'Empty filename'}), 400
+    allowed = ('.pdf', '.docx')
+    if not file.filename.lower().endswith(allowed):
+        return jsonify({'error': 'Only PDF and DOCX files are supported'}), 400
     try:
         text = extract_text(file.read(), file.filename)
+        if not text.strip():
+            return jsonify({'error': 'Could not extract text from the file. The file may be image-based.'}), 400
         return jsonify({'text': text, 'success': True})
     except Exception as e:
         return jsonify({'error': str(e)}), 400
@@ -26,9 +38,9 @@ def upload_resume():
 
 @resume_bp.route('/analyze', methods=['POST'])
 def analyze_resume():
-    data = request.get_json()
-    resume_text = data.get('resume_text', '')
-    job_description = data.get('job_description', '')
+    data = request.get_json(silent=True) or {}
+    resume_text = data.get('resume_text', '').strip()
+    job_description = data.get('job_description', '').strip()
     if not resume_text or not job_description:
         return jsonify({'error': 'resume_text and job_description are required'}), 400
     try:
@@ -40,10 +52,10 @@ def analyze_resume():
 
 @resume_bp.route('/optimize', methods=['POST'])
 def optimize():
-    data = request.get_json()
-    resume_text = data.get('resume_text', '')
-    job_description = data.get('job_description', '')
-    label = data.get('label', 'Optimized Resume')
+    data = request.get_json(silent=True) or {}
+    resume_text = data.get('resume_text', '').strip()
+    job_description = data.get('job_description', '').strip()
+    label = data.get('label', 'Optimized Resume').strip() or 'Optimized Resume'
     if not resume_text or not job_description:
         return jsonify({'error': 'resume_text and job_description are required'}), 400
     try:
@@ -72,14 +84,15 @@ def optimize():
             'suggestions': analysis.get('suggestions', []),
         })
     except Exception as e:
+        db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
 
 @resume_bp.route('/rewrite-section', methods=['POST'])
 def rewrite_section_route():
-    data = request.get_json()
-    section_text = data.get('section_text', '')
-    section_name = data.get('section_name', 'Section')
+    data = request.get_json(silent=True) or {}
+    section_text = data.get('section_text', '').strip()
+    section_name = data.get('section_name', 'Section').strip() or 'Section'
     job_description = data.get('job_description', '')
     if not section_text:
         return jsonify({'error': 'section_text is required'}), 400
@@ -92,9 +105,9 @@ def rewrite_section_route():
 
 @resume_bp.route('/generate-from-skills', methods=['POST'])
 def generate_from_skills():
-    data = request.get_json()
-    name = data.get('name', '')
-    skills = data.get('skills', '')
+    data = request.get_json(silent=True) or {}
+    name = data.get('name', '').strip()
+    skills = data.get('skills', '').strip()
     education = data.get('education', '')
     experience_notes = data.get('experience_notes', '')
     if not name or not skills:
@@ -114,13 +127,13 @@ def list_resumes():
 
 @resume_bp.route('/<int:resume_id>', methods=['GET'])
 def get_resume(resume_id):
-    resume = Resume.query.get_or_404(resume_id)
+    resume = get_or_404(Resume, resume_id)
     return jsonify(resume.to_dict())
 
 
 @resume_bp.route('/<int:resume_id>', methods=['DELETE'])
 def delete_resume(resume_id):
-    resume = Resume.query.get_or_404(resume_id)
+    resume = get_or_404(Resume, resume_id)
     db.session.delete(resume)
     db.session.commit()
     return jsonify({'success': True})
@@ -128,7 +141,7 @@ def delete_resume(resume_id):
 
 @resume_bp.route('/export/<int:resume_id>/<doc_type>', methods=['GET'])
 def export_resume(resume_id, doc_type):
-    resume = Resume.query.get_or_404(resume_id)
+    resume = get_or_404(Resume, resume_id)
     if doc_type == 'resume':
         content = resume.optimized_text or resume.original_text or ''
         title = f"Resume - {resume.label}"
@@ -138,7 +151,10 @@ def export_resume(resume_id, doc_type):
         title = f"Cover Letter - {resume.label}"
         filename = f"cover_letter_{resume.id}.pdf"
     else:
-        return jsonify({'error': 'Invalid doc_type'}), 400
+        return jsonify({'error': 'Invalid doc_type. Use "resume" or "cover_letter"'}), 400
+
+    if not content.strip():
+        return jsonify({'error': 'No content available to export for this document'}), 400
 
     try:
         pdf_buffer = generate_pdf(title, content)
