@@ -58,6 +58,40 @@ def create_app():
     def linkedin_optimizer():
         return render_template('linkedin_optimizer.html')
 
+    @app.route('/privacy-policy')
+    def privacy_policy():
+        return render_template('privacy.html')
+
+    @app.route('/terms-of-service')
+    def terms_of_service():
+        return render_template('terms.html')
+
+    @app.route('/cookie-policy')
+    def cookie_policy():
+        return render_template('cookie_policy.html')
+
+    @app.route('/contact')
+    def contact():
+        return render_template('contact.html')
+
+    @app.route('/about')
+    def about():
+        return render_template('about.html')
+
+    @app.context_processor
+    def inject_site_settings():
+        from datetime import datetime
+        try:
+            from models.settings import Setting
+            return dict(
+                site_analytics_id=Setting.get('analytics_id', ''),
+                site_adsense_id=Setting.get('adsense_publisher_id', ''),
+                site_app_name=Setting.get('app_name', 'AI Resume & Cover Letter Creator'),
+                current_year=datetime.utcnow().year,
+            )
+        except Exception:
+            return dict(site_analytics_id='', site_adsense_id='', site_app_name='AI Resume & Cover Letter Creator', current_year=datetime.utcnow().year)
+
     with app.app_context():
         import models.resume
         import models.job

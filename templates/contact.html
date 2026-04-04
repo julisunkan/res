@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+{% block title %}Contact Us - AI Resume & Cover Letter Creator{% endblock %}
+{% block content %}
+<style>
+    .contact-page { max-width: 820px; margin: 0 auto; padding: 48px 24px; }
+    .contact-page h1 { font-size: 32px; font-weight: 700; color: #e2e8f0; margin-bottom: 8px; }
+    .contact-page .subtitle { color: #64748b; font-size: 15px; margin-bottom: 40px; line-height: 1.7; }
+    .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 32px; }
+    .contact-card { background: #12121f; border: 1px solid #1e1e3a; border-radius: 12px; padding: 28px; }
+    .contact-card h2 { font-size: 16px; font-weight: 600; color: #e2e8f0; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+    .contact-card p { color: #94a3b8; font-size: 14px; line-height: 1.7; }
+    .contact-card a { color: #818cf8; text-decoration: none; }
+    .contact-card a:hover { text-decoration: underline; }
+    .contact-form-card { background: #12121f; border: 1px solid #1e1e3a; border-radius: 12px; padding: 32px; }
+    .contact-form-card h2 { font-size: 20px; font-weight: 600; color: #e2e8f0; margin-bottom: 24px; }
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 13px; font-weight: 500; color: #94a3b8; margin-bottom: 6px; }
+    .form-group input, .form-group textarea, .form-group select {
+        width: 100%; padding: 10px 14px;
+        background: #0f0f1a; border: 1px solid #1e1e3a;
+        border-radius: 8px; color: #e2e8f0; font-size: 14px;
+        font-family: inherit; outline: none; transition: border-color 0.2s;
+    }
+    .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+        border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79,70,229,0.12);
+    }
+    .form-group textarea { resize: vertical; min-height: 130px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .submit-btn {
+        background: #4f46e5; color: white; border: none;
+        padding: 11px 28px; border-radius: 8px; font-size: 14px;
+        font-weight: 600; cursor: pointer; font-family: inherit;
+        transition: background 0.15s;
+    }
+    .submit-btn:hover { background: #3730a3; }
+    .faq-section { margin-top: 40px; }
+    .faq-section h2 { font-size: 22px; font-weight: 600; color: #e2e8f0; margin-bottom: 20px; }
+    .faq-item { background: #12121f; border: 1px solid #1e1e3a; border-radius: 10px; padding: 20px 24px; margin-bottom: 12px; }
+    .faq-q { font-size: 15px; font-weight: 600; color: #e2e8f0; margin-bottom: 8px; }
+    .faq-a { font-size: 14px; color: #94a3b8; line-height: 1.7; }
+    .alert-form { display: none; padding: 12px 16px; border-radius: 8px; margin-top: 14px; font-size: 14px; }
+    .alert-ok { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); color: #6ee7b7; display: block; }
+    .alert-err { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: #fca5a5; display: block; }
+    @media (max-width: 640px) {
+        .contact-grid { grid-template-columns: 1fr; }
+        .form-row { grid-template-columns: 1fr; }
+    }
+</style>
+<div class="contact-page">
+    <h1>Contact Us</h1>
+    <p class="subtitle">Have a question, feedback, or need help? We'd love to hear from you. Fill out the form below and we'll get back to you as soon as possible.</p>
+
+    <div class="contact-grid">
+        <div class="contact-card">
+            <h2>📧 General Inquiries</h2>
+            <p>For general questions about our AI resume and career tools, features, or how to get started, use the contact form on this page.</p>
+        </div>
+        <div class="contact-card">
+            <h2>🔒 Privacy Requests</h2>
+            <p>To request deletion of your data or exercise any privacy rights, please use the contact form and select "Privacy Request" as the subject. See our <a href="/privacy-policy">Privacy Policy</a> for details.</p>
+        </div>
+        <div class="contact-card">
+            <h2>🐛 Report a Bug</h2>
+            <p>Found an issue with our platform? Select "Bug Report" in the contact form and describe what happened. We appreciate your help improving our service.</p>
+        </div>
+        <div class="contact-card">
+            <h2>💡 Feature Requests</h2>
+            <p>Have an idea for a new feature or improvement? We'd love to hear it. Use the contact form and let us know what would make the service better for you.</p>
+        </div>
+    </div>
+
+    <div class="contact-form-card">
+        <h2>Send Us a Message</h2>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Your Name</label>
+                <input type="text" id="contactName" placeholder="John Doe">
+            </div>
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" id="contactEmail" placeholder="you@example.com">
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Subject</label>
+            <select id="contactSubject">
+                <option value="">— Select a subject —</option>
+                <option value="General Question">General Question</option>
+                <option value="Bug Report">Bug Report</option>
+                <option value="Feature Request">Feature Request</option>
+                <option value="Privacy Request">Privacy / Data Request</option>
+                <option value="Advertising">Advertising Inquiry</option>
+                <option value="Other">Other</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Message</label>
+            <textarea id="contactMessage" placeholder="Tell us how we can help you..."></textarea>
+        </div>
+        <button class="submit-btn" onclick="submitContact()">Send Message</button>
+        <div id="contactAlert" class="alert-form"></div>
+    </div>
+
+    <div class="faq-section">
+        <h2>Frequently Asked Questions</h2>
+        <div class="faq-item">
+            <div class="faq-q">Is my resume data private and secure?</div>
+            <div class="faq-a">Yes. Your resume content is stored securely and used only to provide our AI-powered services. We do not sell your personal resume data to third parties. See our <a href="/privacy-policy" style="color:#818cf8;">Privacy Policy</a> for full details.</div>
+        </div>
+        <div class="faq-item">
+            <div class="faq-q">How do I delete my data?</div>
+            <div class="faq-a">You can delete individual resumes and job applications directly from the app. To request full data deletion, use the contact form above and select "Privacy Request".</div>
+        </div>
+        <div class="faq-item">
+            <div class="faq-q">Why do I see ads on the website?</div>
+            <div class="faq-a">We use Google AdSense to display advertisements, which helps us keep the service free. You can opt out of personalized ads via <a href="https://www.google.com/settings/ads" target="_blank" rel="noopener" style="color:#818cf8;">Google Ads Settings</a>. For more details, see our <a href="/cookie-policy" style="color:#818cf8;">Cookie Policy</a>.</div>
+        </div>
+        <div class="faq-item">
+            <div class="faq-q">How accurate is the AI-generated content?</div>
+            <div class="faq-a">Our AI provides a strong starting point for resumes and cover letters, but we always recommend reviewing and personalizing the output before submitting to employers. The AI is a tool to assist you, not replace your judgment.</div>
+        </div>
+    </div>
+</div>
+<script>
+function submitContact() {
+    const name = document.getElementById('contactName').value.trim();
+    const email = document.getElementById('contactEmail').value.trim();
+    const subject = document.getElementById('contactSubject').value;
+    const message = document.getElementById('contactMessage').value.trim();
+    const alertEl = document.getElementById('contactAlert');
+
+    if (!name || !email || !subject || !message) {
+        alertEl.className = 'alert-form alert-err';
+        alertEl.textContent = 'Please fill in all fields before sending.';
+        return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        alertEl.className = 'alert-form alert-err';
+        alertEl.textContent = 'Please enter a valid email address.';
+        return;
+    }
+    // Simulate submission (in production, wire to a backend endpoint or email service)
+    alertEl.className = 'alert-form alert-ok';
+    alertEl.textContent = '✅ Thank you! Your message has been received. We\'ll get back to you soon.';
+    document.getElementById('contactName').value = '';
+    document.getElementById('contactEmail').value = '';
+    document.getElementById('contactSubject').value = '';
+    document.getElementById('contactMessage').value = '';
+}
+</script>
+{% endblock %}

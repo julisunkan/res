@@ -75,6 +75,8 @@ def get_settings():
         'ai_model': 'llama-3.3-70b-versatile',
         'ai_max_tokens': '4096',
         ADMIN_PASSWORD_KEY: '',
+        'analytics_id': '',
+        'adsense_publisher_id': '',
     }
     for k, v in defaults.items():
         if k not in result:

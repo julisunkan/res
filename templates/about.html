@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% block title %}About - AI Resume & Cover Letter Creator{% endblock %}
+{% block content %}
+<style>
+    .about-page { max-width: 860px; margin: 0 auto; padding: 48px 24px; }
+    .about-page h1 { font-size: 36px; font-weight: 700; color: #e2e8f0; margin-bottom: 10px; }
+    .about-page .subtitle { color: #94a3b8; font-size: 16px; line-height: 1.8; margin-bottom: 48px; max-width: 620px; }
+    .about-section { margin-bottom: 48px; }
+    .about-section h2 { font-size: 22px; font-weight: 600; color: #e2e8f0; margin-bottom: 16px; }
+    .about-section p { color: #94a3b8; font-size: 15px; line-height: 1.8; margin-bottom: 14px; }
+    .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-top: 24px; }
+    .feature-card { background: #12121f; border: 1px solid #1e1e3a; border-radius: 12px; padding: 24px; }
+    .feature-icon { font-size: 28px; margin-bottom: 12px; }
+    .feature-card h3 { font-size: 15px; font-weight: 600; color: #e2e8f0; margin-bottom: 8px; }
+    .feature-card p { font-size: 13px; color: #64748b; line-height: 1.7; margin: 0; }
+    .mission-card { background: linear-gradient(135deg, rgba(79,70,229,0.12), rgba(99,102,241,0.06)); border: 1px solid rgba(79,70,229,0.25); border-radius: 14px; padding: 36px; margin-bottom: 48px; }
+    .mission-card h2 { font-size: 22px; font-weight: 700; color: #e2e8f0; margin-bottom: 14px; }
+    .mission-card p { color: #94a3b8; font-size: 15px; line-height: 1.8; margin: 0; }
+    .values-list { list-style: none; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
+    .values-list li { background: #12121f; border: 1px solid #1e1e3a; border-radius: 8px; padding: 14px 18px; color: #94a3b8; font-size: 14px; display: flex; align-items: center; gap: 10px; }
+    .values-list li span { font-size: 18px; }
+    .cta-row { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 32px; }
+    .cta-btn { display: inline-block; padding: 12px 28px; border-radius: 8px; font-size: 14px; font-weight: 600; text-decoration: none; transition: all 0.15s; }
+    .cta-primary { background: #4f46e5; color: white; }
+    .cta-primary:hover { background: #3730a3; }
+    .cta-secondary { background: rgba(79,70,229,0.1); color: #818cf8; border: 1px solid rgba(79,70,229,0.25); }
+    .cta-secondary:hover { background: rgba(79,70,229,0.2); }
+    @media (max-width: 640px) { .values-list { grid-template-columns: 1fr; } }
+</style>
+<div class="about-page">
+    <h1>About AI Resume & Cover Letter Creator</h1>
+    <p class="subtitle">We're building the smartest AI-powered career toolkit to help job seekers land their dream roles — faster, smarter, and with more confidence.</p>
+
+    <div class="mission-card">
+        <h2>🎯 Our Mission</h2>
+        <p>Job searching is stressful enough. We believe every job seeker deserves access to powerful tools that help them present their best self — regardless of their writing skills or professional network. Our mission is to democratize career success through intelligent AI assistance that tailors, optimizes, and prepares you for every stage of the job search journey.</p>
+    </div>
+
+    <div class="about-section">
+        <h2>What We Offer</h2>
+        <p>AI Resume &amp; Cover Letter Creator is a comprehensive, AI-powered platform covering every critical aspect of the modern job search:</p>
+        <div class="feature-grid">
+            <div class="feature-card">
+                <div class="feature-icon">📄</div>
+                <h3>Resume Builder & Optimizer</h3>
+                <p>Upload your resume and a job description — our AI tailors and optimizes your resume to maximize keyword match scores and ATS compatibility.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">✉️</div>
+                <h3>Cover Letter Generator</h3>
+                <p>Generate compelling, personalized cover letters in seconds that highlight your strengths and align with the specific role you're applying for.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">💼</div>
+                <h3>Job Application Tracker</h3>
+                <p>Stay organized with a comprehensive tracker that logs every application, interview, and offer so nothing slips through the cracks.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🎤</div>
+                <h3>Interview Preparation</h3>
+                <p>Practice with AI-generated interview questions tailored to your target role and get feedback to sharpen your answers.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">💬</div>
+                <h3>Career Chat Assistant</h3>
+                <p>Get instant career advice, salary negotiation tips, and job search strategies from your personal AI career coach.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🔗</div>
+                <h3>LinkedIn Optimizer</h3>
+                <p>Improve your LinkedIn profile with AI-powered suggestions to attract recruiters and stand out in a crowded market.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="about-section">
+        <h2>Our Values</h2>
+        <ul class="values-list">
+            <li><span>🔒</span> Privacy-first — your data is yours</li>
+            <li><span>⚡</span> Speed — results in seconds, not hours</li>
+            <li><span>🎯</span> Accuracy — AI tuned for real-world hiring</li>
+            <li><span>♿</span> Accessibility — free tools for everyone</li>
+            <li><span>🔍</span> Transparency — honest about how AI works</li>
+            <li><span>🤝</span> Trust — no hidden data selling</li>
+        </ul>
+    </div>
+
+    <div class="about-section">
+        <h2>How It Works</h2>
+        <p>Our platform is powered by state-of-the-art large language models that analyze your resume content alongside job descriptions to identify gaps, suggest improvements, and generate tailored application materials.</p>
+        <p>All AI processing is done through secure API connections. Your resume content is used solely to power the features you use — we don't train our models on your personal data or share it with third parties for purposes other than providing the service.</p>
+        <p>For more details on how we handle your data, please read our <a href="/privacy-policy" style="color:#818cf8;">Privacy Policy</a>.</p>
+    </div>
+
+    <div class="about-section">
+        <h2>Get Started</h2>
+        <p>Ready to transform your job search? Try our AI-powered tools for free and see why thousands of job seekers trust us to help them land interviews and offers.</p>
+        <div class="cta-row">
+            <a href="/resume-builder" class="cta-btn cta-primary">✦ Build My Resume</a>
+            <a href="/career-chat" class="cta-btn cta-secondary">💬 Chat with AI</a>
+            <a href="/contact" class="cta-btn cta-secondary">📧 Contact Us</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

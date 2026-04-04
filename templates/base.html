@@ -12,6 +12,141 @@
     <link rel="stylesheet" href="/static/css/style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    {% if site_analytics_id %}
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id={{ site_analytics_id }}"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', '{{ site_analytics_id }}');
+    </script>
+    {% endif %}
+
+    {% if site_adsense_id %}
+    <!-- Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={{ site_adsense_id }}" crossorigin="anonymous"></script>
+    {% endif %}
+
+    <style>
+        .site-footer {
+            background: #0d0d1a;
+            border-top: 1px solid #1e1e3a;
+            padding: 40px 24px 24px;
+            margin-top: 60px;
+            color: #64748b;
+            font-size: 13px;
+        }
+        .footer-inner {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 32px;
+            margin-bottom: 32px;
+        }
+        .footer-brand h3 {
+            color: #e2e8f0;
+            font-size: 15px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .footer-brand p {
+            line-height: 1.7;
+            max-width: 320px;
+        }
+        .footer-col h4 {
+            color: #e2e8f0;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+        .footer-col ul { list-style: none; padding: 0; margin: 0; }
+        .footer-col ul li { margin-bottom: 8px; }
+        .footer-col ul li a {
+            color: #64748b;
+            text-decoration: none;
+            transition: color 0.15s;
+        }
+        .footer-col ul li a:hover { color: #818cf8; }
+        .footer-bottom {
+            border-top: 1px solid #1e1e3a;
+            padding-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .footer-bottom a { color: #64748b; text-decoration: none; margin-left: 16px; }
+        .footer-bottom a:hover { color: #818cf8; }
+
+        /* Cookie Consent Banner */
+        #cookieBanner {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #12121f;
+            border-top: 1px solid #1e1e3a;
+            padding: 16px 24px;
+            z-index: 9999;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.4);
+        }
+        #cookieBanner.show { display: block; }
+        .cookie-inner {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .cookie-text {
+            flex: 1;
+            font-size: 13px;
+            color: #94a3b8;
+            line-height: 1.6;
+        }
+        .cookie-text a { color: #818cf8; text-decoration: none; }
+        .cookie-text a:hover { text-decoration: underline; }
+        .cookie-btns { display: flex; gap: 10px; flex-shrink: 0; }
+        .cookie-accept {
+            background: #4f46e5;
+            color: white;
+            border: none;
+            padding: 9px 20px;
+            border-radius: 7px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .cookie-accept:hover { background: #3730a3; }
+        .cookie-decline {
+            background: transparent;
+            color: #64748b;
+            border: 1px solid #1e1e3a;
+            padding: 9px 20px;
+            border-radius: 7px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .cookie-decline:hover { color: #e2e8f0; border-color: #64748b; }
+
+        @media (max-width: 640px) {
+            .footer-grid { grid-template-columns: 1fr; gap: 24px; }
+            .footer-bottom { flex-direction: column; text-align: center; }
+        }
+    </style>
 </head>
 <body>
     <nav class="navbar">
@@ -36,6 +171,62 @@
         {% block content %}{% endblock %}
     </main>
 
+    <!-- FOOTER -->
+    <footer class="site-footer">
+        <div class="footer-inner">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <h3>✦ AI Resume & Cover Letter Creator</h3>
+                    <p>Your intelligent job application assistant — from resume optimization to cover letters and interview prep, powered by AI.</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Tools</h4>
+                    <ul>
+                        <li><a href="/resume-builder">Resume Builder</a></li>
+                        <li><a href="/job-tracker">Job Tracker</a></li>
+                        <li><a href="/interview-prep">Interview Prep</a></li>
+                        <li><a href="/career-chat">Career Chat</a></li>
+                        <li><a href="/linkedin-optimizer">LinkedIn Optimizer</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Legal</h4>
+                    <ul>
+                        <li><a href="/about">About</a></li>
+                        <li><a href="/contact">Contact</a></li>
+                        <li><a href="/privacy-policy">Privacy Policy</a></li>
+                        <li><a href="/terms-of-service">Terms of Service</a></li>
+                        <li><a href="/cookie-policy">Cookie Policy</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <span>&copy; {{ current_year }} AI Resume & Cover Letter Creator. All rights reserved.</span>
+                <div>
+                    <a href="/privacy-policy">Privacy</a>
+                    <a href="/terms-of-service">Terms</a>
+                    <a href="/cookie-policy">Cookies</a>
+                    <a href="/contact">Contact</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Cookie Consent Banner -->
+    <div id="cookieBanner">
+        <div class="cookie-inner">
+            <div class="cookie-text">
+                We use cookies and similar technologies to improve your experience, show personalized ads, and analyze traffic.
+                By clicking "Accept All", you consent to our use of cookies as described in our
+                <a href="/cookie-policy">Cookie Policy</a> and <a href="/privacy-policy">Privacy Policy</a>.
+            </div>
+            <div class="cookie-btns">
+                <button class="cookie-decline" onclick="handleCookies(false)">Decline</button>
+                <button class="cookie-accept" onclick="handleCookies(true)">Accept All</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // PWA Service Worker Registration
         if ('serviceWorker' in navigator) {
@@ -52,6 +243,19 @@
         navToggle.addEventListener('click', () => {
             navLinks.classList.toggle('open');
         });
+
+        // Cookie Consent
+        function handleCookies(accepted) {
+            localStorage.setItem('cookie_consent', accepted ? 'accepted' : 'declined');
+            document.getElementById('cookieBanner').classList.remove('show');
+        }
+
+        (function() {
+            const consent = localStorage.getItem('cookie_consent');
+            if (!consent) {
+                document.getElementById('cookieBanner').classList.add('show');
+            }
+        })();
     </script>
     {% block scripts %}{% endblock %}
 </body>
