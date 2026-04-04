@@ -16,12 +16,25 @@ def _get_api_key():
     return key
 
 
+DEFAULT_MODEL = 'llama-3.3-70b-versatile'
+
+# Models that are no longer supported by Groq
+DEPRECATED_MODELS = {
+    'llama3-70b-8192', 'llama3-8b-8192',
+    'mixtral-8x7b-32768', 'gemma2-9b-it',
+    'gemma-7b-it', 'llama2-70b-4096',
+}
+
 def _get_model():
     try:
         from models.settings import Setting
-        return Setting.get('ai_model', 'llama3-70b-8192') or 'llama3-70b-8192'
+        model = Setting.get('ai_model', DEFAULT_MODEL) or DEFAULT_MODEL
+        if model in DEPRECATED_MODELS:
+            Setting.set('ai_model', DEFAULT_MODEL)
+            return DEFAULT_MODEL
+        return model
     except Exception:
-        return 'llama3-70b-8192'
+        return DEFAULT_MODEL
 
 
 def _get_max_tokens():
