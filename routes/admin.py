@@ -72,7 +72,7 @@ def get_settings():
         'app_name': 'AI Career Hub',
         'app_tagline': 'Your intelligent job application assistant — from resume to offer letter.',
         'max_upload_mb': '10',
-        'ai_model': 'llama3-70b-8192',
+        'ai_model': 'llama-3.3-70b-versatile',
         'ai_max_tokens': '4096',
         ADMIN_PASSWORD_KEY: '',
     }
@@ -103,13 +103,15 @@ def test_groq():
         return jsonify({'success': False, 'error': 'No API key saved'})
     try:
         from groq import Groq
+        from utils.ai_engine import _get_model
         client = Groq(api_key=api_key)
+        model = _get_model()
         resp = client.chat.completions.create(
-            model=Setting.get('ai_model', 'llama3-70b-8192'),
+            model=model,
             messages=[{'role': 'user', 'content': 'Say "OK" in one word.'}],
             max_tokens=5,
         )
-        return jsonify({'success': True, 'response': resp.choices[0].message.content.strip()})
+        return jsonify({'success': True, 'response': resp.choices[0].message.content.strip(), 'model': model})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
 
