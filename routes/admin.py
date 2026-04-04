@@ -69,7 +69,7 @@ def get_settings():
     # Always include known keys even if unset
     defaults = {
         'groq_api_key': '',
-        'app_name': 'AI Career Hub',
+        'app_name': 'AI Resume & Cover Letter Creator',
         'app_tagline': 'Your intelligent job application assistant — from resume to offer letter.',
         'max_upload_mb': '10',
         'ai_model': 'llama-3.3-70b-versatile',
