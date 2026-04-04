@@ -21,7 +21,9 @@
             --danger: #ef4444;
             --sidebar-w: 220px;
         }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; }
+
+        html, body { height: 100%; overflow: hidden; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); display: flex; }
 
         /* SIDEBAR */
         .sidebar {
@@ -30,100 +32,109 @@
             border-right: 1px solid var(--border);
             display: flex;
             flex-direction: column;
-            position: fixed;
-            top: 0; left: 0; bottom: 0;
-            z-index: 50;
+            height: 100vh;
+            flex-shrink: 0;
+            overflow: hidden;
         }
         .sidebar-brand {
-            padding: 20px 18px;
+            padding: 18px 16px;
             border-bottom: 1px solid var(--border);
             display: flex;
             align-items: center;
             gap: 10px;
+            flex-shrink: 0;
         }
         .brand-icon { font-size: 20px; }
-        .brand-text { font-size: 14px; font-weight: 700; line-height: 1.3; }
+        .brand-text { font-size: 13px; font-weight: 700; line-height: 1.3; }
         .brand-sub { font-size: 11px; color: var(--muted); font-weight: 400; }
-        .sidebar-nav { flex: 1; padding: 12px 8px; display: flex; flex-direction: column; gap: 2px; }
+        .sidebar-nav { flex: 1; padding: 10px 8px; display: flex; flex-direction: column; gap: 2px; overflow-y: auto; }
         .nav-item {
             display: flex; align-items: center; gap: 10px;
             padding: 9px 12px; border-radius: 8px;
-            font-size: 14px; font-weight: 500; color: var(--muted);
+            font-size: 13px; font-weight: 500; color: var(--muted);
             cursor: pointer; transition: all 0.15s; border: none; background: none; width: 100%; text-align: left;
+            flex-shrink: 0;
         }
         .nav-item:hover { background: rgba(79,70,229,0.08); color: var(--text); }
         .nav-item.active { background: rgba(79,70,229,0.15); color: var(--primary-l); }
-        .nav-item .icon { font-size: 16px; width: 20px; text-align: center; }
-        .sidebar-footer { padding: 12px 8px; border-top: 1px solid var(--border); }
+        .nav-item .icon { font-size: 15px; width: 18px; text-align: center; flex-shrink: 0; }
+        .sidebar-footer { padding: 10px 8px; border-top: 1px solid var(--border); flex-shrink: 0; }
         .back-link { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; text-decoration: none; padding: 8px 12px; border-radius: 8px; transition: all 0.15s; }
         .back-link:hover { background: rgba(255,255,255,0.04); color: var(--text); }
 
         /* MAIN */
-        .main { margin-left: var(--sidebar-w); flex: 1; min-height: 100vh; }
+        .main { flex: 1; display: flex; flex-direction: column; height: 100vh; overflow: hidden; min-width: 0; }
         .topbar {
             background: var(--bg2);
             border-bottom: 1px solid var(--border);
-            padding: 0 28px;
-            height: 58px;
+            padding: 0 24px;
+            height: 54px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            position: sticky; top: 0; z-index: 40;
+            flex-shrink: 0;
         }
-        .topbar-title { font-size: 16px; font-weight: 600; }
+        .topbar-title { font-size: 15px; font-weight: 600; }
         .topbar-right { display: flex; align-items: center; gap: 12px; }
-        .badge-admin { background: rgba(79,70,229,0.15); color: var(--primary-l); padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
-        .content { padding: 28px; }
+        .badge-admin { background: rgba(79,70,229,0.15); color: var(--primary-l); padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+        .content { flex: 1; overflow-y: auto; padding: 24px; }
 
         /* PANELS */
         .panel { display: none; }
         .panel.active { display: block; }
 
         /* CARDS */
-        .card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 22px; margin-bottom: 18px; }
-        .card-title { font-size: 15px; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
-        .card-title .icon { font-size: 18px; }
+        .card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+        .card-title { font-size: 14px; font-weight: 600; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+        .card-title .icon { font-size: 16px; }
 
         /* STATS ROW */
-        .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 22px; }
-        .stat { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 18px; text-align: center; }
-        .stat-val { font-size: 30px; font-weight: 700; color: var(--primary-l); }
+        .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 18px; }
+        .stat { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 16px; text-align: center; }
+        .stat-val { font-size: 28px; font-weight: 700; color: var(--primary-l); }
         .stat-lbl { font-size: 12px; color: var(--muted); margin-top: 2px; }
 
+        /* JOB BOARD STATS */
+        .jb-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
+        .stat-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 14px; text-align: center; }
+        .stat-value { font-size: 24px; font-weight: 700; color: var(--primary-l); }
+        .stat-label { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
         /* FORMS */
-        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-        .form-group { margin-bottom: 14px; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        .form-group { margin-bottom: 12px; }
         label { display: block; font-size: 13px; font-weight: 500; color: var(--muted); margin-bottom: 5px; }
         input[type="text"], input[type="password"], input[type="number"], select, textarea {
-            width: 100%; padding: 9px 12px; background: var(--bg3); border: 1px solid var(--border);
+            width: 100%; padding: 8px 12px; background: var(--bg3); border: 1px solid var(--border);
             border-radius: 8px; color: var(--text); font-size: 13px; font-family: inherit;
             outline: none; transition: border-color 0.2s;
         }
         input:focus, select:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79,70,229,0.12); }
-        textarea { resize: vertical; min-height: 90px; }
+        textarea { resize: vertical; min-height: 80px; }
         .input-row { display: flex; gap: 8px; }
         .input-row input { flex: 1; }
 
         /* BUTTONS */
-        .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 7px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; font-family: inherit; transition: all 0.15s; }
+        .btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 7px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; font-family: inherit; transition: all 0.15s; white-space: nowrap; }
         .btn-primary { background: var(--primary); color: white; }
         .btn-primary:hover { background: #3730a3; }
         .btn-secondary { background: rgba(79,70,229,0.1); color: var(--primary-l); border: 1px solid rgba(79,70,229,0.25); }
         .btn-secondary:hover { background: rgba(79,70,229,0.2); }
         .btn-success { background: var(--success); color: white; }
+        .btn-success:hover { background: #059669; }
         .btn-danger { background: transparent; color: var(--danger); border: 1px solid rgba(239,68,68,0.4); }
         .btn-danger:hover { background: rgba(239,68,68,0.08); }
-        .btn-sm { padding: 5px 11px; font-size: 12px; }
+        .btn-sm { padding: 5px 10px; font-size: 12px; }
         .btn:disabled { opacity: 0.55; cursor: not-allowed; }
 
         /* TABLE */
         .tbl-wrap { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        th { text-align: left; padding: 9px 14px; color: var(--muted); font-weight: 600; border-bottom: 1px solid var(--border); white-space: nowrap; }
-        td { padding: 11px 14px; border-bottom: 1px solid rgba(30,30,58,0.7); vertical-align: middle; }
+        th { text-align: left; padding: 9px 12px; color: var(--muted); font-weight: 600; border-bottom: 1px solid var(--border); white-space: nowrap; }
+        td { padding: 10px 12px; border-bottom: 1px solid rgba(30,30,58,0.7); vertical-align: middle; }
         tr:last-child td { border-bottom: none; }
         tr:hover td { background: rgba(79,70,229,0.03); }
-        .tbl-actions { display: flex; gap: 6px; }
+        .tbl-actions { display: flex; gap: 5px; flex-wrap: wrap; }
 
         /* BADGE */
         .badge { display: inline-flex; align-items: center; padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: 600; }
@@ -139,21 +150,24 @@
         .alert-show { display: block; }
 
         /* SECTION DIVIDER */
-        .section-title { font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; margin: 22px 0 12px; }
+        .section-title { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; margin: 18px 0 10px; }
 
         /* MODAL */
-        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 200; align-items: center; justify-content: center; }
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 200; align-items: flex-start; justify-content: center; padding: 40px 20px; overflow-y: auto; }
         .modal-overlay.open { display: flex; }
-        .modal { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 26px; width: 90%; max-width: 580px; max-height: 85vh; overflow-y: auto; }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
-        .modal-close { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 18px; }
+        .modal { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 24px; width: 100%; max-width: 560px; margin: auto; }
+        .modal-lg { max-width: 760px; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .modal-title { font-size: 15px; font-weight: 600; }
+        .modal-close { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 18px; line-height: 1; padding: 2px 6px; border-radius: 4px; }
+        .modal-close:hover { color: var(--text); background: rgba(255,255,255,0.06); }
 
         /* CHECKBOX */
         input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--primary); cursor: pointer; }
 
         /* PILL STATUS */
         .pill { display: inline-flex; align-items: center; gap: 5px; }
-        .dot { width: 7px; height: 7px; border-radius: 50%; }
+        .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
         .dot-green { background: var(--success); }
         .dot-red { background: var(--danger); }
         .dot-yellow { background: var(--warning); }
@@ -161,10 +175,31 @@
         .text-muted { color: var(--muted); }
         .text-truncate { max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block; vertical-align: middle; }
 
+        /* AD PLACEMENTS */
+        .placement-row { display: flex; align-items: flex-start; gap: 16px; padding: 16px 0; border-bottom: 1px solid var(--border); }
+        .placement-row:last-child { border-bottom: none; padding-bottom: 0; }
+        .placement-info { flex: 1; min-width: 0; }
+        .placement-name { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+        .placement-desc { font-size: 12px; color: var(--muted); line-height: 1.6; margin-bottom: 10px; }
+        .toggle-wrap { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+        .toggle { position: relative; width: 40px; height: 22px; flex-shrink: 0; }
+        .toggle input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; inset: 0; background: #2d2d4e; border-radius: 22px; transition: .2s; }
+        .slider:before { content: ''; position: absolute; height: 16px; width: 16px; left: 3px; bottom: 3px; background: #64748b; border-radius: 50%; transition: .2s; }
+        .toggle input:checked + .slider { background: rgba(79,70,229,0.4); }
+        .toggle input:checked + .slider:before { transform: translateX(18px); background: var(--primary-l); }
+        .toggle-label { font-size: 13px; color: var(--muted); }
+        .slot-input-wrap { display: flex; gap: 8px; }
+        .slot-input-wrap input { flex: 1; }
+
+        /* TAB BAR */
+        .tab-bar { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; align-items: center; }
+        .tab-bar .spacer { flex: 1; }
+
         @media (max-width: 680px) {
             .sidebar { display: none; }
-            .main { margin-left: 0; }
             .form-row { grid-template-columns: 1fr; }
+            .jb-stats { grid-template-columns: repeat(2, 1fr); }
         }
     </style>
 </head>
@@ -174,7 +209,10 @@
 <aside class="sidebar">
     <div class="sidebar-brand">
         <div class="brand-icon">⚙️</div>
-        <div class="brand-text">Admin Panel<div class="brand-sub">AI Resume & Cover Letter Creator</div></div>
+        <div>
+            <div class="brand-text">Admin Panel</div>
+            <div class="brand-sub">AI Resume & Cover Letter</div>
+        </div>
     </div>
     <nav class="sidebar-nav">
         <button class="nav-item active" onclick="show('overview')"><span class="icon">📊</span> Overview</button>
@@ -214,7 +252,7 @@
 
             <div class="card">
                 <div class="card-title"><span class="icon">🤖</span> AI Engine Status</div>
-                <div id="aiStatusRow" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+                <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
                     <span id="aiStatusPill" class="pill"><span class="dot dot-yellow"></span> Checking...</span>
                     <button class="btn btn-secondary btn-sm" onclick="testGroq()">Test Connection</button>
                 </div>
@@ -253,7 +291,7 @@
 
             <div class="card">
                 <div class="card-title"><span class="icon">⚡</span> Performance</div>
-                <div class="form-group">
+                <div class="form-group" style="max-width:260px;">
                     <label>Max Upload Size (MB)</label>
                     <input type="number" id="s-max_upload_mb" min="1" max="50" placeholder="10">
                 </div>
@@ -305,7 +343,7 @@
 
         <!-- ── RESUMES ── -->
         <div class="panel" id="panel-resumes">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
                 <input type="text" id="resumeSearch" placeholder="Search resumes..." style="max-width:240px;" oninput="filterResumes()">
                 <button class="btn btn-danger btn-sm" onclick="bulkDeleteResumes()">Delete Selected</button>
             </div>
@@ -330,7 +368,7 @@
 
         <!-- ── JOBS ── -->
         <div class="panel" id="panel-jobs">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
                 <input type="text" id="jobSearch" placeholder="Search jobs..." style="max-width:240px;" oninput="filterJobs()">
                 <button class="btn btn-danger btn-sm" onclick="bulkDeleteJobs()">Delete Selected</button>
             </div>
@@ -358,19 +396,17 @@
         <div class="panel" id="panel-jobboard">
             <div id="jbAlert" class="alert"></div>
 
-            <!-- Stats Row -->
-            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;" id="jbStatsRow">
+            <div class="jb-stats" id="jbStatsRow">
                 <div class="stat-card"><div class="stat-value" id="jbCountDraft">—</div><div class="stat-label">Drafts</div></div>
                 <div class="stat-card"><div class="stat-value" id="jbCountPublished">—</div><div class="stat-label">Published</div></div>
                 <div class="stat-card"><div class="stat-value" id="jbCountArchived">—</div><div class="stat-label">Archived</div></div>
                 <div class="stat-card"><div class="stat-value" id="jbCountTotal">—</div><div class="stat-label">Total</div></div>
             </div>
 
-            <!-- Fetch Card -->
-            <div class="card" style="margin-bottom:16px;">
+            <div class="card">
                 <div class="card-title"><span class="icon">🔄</span> Fetch New Jobs</div>
-                <p style="font-size:13px;color:var(--muted);margin-bottom:16px;">Pull fresh job postings from external sources. Duplicate posts are automatically skipped. New posts are saved as drafts for your review.</p>
-                <div style="display:flex;flex-wrap:wrap;gap:14px;margin-bottom:16px;">
+                <p style="font-size:13px;color:var(--muted);margin-bottom:14px;">Pull fresh job postings from external sources. Duplicates are automatically skipped. New posts are saved as drafts.</p>
+                <div style="display:flex;flex-wrap:wrap;gap:14px;margin-bottom:14px;">
                     <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;">
                         <input type="checkbox" id="src_remotive" checked> Remotive <span style="font-size:11px;color:var(--muted);">(remote tech)</span>
                     </label>
@@ -384,8 +420,8 @@
                         <input type="checkbox" id="src_adzuna"> Adzuna <span style="font-size:11px;color:var(--muted);">(requires API key)</span>
                     </label>
                 </div>
-                <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px;">
-                    <input type="text" id="jbFetchSearch" placeholder='Search keyword (e.g. "python developer")' style="max-width:280px;">
+                <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px;">
+                    <input type="text" id="jbFetchSearch" placeholder='Keyword e.g. "python developer"' style="max-width:260px;">
                     <select id="jbFetchLimit" style="max-width:140px;">
                         <option value="10">10 per source</option>
                         <option value="15" selected>15 per source</option>
@@ -394,7 +430,7 @@
                     </select>
                     <button class="btn btn-primary" onclick="fetchJobsNow()" id="fetchBtn">🔄 Fetch Jobs</button>
                 </div>
-                <div style="border-top:1px solid var(--border);padding-top:12px;margin-top:4px;">
+                <div style="border-top:1px solid var(--border);padding-top:12px;">
                     <div style="font-size:12px;color:var(--muted);margin-bottom:8px;">Adzuna API (optional — for premium listings)</div>
                     <div style="display:flex;gap:8px;flex-wrap:wrap;">
                         <input type="text" id="s-adzuna_app_id" placeholder="Adzuna App ID" style="max-width:200px;">
@@ -404,13 +440,12 @@
                 </div>
             </div>
 
-            <!-- Tab Bar -->
-            <div style="display:flex;gap:6px;margin-bottom:14px;">
+            <div class="tab-bar">
                 <button class="btn btn-sm" id="tab-draft" onclick="loadJobBoard('draft')" style="background:rgba(79,70,229,.2);color:#818cf8;">Drafts</button>
                 <button class="btn btn-secondary btn-sm" id="tab-published" onclick="loadJobBoard('published')">Published</button>
                 <button class="btn btn-secondary btn-sm" id="tab-archived" onclick="loadJobBoard('archived')">Archived</button>
                 <button class="btn btn-secondary btn-sm" id="tab-all" onclick="loadJobBoard('all')">All</button>
-                <div style="flex:1;"></div>
+                <div class="spacer"></div>
                 <button class="btn btn-danger btn-sm" onclick="bulkJobBoardAction('delete')">Delete Selected</button>
                 <button class="btn btn-secondary btn-sm" onclick="bulkJobBoardAction('publish')">Publish Selected</button>
             </div>
@@ -437,113 +472,44 @@
             </div>
         </div>
 
-        <!-- Job Board Edit Modal -->
-        <div class="modal" id="jbModal">
-            <div class="modal-content" style="max-width:780px;max-height:90vh;overflow-y:auto;">
-                <div class="modal-header">
-                    <div class="modal-title">Edit Job Post</div>
-                    <button class="modal-close" onclick="closeModal('jbModal')">✕</button>
-                </div>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
-                    <div class="form-group"><label>Job Title</label><input type="text" id="jbEditTitle"></div>
-                    <div class="form-group"><label>Company</label><input type="text" id="jbEditCompany"></div>
-                    <div class="form-group"><label>Location</label><input type="text" id="jbEditLocation"></div>
-                    <div class="form-group"><label>Job Type</label>
-                        <select id="jbEditType">
-                            <option value="remote">Remote</option>
-                            <option value="full-time">Full-time</option>
-                            <option value="part-time">Part-time</option>
-                            <option value="contract">Contract</option>
-                            <option value="freelance">Freelance</option>
-                            <option value="internship">Internship</option>
-                        </select>
-                    </div>
-                    <div class="form-group"><label>Salary / Compensation</label><input type="text" id="jbEditSalary" placeholder="e.g. $80k–$120k"></div>
-                    <div class="form-group"><label>Apply URL</label><input type="text" id="jbEditUrl" placeholder="https://..."></div>
-                </div>
-                <div class="form-group"><label>Tags (comma-separated)</label><input type="text" id="jbEditTags" placeholder="Python, Remote, Backend"></div>
-                <div class="form-group">
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-                        <label>Description</label>
-                        <button class="btn btn-secondary btn-sm" onclick="rewriteJobPost()" id="rewriteBtn">✦ Rewrite with AI</button>
-                    </div>
-                    <textarea id="jbEditDesc" rows="18" style="font-family:inherit;font-size:13px;line-height:1.7;"></textarea>
-                </div>
-                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-                    <button class="btn btn-success" onclick="saveJobPost('published')">✅ Save & Publish</button>
-                    <button class="btn btn-secondary" onclick="saveJobPost('draft')">💾 Save as Draft</button>
-                    <button class="btn btn-secondary" onclick="saveJobPost('archived')">📦 Archive</button>
-                    <label style="display:flex;align-items:center;gap:6px;font-size:13px;margin-left:auto;cursor:pointer;">
-                        <input type="checkbox" id="jbEditFeatured"> ⭐ Featured
-                    </label>
-                </div>
-                <div id="jbEditAlert" class="alert" style="margin-top:10px;"></div>
-                <input type="hidden" id="jbEditId">
-            </div>
-        </div>
-
         <!-- ── MONETIZATION ── -->
         <div class="panel" id="panel-monetization">
             <div id="monetizationAlert" class="alert"></div>
             <div class="card">
                 <div class="card-title"><span class="icon">📊</span> Google Analytics</div>
                 <p style="font-size:13px;color:var(--muted);margin-bottom:14px;">
-                    Enter your Google Analytics Measurement ID to track site traffic and user behavior.
+                    Enter your Google Analytics Measurement ID to track site traffic.
                     Get your ID at <a href="https://analytics.google.com" target="_blank" style="color:var(--primary-l);">analytics.google.com</a>.
                 </p>
-                <div class="form-group">
+                <div class="form-group" style="max-width:320px;">
                     <label>Measurement ID (e.g. G-XXXXXXXXXX)</label>
                     <input type="text" id="s-analytics_id" placeholder="G-XXXXXXXXXX">
                 </div>
-                <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">The Analytics script will be automatically injected on all pages when this field is set.</div>
                 <button class="btn btn-primary" onclick="saveSettings(['analytics_id'])">Save Analytics ID</button>
             </div>
 
             <div class="card">
                 <div class="card-title"><span class="icon">💰</span> Google AdSense</div>
                 <p style="font-size:13px;color:var(--muted);margin-bottom:14px;">
-                    Enter your AdSense Publisher ID to enable monetization on this site.
-                    Get your Publisher ID at <a href="https://adsense.google.com" target="_blank" style="color:var(--primary-l);">adsense.google.com</a>.
+                    Enter your AdSense Publisher ID to enable monetization.
+                    Get your ID at <a href="https://adsense.google.com" target="_blank" style="color:var(--primary-l);">adsense.google.com</a>.
                 </p>
-                <div class="form-group">
+                <div class="form-group" style="max-width:380px;">
                     <label>Publisher ID (e.g. ca-pub-XXXXXXXXXXXXXXXX)</label>
                     <input type="text" id="s-adsense_publisher_id" placeholder="ca-pub-XXXXXXXXXXXXXXXX">
                 </div>
-                <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">The AdSense script will be automatically injected on all pages when this field is set.</div>
                 <button class="btn btn-primary" onclick="saveSettings(['adsense_publisher_id'])">Save Publisher ID</button>
             </div>
 
             <div class="card">
                 <div class="card-title"><span class="icon">📍</span> Ad Placements</div>
-                <p style="font-size:13px;color:var(--muted);margin-bottom:18px;">
-                    Control where ads appear on the site. Each placement requires a unique Ad Unit Slot ID from your AdSense account.
-                    Your Publisher ID must be set above for ads to display.
-                </p>
-
-                <style>
-                    .placement-row { display:flex; align-items:flex-start; gap:16px; padding:16px 0; border-bottom:1px solid var(--border); }
-                    .placement-row:last-child { border-bottom:none; padding-bottom:0; }
-                    .placement-info { flex:1; }
-                    .placement-name { font-size:14px; font-weight:600; color:var(--text); margin-bottom:3px; }
-                    .placement-desc { font-size:12px; color:var(--muted); line-height:1.6; margin-bottom:10px; }
-                    .toggle-wrap { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
-                    .toggle { position:relative; width:40px; height:22px; flex-shrink:0; }
-                    .toggle input { opacity:0; width:0; height:0; }
-                    .slider { position:absolute; cursor:pointer; inset:0; background:#2d2d4e; border-radius:22px; transition:.2s; }
-                    .slider:before { content:''; position:absolute; height:16px; width:16px; left:3px; bottom:3px; background:#64748b; border-radius:50%; transition:.2s; }
-                    .toggle input:checked + .slider { background:rgba(79,70,229,0.4); }
-                    .toggle input:checked + .slider:before { transform:translateX(18px); background:var(--primary-l); }
-                    .toggle-label { font-size:13px; color:var(--muted); }
-                    .slot-input-wrap { display:flex; gap:8px; }
-                    .slot-input-wrap input { flex:1; }
-                    .placement-preview { font-size:11px; color:var(--muted); margin-top:8px; }
-                </style>
+                <p style="font-size:13px;color:var(--muted);margin-bottom:16px;">Control where ads appear. Each placement requires a unique Ad Unit Slot ID from your AdSense account.</p>
 
                 <div class="placement-row">
-                    <div style="font-size:24px;flex-shrink:0;width:36px;text-align:center;">🏷️</div>
+                    <div style="font-size:22px;flex-shrink:0;width:32px;text-align:center;padding-top:2px;">🏷️</div>
                     <div class="placement-info">
                         <div class="placement-name">Top Banner — All Pages</div>
-                        <div class="placement-desc">Full-width banner displayed at the top of every page, just below the navigation bar. High visibility for all visitors.</div>
+                        <div class="placement-desc">Full-width banner at the top of every page, below the navigation bar.</div>
                         <div class="toggle-wrap">
                             <label class="toggle">
                                 <input type="checkbox" id="ad_top_banner_enabled" onchange="saveAdPlacement('top_banner')">
@@ -559,10 +525,10 @@
                 </div>
 
                 <div class="placement-row">
-                    <div style="font-size:24px;flex-shrink:0;width:36px;text-align:center;">📄</div>
+                    <div style="font-size:22px;flex-shrink:0;width:32px;text-align:center;padding-top:2px;">📄</div>
                     <div class="placement-info">
-                        <div class="placement-name">Between Resume & Cover Letter — Resume Builder</div>
-                        <div class="placement-desc">Displayed between the Optimized Resume and Cover Letter results after the AI processes the user's submission. Shown at a high-engagement moment.</div>
+                        <div class="placement-name">Between Resume & Cover Letter</div>
+                        <div class="placement-desc">Displayed between Optimized Resume and Cover Letter results after AI processes the submission.</div>
                         <div class="toggle-wrap">
                             <label class="toggle">
                                 <input type="checkbox" id="ad_results_enabled" onchange="saveAdPlacement('results')">
@@ -578,10 +544,10 @@
                 </div>
 
                 <div class="placement-row">
-                    <div style="font-size:24px;flex-shrink:0;width:36px;text-align:center;">📌</div>
+                    <div style="font-size:22px;flex-shrink:0;width:32px;text-align:center;padding-top:2px;">📌</div>
                     <div class="placement-info">
                         <div class="placement-name">Sidebar — Dashboard</div>
-                        <div class="placement-desc">Sticky vertical ad unit shown in the right sidebar of the Dashboard page. Visible while users browse their application stats and quick actions.</div>
+                        <div class="placement-desc">Sticky vertical ad unit shown in the right sidebar of the Dashboard page.</div>
                         <div class="toggle-wrap">
                             <label class="toggle">
                                 <input type="checkbox" id="ad_sidebar_enabled" onchange="saveAdPlacement('sidebar')">
@@ -595,16 +561,14 @@
                         </div>
                     </div>
                 </div>
-
-                <div id="placementsAlert" class="alert" style="margin-top:14px;"></div>
+                <div id="placementsAlert" class="alert" style="margin-top:14px;margin-bottom:0;"></div>
             </div>
 
             <div class="card">
                 <div class="card-title"><span class="icon">📄</span> ads.txt File</div>
                 <p style="font-size:13px;color:var(--muted);margin-bottom:14px;">
-                    The <code style="background:rgba(255,255,255,0.06);padding:2px 6px;border-radius:4px;">ads.txt</code> file is required by Google AdSense to authorize your publisher account.
-                    Upload the file provided by Google, or paste the content directly. It will be served at
-                    <a href="/ads.txt" target="_blank" style="color:var(--primary-l);">/ads.txt</a>.
+                    The <code style="background:rgba(255,255,255,0.06);padding:2px 6px;border-radius:4px;">ads.txt</code> file is required by Google AdSense.
+                    Served at <a href="/ads.txt" target="_blank" style="color:var(--primary-l);">/ads.txt</a>.
                 </p>
                 <div class="form-group">
                     <label>Upload ads.txt file</label>
@@ -613,30 +577,29 @@
                         <button class="btn btn-secondary btn-sm" onclick="uploadAdsTxt()">Upload File</button>
                     </div>
                 </div>
-                <div class="section-title" style="margin-top:8px;">— or paste content manually —</div>
+                <div class="section-title">— or paste content manually —</div>
                 <div class="form-group">
                     <label>ads.txt content</label>
-                    <textarea id="adsTxtContent" rows="5" placeholder="google.com, pub-XXXXXXXXXXXXXXXX, DIRECT, f08c47fec0942fa0" style="font-family:monospace;font-size:12px;"></textarea>
+                    <textarea id="adsTxtContent" rows="4" placeholder="google.com, pub-XXXXXXXXXXXXXXXX, DIRECT, f08c47fec0942fa0" style="font-family:monospace;font-size:12px;"></textarea>
                 </div>
                 <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
                     <button class="btn btn-primary" onclick="saveAdsTxtContent()">Save Content</button>
                     <a href="/ads.txt" target="_blank" class="btn btn-secondary btn-sm">Preview /ads.txt ↗</a>
                 </div>
-                <div id="adsTxtAlert" class="alert" style="margin-top:12px;"></div>
+                <div id="adsTxtAlert" class="alert" style="margin-top:12px;margin-bottom:0;"></div>
             </div>
 
             <div class="card">
                 <div class="card-title"><span class="icon">📋</span> AdSense Compliance Checklist</div>
-                <div style="display:flex;flex-direction:column;gap:10px;font-size:13px;">
-                    <div style="display:flex;align-items:center;gap:10px;color:var(--success);">✅ <span>Privacy Policy page — <a href="/privacy-policy" target="_blank" style="color:var(--primary-l);">/privacy-policy</a></span></div>
-                    <div style="display:flex;align-items:center;gap:10px;color:var(--success);">✅ <span>Terms of Service page — <a href="/terms-of-service" target="_blank" style="color:var(--primary-l);">/terms-of-service</a></span></div>
-                    <div style="display:flex;align-items:center;gap:10px;color:var(--success);">✅ <span>Cookie Policy page — <a href="/cookie-policy" target="_blank" style="color:var(--primary-l);">/cookie-policy</a></span></div>
+                <div style="display:flex;flex-direction:column;gap:9px;font-size:13px;">
+                    <div style="display:flex;align-items:center;gap:10px;color:var(--success);">✅ <span>Privacy Policy — <a href="/privacy-policy" target="_blank" style="color:var(--primary-l);">/privacy-policy</a></span></div>
+                    <div style="display:flex;align-items:center;gap:10px;color:var(--success);">✅ <span>Terms of Service — <a href="/terms-of-service" target="_blank" style="color:var(--primary-l);">/terms-of-service</a></span></div>
+                    <div style="display:flex;align-items:center;gap:10px;color:var(--success);">✅ <span>Cookie Policy — <a href="/cookie-policy" target="_blank" style="color:var(--primary-l);">/cookie-policy</a></span></div>
                     <div style="display:flex;align-items:center;gap:10px;color:var(--success);">✅ <span>Contact page — <a href="/contact" target="_blank" style="color:var(--primary-l);">/contact</a></span></div>
                     <div style="display:flex;align-items:center;gap:10px;color:var(--success);">✅ <span>About page — <a href="/about" target="_blank" style="color:var(--primary-l);">/about</a></span></div>
                     <div style="display:flex;align-items:center;gap:10px;color:var(--success);">✅ <span>Cookie consent banner on all pages</span></div>
                     <div style="display:flex;align-items:center;gap:10px;color:var(--success);">✅ <span>Footer with legal links on all pages</span></div>
-                    <div style="display:flex;align-items:center;gap:10px;color:var(--success);">✅ <span>Original, valuable content on all pages</span></div>
-                    <div style="display:flex;align-items:center;gap:10px;color:var(--warning);">⚠️ <span>Apply for AdSense at <a href="https://adsense.google.com/start/" target="_blank" style="color:var(--primary-l);">adsense.google.com/start</a> once your site has content</span></div>
+                    <div style="display:flex;align-items:center;gap:10px;color:var(--warning);">⚠️ <span>Apply for AdSense at <a href="https://adsense.google.com/start/" target="_blank" style="color:var(--primary-l);">adsense.google.com/start</a> once site has content</span></div>
                 </div>
             </div>
         </div>
@@ -644,7 +607,7 @@
         <!-- ── SECURITY ── -->
         <div class="panel" id="panel-security">
             <div id="secAlert" class="alert"></div>
-            <div class="card" style="max-width:500px;">
+            <div class="card" style="max-width:480px;">
                 <div class="card-title"><span class="icon">🔑</span> Change Admin Password</div>
                 <p style="font-size:13px;color:var(--muted);margin-bottom:16px;">Default password is <code style="background:rgba(255,255,255,0.06);padding:2px 6px;border-radius:4px;">admin123</code> — change it immediately.</p>
                 <div class="form-group">
@@ -653,7 +616,7 @@
                 </div>
                 <div class="form-group">
                     <label>New Password</label>
-                    <input type="password" id="newPw" placeholder="Min. 8 characters">
+                    <input type="password" id="newPw" placeholder="Min. 6 characters">
                 </div>
                 <div class="form-group">
                     <label>Confirm New Password</label>
@@ -662,7 +625,7 @@
                 <button class="btn btn-primary" onclick="changePassword()">Update Password</button>
             </div>
 
-            <div class="card" style="max-width:500px;margin-top:0;">
+            <div class="card" style="max-width:480px;">
                 <div class="card-title"><span class="icon">⚠️</span> Danger Zone</div>
                 <p style="font-size:13px;color:var(--muted);margin-bottom:14px;">Permanently delete all user-generated content from the database.</p>
                 <div style="display:flex;gap:8px;flex-wrap:wrap;">
@@ -672,31 +635,33 @@
             </div>
         </div>
 
-    </div>
-</div>
+    </div><!-- /.content -->
+</div><!-- /.main -->
 
-<!-- RESUME DETAIL MODAL -->
+<!-- ── MODALS (outside .main so they overlay correctly) ── -->
+
+<!-- RESUME EDIT MODAL -->
 <div class="modal-overlay" id="resumeModal">
     <div class="modal">
         <div class="modal-header">
-            <div style="font-size:15px;font-weight:600;">Edit Resume</div>
+            <div class="modal-title">Edit Resume</div>
             <button class="modal-close" onclick="closeModal('resumeModal')">✕</button>
         </div>
         <input type="hidden" id="editResumeId">
         <div class="form-group"><label>Label</label><input type="text" id="editResumeLabel"></div>
-        <div class="form-group"><label>Match Score (%)</label><input type="number" id="editResumeScore" min="0" max="100"></div>
-        <div class="form-group"><label>Optimized Resume Text</label><textarea id="editResumeText" rows="8"></textarea></div>
-        <div class="form-group"><label>Cover Letter Text</label><textarea id="editResumeCover" rows="6"></textarea></div>
-        <div class="form-group"><label>Suggestions (JSON array or plain text)</label><textarea id="editResumeSuggestions" rows="3"></textarea></div>
+        <div class="form-group"><label>Match Score (%)</label><input type="number" id="editResumeScore" min="0" max="100" style="max-width:120px;"></div>
+        <div class="form-group"><label>Optimized Resume Text</label><textarea id="editResumeText" rows="7"></textarea></div>
+        <div class="form-group"><label>Cover Letter Text</label><textarea id="editResumeCover" rows="5"></textarea></div>
+        <div class="form-group"><label>Suggestions</label><textarea id="editResumeSuggestions" rows="3"></textarea></div>
         <button class="btn btn-primary" onclick="saveResume()">Save Changes</button>
     </div>
 </div>
 
-<!-- JOB DETAIL MODAL -->
+<!-- JOB EDIT MODAL -->
 <div class="modal-overlay" id="jobModal">
     <div class="modal">
         <div class="modal-header">
-            <div style="font-size:15px;font-weight:600;">Edit Job Application</div>
+            <div class="modal-title">Edit Job Application</div>
             <button class="modal-close" onclick="closeModal('jobModal')">✕</button>
         </div>
         <input type="hidden" id="editJobId">
@@ -704,12 +669,58 @@
             <div class="form-group"><label>Company</label><input type="text" id="editJobCompany"></div>
             <div class="form-group"><label>Position</label><input type="text" id="editJobPosition"></div>
         </div>
-        <div class="form-group"><label>Status</label>
+        <div class="form-group">
+            <label>Status</label>
             <select id="editJobStatus"><option>Applied</option><option>Interview</option><option>Offer</option><option>Rejected</option></select>
         </div>
         <div class="form-group"><label>Notes</label><textarea id="editJobNotes" rows="3"></textarea></div>
-        <div class="form-group"><label>Job Description</label><textarea id="editJobJd" rows="5"></textarea></div>
+        <div class="form-group"><label>Job Description</label><textarea id="editJobJd" rows="4"></textarea></div>
         <button class="btn btn-primary" onclick="saveJob()">Save Changes</button>
+    </div>
+</div>
+
+<!-- JOB BOARD EDIT MODAL -->
+<div class="modal-overlay" id="jbModal">
+    <div class="modal modal-lg">
+        <div class="modal-header">
+            <div class="modal-title">Edit Job Post</div>
+            <button class="modal-close" onclick="closeModal('jbModal')">✕</button>
+        </div>
+        <div class="form-row" style="margin-bottom:0;">
+            <div class="form-group"><label>Job Title</label><input type="text" id="jbEditTitle"></div>
+            <div class="form-group"><label>Company</label><input type="text" id="jbEditCompany"></div>
+            <div class="form-group"><label>Location</label><input type="text" id="jbEditLocation"></div>
+            <div class="form-group"><label>Job Type</label>
+                <select id="jbEditType">
+                    <option value="remote">Remote</option>
+                    <option value="full-time">Full-time</option>
+                    <option value="part-time">Part-time</option>
+                    <option value="contract">Contract</option>
+                    <option value="freelance">Freelance</option>
+                    <option value="internship">Internship</option>
+                </select>
+            </div>
+            <div class="form-group"><label>Salary / Compensation</label><input type="text" id="jbEditSalary" placeholder="e.g. $80k–$120k"></div>
+            <div class="form-group"><label>Apply URL</label><input type="text" id="jbEditUrl" placeholder="https://..."></div>
+        </div>
+        <div class="form-group"><label>Tags (comma-separated)</label><input type="text" id="jbEditTags" placeholder="Python, Remote, Backend"></div>
+        <div class="form-group">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                <label style="margin-bottom:0;">Description</label>
+                <button class="btn btn-secondary btn-sm" onclick="rewriteJobPost()" id="rewriteBtn">✦ Rewrite with AI</button>
+            </div>
+            <textarea id="jbEditDesc" rows="12" style="font-family:inherit;font-size:13px;line-height:1.7;"></textarea>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+            <button class="btn btn-success" onclick="saveJobPost('published')">✅ Save & Publish</button>
+            <button class="btn btn-secondary" onclick="saveJobPost('draft')">💾 Save as Draft</button>
+            <button class="btn btn-secondary" onclick="saveJobPost('archived')">📦 Archive</button>
+            <label style="display:flex;align-items:center;gap:6px;font-size:13px;margin-left:auto;cursor:pointer;">
+                <input type="checkbox" id="jbEditFeatured"> ⭐ Featured
+            </label>
+        </div>
+        <div id="jbEditAlert" class="alert" style="margin-top:10px;margin-bottom:0;"></div>
+        <input type="hidden" id="jbEditId">
     </div>
 </div>
 
@@ -734,8 +745,8 @@ function show(name) {
     if (name === 'resumes') loadResumes();
     if (name === 'jobs') loadJobs();
     if (name === 'jobboard') loadJobBoard('draft');
-    if (name === 'settings' || name === 'ai' || name === 'security' || name === 'monetization') loadSettings();
-    if (name === 'monetization') { showAlert('monetizationAlert', '', true); loadAdsTxt(); }
+    if (['settings','ai','security','monetization'].includes(name)) loadSettings();
+    if (name === 'monetization') loadAdsTxt();
 }
 
 // ── Settings ────────────────────────────────────────────────────────────────
@@ -749,10 +760,8 @@ async function loadSettings() {
     loadAdPlacements(settings);
 }
 
-// ── Ad Placements ────────────────────────────────────────────────────────────
 function loadAdPlacements(s) {
-    const placements = ['top_banner', 'results', 'sidebar'];
-    placements.forEach(p => {
+    ['top_banner','results','sidebar'].forEach(p => {
         const enabledKey = 'ad_' + p + '_enabled';
         const slotKey = 'ad_' + p + '_slot';
         const cb = document.getElementById(enabledKey);
@@ -781,8 +790,7 @@ async function saveAdPlacement(p) {
     if (lbl) lbl.textContent = (cb && cb.checked) ? 'Enabled' : 'Disabled';
     const res = await fetch('/julisunkan/api/settings', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
     const data = await res.json();
-    showAlert('placementsAlert', data.success ? '✅ Placement saved successfully.' : '❌ Error saving placement.', data.success);
-    setTimeout(() => { const a=document.getElementById('placementsAlert'); if(a) a.textContent=''; }, 3000);
+    showAlert('placementsAlert', data.success ? '✅ Placement saved.' : '❌ Error saving placement.', data.success);
 }
 
 async function saveSettings(keys) {
@@ -794,8 +802,7 @@ async function saveSettings(keys) {
     const res = await fetch('/julisunkan/api/settings', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
     const data = await res.json();
     const alertMap = { settings:'settingsAlert', ai:'aiAlert', monetization:'monetizationAlert', security:'secAlert' };
-    const alertId = alertMap[currentPanel] || 'settingsAlert';
-    showAlert(alertId, data.success ? 'Settings saved successfully.' : 'Error saving settings.', data.success);
+    showAlert(alertMap[currentPanel] || 'settingsAlert', data.success ? 'Settings saved successfully.' : 'Error saving settings.', data.success);
 }
 
 async function saveGroqKey() {
@@ -831,192 +838,6 @@ async function testGroq(fromAiPanel) {
     }
 }
 
-// ── Job Board ────────────────────────────────────────────────────────────────
-let jbCurrentStatus = 'draft';
-let jbAllPosts = [];
-let jbEditingId = null;
-
-async function loadJobBoard(status) {
-    jbCurrentStatus = status;
-    ['draft','published','archived','all'].forEach(s => {
-        const btn = document.getElementById('tab-' + s);
-        if (btn) {
-            btn.className = s === status
-                ? 'btn btn-sm'
-                : 'btn btn-secondary btn-sm';
-            if (s === status) btn.style.cssText = 'background:rgba(79,70,229,.2);color:#818cf8;';
-            else btn.style.cssText = '';
-        }
-    });
-    const res = await fetch('/api/jobboard/admin/posts?status=' + status);
-    const data = await res.json();
-    jbAllPosts = data.posts;
-    const c = data.counts;
-    document.getElementById('jbCountDraft').textContent = c.draft;
-    document.getElementById('jbCountPublished').textContent = c.published;
-    document.getElementById('jbCountArchived').textContent = c.archived;
-    document.getElementById('jbCountTotal').textContent = c.total;
-    renderJobBoardTable(jbAllPosts);
-}
-
-function renderJobBoardTable(posts) {
-    const tbody = document.getElementById('jbTbody');
-    if (!posts.length) {
-        tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:32px;">
-            No ${jbCurrentStatus === 'all' ? '' : jbCurrentStatus} posts found.
-            ${jbCurrentStatus === 'draft' ? '<br><small>Use "Fetch Jobs" above to pull from external sources.</small>' : ''}
-        </td></tr>`;
-        return;
-    }
-    tbody.innerHTML = posts.map(p => {
-        const tags = Array.isArray(p.tags) ? p.tags.slice(0,2).join(', ') : '';
-        const statusColor = {draft:'var(--warning)',published:'var(--success)',archived:'var(--muted)'}[p.status]||'var(--muted)';
-        return `<tr>
-            <td><input type="checkbox" class="jb-check" data-id="${p.id}"></td>
-            <td style="color:var(--muted);font-size:12px;">${p.id}</td>
-            <td style="max-width:220px;">
-                <div style="font-weight:500;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${escHtmlAdmin(p.title)}">${escHtmlAdmin(p.title)}</div>
-                ${tags ? `<div style="font-size:11px;color:var(--muted);">${escHtmlAdmin(tags)}</div>` : ''}
-            </td>
-            <td style="font-size:13px;">${escHtmlAdmin(p.company||'—')}</td>
-            <td><span style="font-size:11px;background:rgba(100,116,139,.1);color:#94a3b8;padding:2px 8px;border-radius:8px;">${escHtmlAdmin(p.source)}</span></td>
-            <td style="font-size:12px;color:var(--muted);">${escHtmlAdmin(p.job_type||'—')}</td>
-            <td><span style="font-size:12px;color:${statusColor};font-weight:600;">${p.status}</span></td>
-            <td style="text-align:center;">${p.ai_rewritten ? '<span title="AI Rewritten" style="color:#a78bfa;">✦</span>' : '<span style="color:#1e1e3a;">—</span>'}</td>
-            <td>
-                <div style="display:flex;gap:4px;flex-wrap:wrap;">
-                    <button class="btn btn-secondary btn-sm" onclick="openJbEdit(${p.id})">Edit</button>
-                    ${p.status !== 'published' ? `<button class="btn btn-success btn-sm" onclick="jbQuickAction(${p.id},'published')">Publish</button>` : ''}
-                    ${p.status === 'published' ? `<button class="btn btn-secondary btn-sm" onclick="jbQuickAction(${p.id},'draft')">Unpublish</button>` : ''}
-                    <button class="btn btn-danger btn-sm" onclick="jbDelete(${p.id})">Del</button>
-                </div>
-            </td>
-        </tr>`;
-    }).join('');
-}
-
-function jbToggleAll() {
-    const checked = document.getElementById('jbSelectAll').checked;
-    document.querySelectorAll('.jb-check').forEach(c => c.checked = checked);
-}
-
-async function jbQuickAction(id, status) {
-    await fetch('/api/jobboard/admin/posts/' + id, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({status}) });
-    loadJobBoard(jbCurrentStatus);
-}
-
-async function jbDelete(id) {
-    if (!confirm('Delete this job post permanently?')) return;
-    await fetch('/api/jobboard/admin/posts/' + id, { method:'DELETE' });
-    loadJobBoard(jbCurrentStatus);
-}
-
-async function bulkJobBoardAction(action) {
-    const ids = [...document.querySelectorAll('.jb-check:checked')].map(c => parseInt(c.dataset.id));
-    if (!ids.length) { showAlert('jbAlert', 'No posts selected.', false); return; }
-    if (action === 'delete' && !confirm(`Delete ${ids.length} post(s) permanently?`)) return;
-    const res = await fetch('/api/jobboard/admin/posts/bulk', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({action, ids}) });
-    const data = await res.json();
-    showAlert('jbAlert', data.success ? `✅ ${data.affected} post(s) ${action}d.` : '❌ Error: ' + data.error, data.success);
-    loadJobBoard(jbCurrentStatus);
-}
-
-async function openJbEdit(id) {
-    const res = await fetch('/api/jobboard/admin/posts/' + id);
-    const p = await res.json();
-    jbEditingId = id;
-    document.getElementById('jbEditId').value = id;
-    document.getElementById('jbEditTitle').value = p.title || '';
-    document.getElementById('jbEditCompany').value = p.company || '';
-    document.getElementById('jbEditLocation').value = p.location || '';
-    document.getElementById('jbEditType').value = p.job_type || 'remote';
-    document.getElementById('jbEditSalary').value = p.salary || '';
-    document.getElementById('jbEditUrl').value = p.apply_url || '';
-    const tags = Array.isArray(p.tags) ? p.tags.join(', ') : (p.tags || '');
-    document.getElementById('jbEditTags').value = tags;
-    document.getElementById('jbEditDesc').value = p.description_raw || p.description || '';
-    document.getElementById('jbEditFeatured').checked = !!p.featured;
-    document.getElementById('jbEditAlert').textContent = '';
-    document.getElementById('jbModal').classList.add('active');
-}
-
-async function saveJobPost(status) {
-    const id = document.getElementById('jbEditId').value;
-    const payload = {
-        title: document.getElementById('jbEditTitle').value,
-        company: document.getElementById('jbEditCompany').value,
-        location: document.getElementById('jbEditLocation').value,
-        job_type: document.getElementById('jbEditType').value,
-        salary: document.getElementById('jbEditSalary').value,
-        apply_url: document.getElementById('jbEditUrl').value,
-        tags: document.getElementById('jbEditTags').value,
-        description: document.getElementById('jbEditDesc').value,
-        featured: document.getElementById('jbEditFeatured').checked,
-        status,
-    };
-    const res = await fetch('/api/jobboard/admin/posts/' + id, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
-    const data = await res.json();
-    if (data.success) {
-        closeModal('jbModal');
-        loadJobBoard(jbCurrentStatus);
-        showAlert('jbAlert', '✅ Post saved as ' + status + '.', true);
-    } else {
-        showAlert('jbEditAlert', '❌ Error saving post.', false);
-    }
-}
-
-async function rewriteJobPost() {
-    const id = document.getElementById('jbEditId').value;
-    const btn = document.getElementById('rewriteBtn');
-    btn.textContent = '⏳ Rewriting...';
-    btn.disabled = true;
-    const res = await fetch('/api/jobboard/admin/posts/' + id + '/rewrite', { method:'POST' });
-    const data = await res.json();
-    btn.textContent = '✦ Rewrite with AI';
-    btn.disabled = false;
-    if (data.success) {
-        document.getElementById('jbEditDesc').value = data.description;
-        showAlert('jbEditAlert', '✅ Description rewritten by AI. Review before publishing.', true);
-    } else {
-        showAlert('jbEditAlert', '❌ ' + (data.error || 'Rewrite failed.'), false);
-    }
-}
-
-async function fetchJobsNow() {
-    const btn = document.getElementById('fetchBtn');
-    btn.textContent = '⏳ Fetching...';
-    btn.disabled = true;
-    const sources = [];
-    if (document.getElementById('src_remotive').checked) sources.push('remotive');
-    if (document.getElementById('src_arbeitnow').checked) sources.push('arbeitnow');
-    if (document.getElementById('src_remoteok').checked) sources.push('remoteok');
-    if (document.getElementById('src_adzuna').checked) sources.push('adzuna');
-    if (!sources.length) { showAlert('jbAlert', 'Select at least one source.', false); btn.textContent='🔄 Fetch Jobs'; btn.disabled=false; return; }
-    const payload = {
-        sources,
-        search: document.getElementById('jbFetchSearch').value.trim(),
-        limit_per_source: parseInt(document.getElementById('jbFetchLimit').value),
-    };
-    try {
-        const res = await fetch('/api/jobboard/admin/fetch', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
-        const data = await res.json();
-        if (data.success) {
-            showAlert('jbAlert', `✅ Fetched ${data.total} posts — ${data.added} new, ${data.skipped} duplicates skipped.`, true);
-            loadJobBoard('draft');
-        } else {
-            showAlert('jbAlert', '❌ Fetch error: ' + data.error, false);
-        }
-    } catch(e) {
-        showAlert('jbAlert', '❌ Network error: ' + e.message, false);
-    }
-    btn.textContent = '🔄 Fetch Jobs';
-    btn.disabled = false;
-}
-
-function escHtmlAdmin(s) {
-    return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
 // ── Password ─────────────────────────────────────────────────────────────────
 async function changePassword() {
     const current = document.getElementById('currentPw').value;
@@ -1025,7 +846,6 @@ async function changePassword() {
     if (!current || !newPw) { showAlert('secAlert', 'All fields are required.', false); return; }
     if (newPw !== confirm) { showAlert('secAlert', 'New passwords do not match.', false); return; }
     if (newPw.length < 6) { showAlert('secAlert', 'Password must be at least 6 characters.', false); return; }
-    // Verify current password then save new
     const verRes = await fetch('/julisunkan/login', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ password: current }) });
     const verData = await verRes.json();
     if (!verData.success) { showAlert('secAlert', 'Current password is incorrect.', false); return; }
@@ -1208,26 +1028,190 @@ async function nukeJobs() {
     showAlert('secAlert', `Deleted ${ids.length} job applications.`, true);
 }
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
-function toggleAll(type) {
-    const checked = document.getElementById(type+'SelectAll').checked;
-    document.querySelectorAll('.'+type+'-cb').forEach(cb => cb.checked = checked);
+// ── Job Board ────────────────────────────────────────────────────────────────
+let jbCurrentStatus = 'draft';
+let jbAllPosts = [];
+
+async function loadJobBoard(status) {
+    jbCurrentStatus = status;
+    ['draft','published','archived','all'].forEach(s => {
+        const btn = document.getElementById('tab-' + s);
+        if (btn) {
+            if (s === status) {
+                btn.className = 'btn btn-sm';
+                btn.style.cssText = 'background:rgba(79,70,229,.2);color:#818cf8;';
+            } else {
+                btn.className = 'btn btn-secondary btn-sm';
+                btn.style.cssText = '';
+            }
+        }
+    });
+    const res = await fetch('/api/jobboard/admin/posts?status=' + status);
+    const data = await res.json();
+    jbAllPosts = data.posts;
+    const c = data.counts;
+    document.getElementById('jbCountDraft').textContent = c.draft;
+    document.getElementById('jbCountPublished').textContent = c.published;
+    document.getElementById('jbCountArchived').textContent = c.archived;
+    document.getElementById('jbCountTotal').textContent = c.total;
+    renderJobBoardTable(jbAllPosts);
 }
 
-function closeModal(id) {
-    document.getElementById(id).classList.remove('open');
+function renderJobBoardTable(posts) {
+    const tbody = document.getElementById('jbTbody');
+    if (!posts.length) {
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:32px;">
+            No ${jbCurrentStatus === 'all' ? '' : jbCurrentStatus} posts found.
+            ${jbCurrentStatus === 'draft' ? '<br><small>Use "Fetch Jobs" above to pull from external sources.</small>' : ''}
+        </td></tr>`;
+        return;
+    }
+    tbody.innerHTML = posts.map(p => {
+        const tags = Array.isArray(p.tags) ? p.tags.slice(0,2).join(', ') : '';
+        const statusColor = {draft:'var(--warning)',published:'var(--success)',archived:'var(--muted)'}[p.status]||'var(--muted)';
+        return `<tr>
+            <td><input type="checkbox" class="jb-check" data-id="${p.id}"></td>
+            <td style="color:var(--muted);font-size:12px;">${p.id}</td>
+            <td style="max-width:220px;">
+                <div style="font-weight:500;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${escHtmlAdmin(p.title)}">${escHtmlAdmin(p.title)}</div>
+                ${tags ? `<div style="font-size:11px;color:var(--muted);">${escHtmlAdmin(tags)}</div>` : ''}
+            </td>
+            <td style="font-size:13px;">${escHtmlAdmin(p.company||'—')}</td>
+            <td><span style="font-size:11px;background:rgba(100,116,139,.1);color:#94a3b8;padding:2px 8px;border-radius:8px;">${escHtmlAdmin(p.source)}</span></td>
+            <td style="font-size:12px;color:var(--muted);">${escHtmlAdmin(p.job_type||'—')}</td>
+            <td><span style="font-size:12px;color:${statusColor};font-weight:600;">${p.status}</span></td>
+            <td style="text-align:center;">${p.ai_rewritten ? '<span title="AI Rewritten" style="color:#a78bfa;">✦</span>' : '<span style="color:#1e1e3a;">—</span>'}</td>
+            <td>
+                <div class="tbl-actions">
+                    <button class="btn btn-secondary btn-sm" onclick="openJbEdit(${p.id})">Edit</button>
+                    ${p.status !== 'published' ? `<button class="btn btn-success btn-sm" onclick="jbQuickAction(${p.id},'published')">Publish</button>` : ''}
+                    ${p.status === 'published' ? `<button class="btn btn-secondary btn-sm" onclick="jbQuickAction(${p.id},'draft')">Unpublish</button>` : ''}
+                    <button class="btn btn-danger btn-sm" onclick="jbDelete(${p.id})">Del</button>
+                </div>
+            </td>
+        </tr>`;
+    }).join('');
 }
 
-function showAlert(id, msg, ok) {
-    const el = document.getElementById(id);
-    el.textContent = msg;
-    el.className = 'alert alert-show ' + (ok ? 'alert-ok' : 'alert-err');
-    setTimeout(() => { el.classList.remove('alert-show'); }, 4000);
+function jbToggleAll() {
+    const checked = document.getElementById('jbSelectAll').checked;
+    document.querySelectorAll('.jb-check').forEach(c => c.checked = checked);
 }
 
-async function doLogout() {
-    await fetch('/julisunkan/logout', { method:'POST' });
-    window.location.href = '/julisunkan';
+async function jbQuickAction(id, status) {
+    await fetch('/api/jobboard/admin/posts/' + id, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({status}) });
+    loadJobBoard(jbCurrentStatus);
+}
+
+async function jbDelete(id) {
+    if (!confirm('Delete this job post permanently?')) return;
+    await fetch('/api/jobboard/admin/posts/' + id, { method:'DELETE' });
+    loadJobBoard(jbCurrentStatus);
+}
+
+async function bulkJobBoardAction(action) {
+    const ids = [...document.querySelectorAll('.jb-check:checked')].map(c => parseInt(c.dataset.id));
+    if (!ids.length) { showAlert('jbAlert', 'No posts selected.', false); return; }
+    if (action === 'delete' && !confirm(`Delete ${ids.length} post(s) permanently?`)) return;
+    const res = await fetch('/api/jobboard/admin/posts/bulk', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({action, ids}) });
+    const data = await res.json();
+    showAlert('jbAlert', data.success ? `✅ ${data.affected} post(s) ${action}d.` : '❌ Error: ' + data.error, data.success);
+    loadJobBoard(jbCurrentStatus);
+}
+
+async function openJbEdit(id) {
+    const res = await fetch('/api/jobboard/admin/posts/' + id);
+    const p = await res.json();
+    document.getElementById('jbEditId').value = id;
+    document.getElementById('jbEditTitle').value = p.title || '';
+    document.getElementById('jbEditCompany').value = p.company || '';
+    document.getElementById('jbEditLocation').value = p.location || '';
+    document.getElementById('jbEditType').value = p.job_type || 'remote';
+    document.getElementById('jbEditSalary').value = p.salary || '';
+    document.getElementById('jbEditUrl').value = p.apply_url || '';
+    const tags = Array.isArray(p.tags) ? p.tags.join(', ') : (p.tags || '');
+    document.getElementById('jbEditTags').value = tags;
+    document.getElementById('jbEditDesc').value = p.description_raw || p.description || '';
+    document.getElementById('jbEditFeatured').checked = !!p.featured;
+    document.getElementById('jbEditAlert').textContent = '';
+    document.getElementById('jbModal').classList.add('open');
+}
+
+async function saveJobPost(status) {
+    const id = document.getElementById('jbEditId').value;
+    const payload = {
+        title: document.getElementById('jbEditTitle').value,
+        company: document.getElementById('jbEditCompany').value,
+        location: document.getElementById('jbEditLocation').value,
+        job_type: document.getElementById('jbEditType').value,
+        salary: document.getElementById('jbEditSalary').value,
+        apply_url: document.getElementById('jbEditUrl').value,
+        tags: document.getElementById('jbEditTags').value,
+        description: document.getElementById('jbEditDesc').value,
+        featured: document.getElementById('jbEditFeatured').checked,
+        status,
+    };
+    const res = await fetch('/api/jobboard/admin/posts/' + id, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+    const data = await res.json();
+    if (data.success) {
+        closeModal('jbModal');
+        loadJobBoard(jbCurrentStatus);
+        showAlert('jbAlert', '✅ Post saved as ' + status + '.', true);
+    } else {
+        showAlert('jbEditAlert', '❌ Error saving post.', false);
+    }
+}
+
+async function rewriteJobPost() {
+    const id = document.getElementById('jbEditId').value;
+    const btn = document.getElementById('rewriteBtn');
+    btn.textContent = '⏳ Rewriting...';
+    btn.disabled = true;
+    const res = await fetch('/api/jobboard/admin/posts/' + id + '/rewrite', { method:'POST' });
+    const data = await res.json();
+    btn.textContent = '✦ Rewrite with AI';
+    btn.disabled = false;
+    if (data.success) {
+        document.getElementById('jbEditDesc').value = data.description;
+        showAlert('jbEditAlert', '✅ Description rewritten by AI. Review before publishing.', true);
+    } else {
+        showAlert('jbEditAlert', '❌ ' + (data.error || 'Rewrite failed.'), false);
+    }
+}
+
+async function fetchJobsNow() {
+    const btn = document.getElementById('fetchBtn');
+    btn.textContent = '⏳ Fetching...';
+    btn.disabled = true;
+    const sources = [];
+    if (document.getElementById('src_remotive').checked) sources.push('remotive');
+    if (document.getElementById('src_arbeitnow').checked) sources.push('arbeitnow');
+    if (document.getElementById('src_remoteok').checked) sources.push('remoteok');
+    if (document.getElementById('src_adzuna').checked) sources.push('adzuna');
+    if (!sources.length) { showAlert('jbAlert', 'Select at least one source.', false); btn.textContent='🔄 Fetch Jobs'; btn.disabled=false; return; }
+    const payload = {
+        sources,
+        search: document.getElementById('jbFetchSearch').value.trim(),
+        limit_per_source: parseInt(document.getElementById('jbFetchLimit').value),
+    };
+    try {
+        const res = await fetch('/api/jobboard/admin/fetch', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+        const data = await res.json();
+        if (data.success) {
+            showAlert('jbAlert', `✅ Fetched ${data.total} posts — ${data.added} new, ${data.skipped} duplicates skipped.`, true);
+            loadJobBoard('draft');
+        } else {
+            showAlert('jbAlert', '❌ Fetch error: ' + data.error, false);
+        }
+    } catch(e) {
+        showAlert('jbAlert', '❌ Network error: ' + e.message, false);
+    }
+    btn.textContent = '🔄 Fetch Jobs';
+    btn.disabled = false;
+}
+
+function escHtmlAdmin(s) {
+    return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 // ── ads.txt ───────────────────────────────────────────────────────────────────
@@ -1268,7 +1252,7 @@ async function uploadAdsTxt() {
     const res = await fetch('/julisunkan/api/ads-txt', { method: 'POST', body: form });
     const data = await res.json();
     if (data.success) {
-        alertEl.textContent = '✅ ads.txt uploaded successfully. Accessible at /ads.txt';
+        alertEl.textContent = '✅ ads.txt uploaded. Accessible at /ads.txt';
         alertEl.className = 'alert alert-show alert-ok';
         fileInput.value = '';
         loadAdsTxt();
@@ -1279,9 +1263,31 @@ async function uploadAdsTxt() {
     setTimeout(() => alertEl.classList.remove('alert-show'), 5000);
 }
 
+// ── Helpers ──────────────────────────────────────────────────────────────────
+function toggleAll(type) {
+    const checked = document.getElementById(type+'SelectAll').checked;
+    document.querySelectorAll('.'+type+'-cb').forEach(cb => cb.checked = checked);
+}
+
+function closeModal(id) {
+    document.getElementById(id).classList.remove('open');
+}
+
+function showAlert(id, msg, ok) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = msg;
+    el.className = 'alert alert-show ' + (ok ? 'alert-ok' : 'alert-err');
+    setTimeout(() => { el.classList.remove('alert-show'); }, 4000);
+}
+
+async function doLogout() {
+    await fetch('/julisunkan/logout', { method:'POST' });
+    window.location.href = '/julisunkan';
+}
+
 // ── Init ──────────────────────────────────────────────────────────────────────
 async function init() {
-    // Load stats
     try {
         const res = await fetch('/julisunkan/api/stats');
         const d = await res.json();
