@@ -1,6 +1,6 @@
 import json
 from functools import wraps
-from flask import Blueprint, render_template, request, jsonify, session, redirect, url_for
+from flask import Blueprint, render_template, request, jsonify, session, redirect, url_for, Response
 from extensions import db
 from models.settings import Setting
 from models.resume import Resume
@@ -203,6 +203,30 @@ def bulk_delete_jobs():
     Job.query.filter(Job.id.in_(ids)).delete(synchronize_session=False)
     db.session.commit()
     return jsonify({'success': True, 'deleted': len(ids)})
+
+
+# ── ADS.TXT ───────────────────────────────────────────────────────────────────
+
+@admin_bp.route('/api/ads-txt', methods=['GET'])
+@admin_required
+def get_ads_txt():
+    content = Setting.get('ads_txt_content', '')
+    return jsonify({'content': content})
+
+
+@admin_bp.route('/api/ads-txt', methods=['POST'])
+@admin_required
+def save_ads_txt():
+    if request.content_type and 'multipart/form-data' in request.content_type:
+        f = request.files.get('file')
+        if not f or not f.filename:
+            return jsonify({'success': False, 'error': 'No file provided'}), 400
+        content = f.read().decode('utf-8', errors='replace')
+    else:
+        data = request.get_json(silent=True) or {}
+        content = data.get('content', '')
+    Setting.set('ads_txt_content', content)
+    return jsonify({'success': True})
 
 
 # ── STATS ─────────────────────────────────────────────────────────────────────

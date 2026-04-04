@@ -385,6 +385,32 @@
             </div>
 
             <div class="card">
+                <div class="card-title"><span class="icon">📄</span> ads.txt File</div>
+                <p style="font-size:13px;color:var(--muted);margin-bottom:14px;">
+                    The <code style="background:rgba(255,255,255,0.06);padding:2px 6px;border-radius:4px;">ads.txt</code> file is required by Google AdSense to authorize your publisher account.
+                    Upload the file provided by Google, or paste the content directly. It will be served at
+                    <a href="/ads.txt" target="_blank" style="color:var(--primary-l);">/ads.txt</a>.
+                </p>
+                <div class="form-group">
+                    <label>Upload ads.txt file</label>
+                    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                        <input type="file" id="adsTxtFile" accept=".txt,text/plain" style="flex:1;min-width:0;padding:7px 10px;font-size:13px;cursor:pointer;">
+                        <button class="btn btn-secondary btn-sm" onclick="uploadAdsTxt()">Upload File</button>
+                    </div>
+                </div>
+                <div class="section-title" style="margin-top:8px;">— or paste content manually —</div>
+                <div class="form-group">
+                    <label>ads.txt content</label>
+                    <textarea id="adsTxtContent" rows="5" placeholder="google.com, pub-XXXXXXXXXXXXXXXX, DIRECT, f08c47fec0942fa0" style="font-family:monospace;font-size:12px;"></textarea>
+                </div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+                    <button class="btn btn-primary" onclick="saveAdsTxtContent()">Save Content</button>
+                    <a href="/ads.txt" target="_blank" class="btn btn-secondary btn-sm">Preview /ads.txt ↗</a>
+                </div>
+                <div id="adsTxtAlert" class="alert" style="margin-top:12px;"></div>
+            </div>
+
+            <div class="card">
                 <div class="card-title"><span class="icon">📋</span> AdSense Compliance Checklist</div>
                 <div style="display:flex;flex-direction:column;gap:10px;font-size:13px;">
                     <div style="display:flex;align-items:center;gap:10px;color:var(--success);">✅ <span>Privacy Policy page — <a href="/privacy-policy" target="_blank" style="color:var(--primary-l);">/privacy-policy</a></span></div>
@@ -493,7 +519,7 @@ function show(name) {
     if (name === 'resumes') loadResumes();
     if (name === 'jobs') loadJobs();
     if (name === 'settings' || name === 'ai' || name === 'security' || name === 'monetization') loadSettings();
-    if (name === 'monetization') showAlert('monetizationAlert', '', true);
+    if (name === 'monetization') { showAlert('monetizationAlert', '', true); loadAdsTxt(); }
 }
 
 // ── Settings ────────────────────────────────────────────────────────────────
@@ -763,6 +789,55 @@ function showAlert(id, msg, ok) {
 async function doLogout() {
     await fetch('/julisunkan/logout', { method:'POST' });
     window.location.href = '/julisunkan';
+}
+
+// ── ads.txt ───────────────────────────────────────────────────────────────────
+async function loadAdsTxt() {
+    try {
+        const res = await fetch('/julisunkan/api/ads-txt');
+        const data = await res.json();
+        document.getElementById('adsTxtContent').value = data.content || '';
+    } catch(e) {}
+}
+
+async function saveAdsTxtContent() {
+    const content = document.getElementById('adsTxtContent').value;
+    const res = await fetch('/julisunkan/api/ads-txt', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content })
+    });
+    const data = await res.json();
+    const alertEl = document.getElementById('adsTxtAlert');
+    alertEl.textContent = data.success ? '✅ ads.txt saved. Accessible at /ads.txt' : '❌ Error: ' + (data.error || 'Unknown error');
+    alertEl.className = 'alert alert-show ' + (data.success ? 'alert-ok' : 'alert-err');
+    setTimeout(() => alertEl.classList.remove('alert-show'), 5000);
+}
+
+async function uploadAdsTxt() {
+    const fileInput = document.getElementById('adsTxtFile');
+    const file = fileInput.files[0];
+    const alertEl = document.getElementById('adsTxtAlert');
+    if (!file) {
+        alertEl.textContent = 'Please select a file first.';
+        alertEl.className = 'alert alert-show alert-err';
+        setTimeout(() => alertEl.classList.remove('alert-show'), 4000);
+        return;
+    }
+    const form = new FormData();
+    form.append('file', file);
+    const res = await fetch('/julisunkan/api/ads-txt', { method: 'POST', body: form });
+    const data = await res.json();
+    if (data.success) {
+        alertEl.textContent = '✅ ads.txt uploaded successfully. Accessible at /ads.txt';
+        alertEl.className = 'alert alert-show alert-ok';
+        fileInput.value = '';
+        loadAdsTxt();
+    } else {
+        alertEl.textContent = '❌ Upload failed: ' + (data.error || 'Unknown error');
+        alertEl.className = 'alert alert-show alert-err';
+    }
+    setTimeout(() => alertEl.classList.remove('alert-show'), 5000);
 }
 
 // ── Init ──────────────────────────────────────────────────────────────────────

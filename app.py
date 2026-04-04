@@ -78,6 +78,13 @@ def create_app():
     def about():
         return render_template('about.html')
 
+    @app.route('/ads.txt')
+    def ads_txt():
+        from flask import Response
+        from models.settings import Setting
+        content = Setting.get('ads_txt_content', '')
+        return Response(content, mimetype='text/plain')
+
     @app.context_processor
     def inject_site_settings():
         from datetime import datetime
