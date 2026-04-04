@@ -9,9 +9,6 @@ build/
 .venv/
 venv/
 env/
-*.db
-*.sqlite3
 uploads/
 .env
 *.log
-instance/
