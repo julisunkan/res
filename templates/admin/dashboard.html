@@ -225,6 +225,7 @@
         <button class="nav-item" onclick="show('monetization')"><span class="icon">💰</span> Monetization</button>
         <button class="nav-item" onclick="show('security')"><span class="icon">🔐</span> Security</button>
         <button class="nav-item" onclick="show('database')"><span class="icon">🗄️</span> Database</button>
+        <button class="nav-item" onclick="show('firebase')"><span class="icon">🔥</span> Firebase</button>
     </nav>
     <div class="sidebar-footer">
         <a href="/" class="back-link" target="_blank">← View Website</a>
@@ -884,6 +885,170 @@
             </div>
         </div>
 
+        <!-- ── FIREBASE ── -->
+        <div class="panel" id="panel-firebase">
+            <div id="fbAlert" class="alert"></div>
+
+            <!-- Status bar -->
+            <div class="card" id="fbStatusCard">
+                <div class="card-title"><span class="icon">🔥</span> Firebase / Firestore Status</div>
+                <div id="fbStatusBody" style="font-size:13px;color:var(--muted);">Loading...</div>
+            </div>
+
+            <!-- Setup Instructions -->
+            <div class="card">
+                <div class="card-title"><span class="icon">📋</span> Setup Instructions</div>
+                <p style="font-size:13px;color:var(--muted);margin-bottom:16px;">Follow these steps to connect your app to Google Cloud Firestore. This takes about 5 minutes.</p>
+
+                <div style="display:flex;flex-direction:column;gap:16px;">
+
+                    <div style="display:flex;gap:14px;align-items:flex-start;">
+                        <div style="width:28px;height:28px;border-radius:50%;background:rgba(79,70,229,0.2);border:2px solid var(--primary);color:var(--primary-l);font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">1</div>
+                        <div>
+                            <div style="font-weight:600;font-size:13px;margin-bottom:4px;">Create a Firebase Project</div>
+                            <div style="font-size:13px;color:var(--muted);line-height:1.6;">
+                                Go to <a href="https://console.firebase.google.com" target="_blank" style="color:var(--primary-l);">console.firebase.google.com</a> and click <strong>Add project</strong>.<br>
+                                Enter a project name (e.g. <code style="background:rgba(255,255,255,.06);padding:1px 5px;border-radius:3px;">resume-app-db</code>), then follow the wizard. You can disable Google Analytics if you don't need it.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display:flex;gap:14px;align-items:flex-start;">
+                        <div style="width:28px;height:28px;border-radius:50%;background:rgba(79,70,229,0.2);border:2px solid var(--primary);color:var(--primary-l);font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">2</div>
+                        <div>
+                            <div style="font-weight:600;font-size:13px;margin-bottom:4px;">Enable Cloud Firestore</div>
+                            <div style="font-size:13px;color:var(--muted);line-height:1.6;">
+                                In the left sidebar of Firebase Console, click <strong>Build → Firestore Database</strong>.<br>
+                                Click <strong>Create database</strong>, choose <strong>Start in production mode</strong>, and select your preferred region (e.g. <code style="background:rgba(255,255,255,.06);padding:1px 5px;border-radius:3px;">us-east1</code>). Click <strong>Enable</strong>.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display:flex;gap:14px;align-items:flex-start;">
+                        <div style="width:28px;height:28px;border-radius:50%;background:rgba(79,70,229,0.2);border:2px solid var(--primary);color:var(--primary-l);font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">3</div>
+                        <div>
+                            <div style="font-weight:600;font-size:13px;margin-bottom:4px;">Generate a Service Account Key</div>
+                            <div style="font-size:13px;color:var(--muted);line-height:1.6;">
+                                Go to <strong>Project Settings</strong> (gear icon ⚙️ next to <em>Project Overview</em>).<br>
+                                Click the <strong>Service accounts</strong> tab.<br>
+                                Click <strong>Generate new private key</strong> → <strong>Generate key</strong>.<br>
+                                A <code style="background:rgba(255,255,255,.06);padding:1px 5px;border-radius:3px;">.json</code> file will download — this is your service account key.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display:flex;gap:14px;align-items:flex-start;">
+                        <div style="width:28px;height:28px;border-radius:50%;background:rgba(79,70,229,0.2);border:2px solid var(--primary);color:var(--primary-l);font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">4</div>
+                        <div>
+                            <div style="font-weight:600;font-size:13px;margin-bottom:4px;">Paste the Key Below &amp; Save</div>
+                            <div style="font-size:13px;color:var(--muted);line-height:1.6;">
+                                Open the downloaded JSON file in any text editor, select all (<kbd>Ctrl+A</kbd>), copy (<kbd>Ctrl+C</kbd>), and paste it into the textarea in the <strong>Credentials</strong> section below. Click <strong>Save Credentials</strong>.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display:flex;gap:14px;align-items:flex-start;">
+                        <div style="width:28px;height:28px;border-radius:50%;background:rgba(79,70,229,0.2);border:2px solid var(--primary);color:var(--primary-l);font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">5</div>
+                        <div>
+                            <div style="font-weight:600;font-size:13px;margin-bottom:4px;">Update Firestore Security Rules</div>
+                            <div style="font-size:13px;color:var(--muted);line-height:1.6;">
+                                In Firebase Console → <strong>Firestore Database → Rules</strong>, replace the content with the following (allows server-side SDK only — no public access):<br>
+                                <pre style="background:rgba(0,0,0,.3);border:1px solid var(--border);border-radius:6px;padding:10px;margin-top:8px;font-size:12px;overflow-x:auto;white-space:pre;">rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}</pre>
+                                Click <strong>Publish</strong>. Your server uses the Admin SDK which bypasses these rules — this blocks any client-side access.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display:flex;gap:14px;align-items:flex-start;">
+                        <div style="width:28px;height:28px;border-radius:50%;background:rgba(16,185,129,0.2);border:2px solid var(--success);color:var(--success);font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">✓</div>
+                        <div>
+                            <div style="font-weight:600;font-size:13px;margin-bottom:4px;">Test Connection &amp; Sync Data</div>
+                            <div style="font-size:13px;color:var(--muted);line-height:1.6;">
+                                Click <strong>Test Connection</strong> below. Once successful, use the <strong>Export to Firestore</strong> section to push your current database data into Firestore collections.
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Credentials -->
+            <div class="card">
+                <div class="card-title"><span class="icon">🔑</span> Service Account Credentials</div>
+                <p style="font-size:13px;color:var(--muted);margin-bottom:12px;">
+                    Paste the full contents of your Firebase service account JSON file here. It will be stored securely in your database and never exposed in exports.
+                </p>
+                <div class="form-group">
+                    <label>Service Account JSON</label>
+                    <textarea id="fbCredsInput" rows="8" placeholder='{"type": "service_account", "project_id": "...", ...}' style="font-family:monospace;font-size:12px;resize:vertical;"></textarea>
+                </div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                    <button class="btn btn-primary" onclick="fbSaveCreds()">💾 Save Credentials</button>
+                    <button class="btn btn-secondary" onclick="fbTest()">🔌 Test Connection</button>
+                    <button class="btn btn-danger btn-sm" onclick="fbClearCreds()" style="margin-left:auto;">🗑 Clear Credentials</button>
+                </div>
+            </div>
+
+            <!-- Export -->
+            <div class="card">
+                <div class="card-title"><span class="icon">📤</span> Export Local Data → Firestore</div>
+                <p style="font-size:13px;color:var(--muted);margin-bottom:14px;">
+                    Push data from your local database into Firestore collections. Existing Firestore documents with the same ID will be overwritten. Sensitive fields (API keys, passwords) are always excluded.
+                </p>
+                <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:14px;">
+                    <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;">
+                        <input type="checkbox" id="fb-exp-resumes" checked style="width:15px;height:15px;accent-color:var(--primary);">
+                        Resumes
+                    </label>
+                    <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;">
+                        <input type="checkbox" id="fb-exp-jobs" checked style="width:15px;height:15px;accent-color:var(--primary);">
+                        Job Applications
+                    </label>
+                    <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;">
+                        <input type="checkbox" id="fb-exp-settings" style="width:15px;height:15px;accent-color:var(--primary);">
+                        Settings (non-sensitive)
+                    </label>
+                    <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;">
+                        <input type="checkbox" id="fb-exp-messages" style="width:15px;height:15px;accent-color:var(--primary);">
+                        Contact Messages
+                    </label>
+                </div>
+                <div id="fbExportProgress" style="display:none;font-size:13px;color:var(--muted);margin-bottom:10px;"></div>
+                <button class="btn btn-primary" onclick="fbExport()">⬆ Export to Firestore</button>
+            </div>
+
+            <!-- Import -->
+            <div class="card">
+                <div class="card-title"><span class="icon">📥</span> Import Firestore Data → Local DB</div>
+                <p style="font-size:13px;color:var(--muted);margin-bottom:14px;">
+                    Pull records from Firestore into your local database. Only records whose ID doesn't already exist locally will be added (no overwrites). Useful for restoring from Firestore or migrating between environments.
+                </p>
+                <div style="padding:10px 12px;border-radius:8px;background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.2);font-size:12px;color:var(--warning);margin-bottom:14px;">
+                    ⚠ Import only adds missing records — it will not update or overwrite existing local data.
+                </div>
+                <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:14px;">
+                    <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;">
+                        <input type="checkbox" id="fb-imp-resumes" checked style="width:15px;height:15px;accent-color:var(--primary);">
+                        Resumes
+                    </label>
+                    <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;">
+                        <input type="checkbox" id="fb-imp-jobs" checked style="width:15px;height:15px;accent-color:var(--primary);">
+                        Job Applications
+                    </label>
+                </div>
+                <div id="fbImportProgress" style="display:none;font-size:13px;color:var(--muted);margin-bottom:10px;"></div>
+                <button class="btn btn-primary" onclick="fbImport()">⬇ Import from Firestore</button>
+            </div>
+
+        </div>
+
     </div><!-- /.content -->
 </div><!-- /.main -->
 
@@ -981,8 +1146,8 @@ let allJobs = [];
 let settings = {};
 
 // ── Navigation ──────────────────────────────────────────────────────────────
-const panelOrder = ['overview','settings','ai','resumes','jobs','jobboard','messages','monetization','security','database'];
-const panelTitles = { overview:'Overview', settings:'App Settings', ai:'AI Configuration', resumes:'Manage Resumes', jobs:'Job Applications', jobboard:'Job Board Manager', messages:'Contact Messages', monetization:'Monetization & Analytics', security:'Security', database:'Database' };
+const panelOrder = ['overview','settings','ai','resumes','jobs','jobboard','messages','monetization','security','database','firebase'];
+const panelTitles = { overview:'Overview', settings:'App Settings', ai:'AI Configuration', resumes:'Manage Resumes', jobs:'Job Applications', jobboard:'Job Board Manager', messages:'Contact Messages', monetization:'Monetization & Analytics', security:'Security', database:'Database', firebase:'Firebase / Firestore' };
 
 function show(name) {
     document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
@@ -998,6 +1163,7 @@ function show(name) {
     if (name === 'monetization') loadAdsTxt();
     if (name === 'database') loadDbConfig();
     if (name === 'messages') loadMessages();
+    if (name === 'firebase') loadFirebaseStatus();
 }
 
 // ── Settings ────────────────────────────────────────────────────────────────
@@ -1867,6 +2033,155 @@ async function bulkDeleteMessages() {
 document.getElementById('msgModal').addEventListener('click', function(e) {
     if (e.target === this) closeMsgModal();
 });
+
+// ── Firebase ──────────────────────────────────────────────────────────────────
+async function loadFirebaseStatus() {
+    const body = document.getElementById('fbStatusBody');
+    try {
+        const res = await fetch('/julisunkan/api/firebase/status');
+        const d = await res.json();
+        if (d.configured) {
+            body.innerHTML = `
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+                    <span style="width:10px;height:10px;border-radius:50%;background:#10b981;display:inline-block;flex-shrink:0;"></span>
+                    <strong style="color:#10b981;">Credentials saved</strong>
+                </div>
+                <div style="color:var(--muted);">Project: <strong style="color:var(--text);">${esc(d.project_id)}</strong></div>
+                <div style="color:var(--muted);margin-top:2px;">Service account: <strong style="color:var(--text);">${esc(d.client_email)}</strong></div>
+                <div style="margin-top:10px;font-size:12px;color:var(--muted);">Click <strong>Test Connection</strong> in the Credentials card to verify live connectivity.</div>
+            `;
+        } else {
+            body.innerHTML = `
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <span style="width:10px;height:10px;border-radius:50%;background:#6b7280;display:inline-block;flex-shrink:0;"></span>
+                    <span style="color:var(--muted);">No credentials saved yet. Follow the setup instructions below, then paste your service account JSON.</span>
+                </div>
+            `;
+        }
+    } catch(e) {
+        body.textContent = 'Failed to load status.';
+    }
+}
+
+async function fbSaveCreds() {
+    const creds = document.getElementById('fbCredsInput').value.trim();
+    if (!creds) { showAlert('fbAlert', '⚠ Please paste your service account JSON first.', false); return; }
+    try {
+        const res = await fetch('/julisunkan/api/firebase/save-credentials', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({ credentials: creds })
+        });
+        const d = await res.json();
+        if (d.success) {
+            showAlert('fbAlert', `✅ Credentials saved for project "${d.project_id}". Click "Test Connection" to verify.`, true);
+            document.getElementById('fbCredsInput').value = '';
+            loadFirebaseStatus();
+        } else {
+            showAlert('fbAlert', `❌ ${d.error}`, false);
+        }
+    } catch(e) {
+        showAlert('fbAlert', `❌ Request failed: ${e}`, false);
+    }
+}
+
+async function fbClearCreds() {
+    if (!confirm('Remove Firebase credentials? You will need to re-enter them to reconnect.')) return;
+    try {
+        const res = await fetch('/julisunkan/api/firebase/clear-credentials', { method: 'POST' });
+        const d = await res.json();
+        if (d.success) {
+            showAlert('fbAlert', '🗑 Credentials cleared.', true);
+            loadFirebaseStatus();
+        } else {
+            showAlert('fbAlert', `❌ ${d.error}`, false);
+        }
+    } catch(e) {
+        showAlert('fbAlert', `❌ Request failed: ${e}`, false);
+    }
+}
+
+async function fbTest() {
+    showAlert('fbAlert', '🔌 Testing connection...', true);
+    try {
+        const res = await fetch('/julisunkan/api/firebase/test', { method: 'POST' });
+        const d = await res.json();
+        if (d.success) {
+            showAlert('fbAlert', `✅ ${d.message}`, true);
+        } else {
+            showAlert('fbAlert', `❌ Connection failed: ${d.message}`, false);
+        }
+    } catch(e) {
+        showAlert('fbAlert', `❌ Request failed: ${e}`, false);
+    }
+}
+
+async function fbExport() {
+    const collections = [];
+    if (document.getElementById('fb-exp-resumes').checked) collections.push('resumes');
+    if (document.getElementById('fb-exp-jobs').checked) collections.push('jobs');
+    if (document.getElementById('fb-exp-settings').checked) collections.push('settings');
+    if (document.getElementById('fb-exp-messages').checked) collections.push('messages');
+    if (!collections.length) { showAlert('fbAlert', '⚠ Select at least one collection to export.', false); return; }
+
+    const prog = document.getElementById('fbExportProgress');
+    prog.style.display = 'block';
+    prog.textContent = '⏳ Exporting to Firestore...';
+    showAlert('fbAlert', '', true);
+
+    try {
+        const res = await fetch('/julisunkan/api/firebase/export', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({ collections })
+        });
+        const d = await res.json();
+        if (d.success) {
+            const summary = Object.entries(d.results).map(([k,v]) => `${v} ${k}`).join(', ');
+            showAlert('fbAlert', `✅ Exported ${d.total} records: ${summary}`, true);
+            prog.style.display = 'none';
+        } else {
+            showAlert('fbAlert', `❌ Export failed: ${d.error}`, false);
+            prog.style.display = 'none';
+        }
+    } catch(e) {
+        showAlert('fbAlert', `❌ Request failed: ${e}`, false);
+        prog.style.display = 'none';
+    }
+}
+
+async function fbImport() {
+    const collections = [];
+    if (document.getElementById('fb-imp-resumes').checked) collections.push('resumes');
+    if (document.getElementById('fb-imp-jobs').checked) collections.push('jobs');
+    if (!collections.length) { showAlert('fbAlert', '⚠ Select at least one collection to import.', false); return; }
+    if (!confirm(`Import ${collections.join(' and ')} from Firestore into local DB? Only new records will be added.`)) return;
+
+    const prog = document.getElementById('fbImportProgress');
+    prog.style.display = 'block';
+    prog.textContent = '⏳ Importing from Firestore...';
+    showAlert('fbAlert', '', true);
+
+    try {
+        const res = await fetch('/julisunkan/api/firebase/import', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({ collections })
+        });
+        const d = await res.json();
+        if (d.success) {
+            const summary = Object.entries(d.results).map(([k,v]) => `${v} ${k}`).join(', ');
+            showAlert('fbAlert', `✅ Imported ${d.total} new records: ${summary}`, true);
+            prog.style.display = 'none';
+        } else {
+            showAlert('fbAlert', `❌ Import failed: ${d.error}`, false);
+            prog.style.display = 'none';
+        }
+    } catch(e) {
+        showAlert('fbAlert', `❌ Request failed: ${e}`, false);
+        prog.style.display = 'none';
+    }
+}
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 async function init() {

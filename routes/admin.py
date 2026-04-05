@@ -515,3 +515,160 @@ def restart_app():
         os.kill(os.getpid(), signal.SIGTERM)
     threading.Thread(target=_restart, daemon=True).start()
     return jsonify({'success': True})
+
+
+# ── FIREBASE / FIRESTORE ───────────────────────────────────────────────────────
+
+@admin_bp.route('/api/firebase/status', methods=['GET'])
+@admin_required
+def firebase_status():
+    creds = Setting.get('firebase_service_account', '') or ''
+    has_creds = bool(creds)
+    project_id = ''
+    client_email = ''
+    if has_creds:
+        try:
+            data = json.loads(creds)
+            project_id = data.get('project_id', '')
+            client_email = data.get('client_email', '')
+        except Exception:
+            pass
+    return jsonify({
+        'configured': has_creds,
+        'project_id': project_id,
+        'client_email': client_email,
+    })
+
+
+@admin_bp.route('/api/firebase/save-credentials', methods=['POST'])
+@admin_required
+def firebase_save_credentials():
+    data = request.get_json(silent=True) or {}
+    creds_json = data.get('credentials', '').strip()
+    if not creds_json:
+        return jsonify({'success': False, 'error': 'No credentials provided.'})
+    try:
+        parsed = json.loads(creds_json)
+        if parsed.get('type') != 'service_account':
+            return jsonify({'success': False, 'error': 'Invalid service account JSON — "type" must be "service_account".'})
+        from utils.firestore_manager import reset_firebase_app
+        reset_firebase_app()
+        Setting.set('firebase_service_account', creds_json)
+        return jsonify({'success': True, 'project_id': parsed.get('project_id', '')})
+    except json.JSONDecodeError as e:
+        return jsonify({'success': False, 'error': f'Invalid JSON: {e}'})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+
+@admin_bp.route('/api/firebase/clear-credentials', methods=['POST'])
+@admin_required
+def firebase_clear_credentials():
+    try:
+        from utils.firestore_manager import reset_firebase_app
+        reset_firebase_app()
+        Setting.set('firebase_service_account', '')
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+
+@admin_bp.route('/api/firebase/test', methods=['POST'])
+@admin_required
+def firebase_test():
+    try:
+        from utils.firestore_manager import test_connection
+        ok, msg = test_connection()
+        return jsonify({'success': ok, 'message': msg})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
+
+
+@admin_bp.route('/api/firebase/export', methods=['POST'])
+@admin_required
+def firebase_export():
+    data = request.get_json(silent=True) or {}
+    collections = data.get('collections', ['resumes', 'jobs'])
+    try:
+        from utils.firestore_manager import export_collection
+        results = {}
+
+        if 'resumes' in collections:
+            rows = [r.to_dict() for r in Resume.query.all()]
+            results['resumes'] = export_collection('resumes', rows)
+
+        if 'jobs' in collections:
+            rows = [j.to_dict() for j in Job.query.all()]
+            results['jobs'] = export_collection('jobs', rows)
+
+        if 'settings' in collections:
+            sensitive = {'admin_password', 'groq_api_key', 'mysql_password', 'firebase_service_account'}
+            rows = [
+                {'id': s.id, 'key': s.key, 'value': s.value}
+                for s in Setting.query.all()
+                if s.key not in sensitive
+            ]
+            results['settings'] = export_collection('settings', rows)
+
+        if 'messages' in collections:
+            rows = [m.to_dict() for m in ContactMessage.query.all()]
+            results['contact_messages'] = export_collection('contact_messages', rows)
+
+        return jsonify({'success': True, 'results': results, 'total': sum(results.values())})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+
+@admin_bp.route('/api/firebase/import', methods=['POST'])
+@admin_required
+def firebase_import():
+    data = request.get_json(silent=True) or {}
+    collections = data.get('collections', ['resumes', 'jobs'])
+    try:
+        from utils.firestore_manager import import_collection
+        results = {}
+
+        if 'resumes' in collections:
+            rows = import_collection('resumes')
+            added = 0
+            for row in rows:
+                rid = row.get('id')
+                if rid and not db.session.get(Resume, int(rid)):
+                    r = Resume(
+                        id=int(rid),
+                        label=row.get('label') or 'Imported Resume',
+                        original_text=row.get('original_text') or '',
+                        optimized_text=row.get('optimized_text') or '',
+                        cover_letter=row.get('cover_letter') or '',
+                        match_score=float(row.get('match_score') or 0),
+                        missing_keywords=row.get('missing_keywords') or '[]',
+                        suggestions=row.get('suggestions') or '[]',
+                    )
+                    db.session.add(r)
+                    added += 1
+            db.session.commit()
+            results['resumes'] = added
+
+        if 'jobs' in collections:
+            rows = import_collection('jobs')
+            added = 0
+            for row in rows:
+                jid = row.get('id')
+                if jid and not db.session.get(Job, int(jid)):
+                    j = Job(
+                        id=int(jid),
+                        company=row.get('company') or '',
+                        position=row.get('position') or '',
+                        status=row.get('status') or 'Applied',
+                        job_description=row.get('job_description') or '',
+                        notes=row.get('notes') or '',
+                    )
+                    db.session.add(j)
+                    added += 1
+            db.session.commit()
+            results['jobs'] = added
+
+        return jsonify({'success': True, 'results': results, 'total': sum(results.values())})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)})
