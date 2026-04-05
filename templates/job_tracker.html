@@ -44,6 +44,7 @@
             <textarea class="form-control" id="jobJd" rows="3" placeholder="Paste the job description..."></textarea>
         </div>
         <button class="btn btn-primary" onclick="addJob()">+ Add Application</button>
+        <div id="trackerMsg" style="display:none;margin-top:10px;"></div>
     </div>
 
     <div class="card">
@@ -81,6 +82,7 @@
             <textarea class="form-control" id="analyzeJd" rows="10" placeholder="Paste job description here..."></textarea>
         </div>
         <button class="btn btn-primary" onclick="analyzeJd()">✦ Analyze</button>
+        <div id="analyzerMsg" style="display:none;margin-top:10px;"></div>
         <div id="jdResult" style="display:none;margin-top:20px;">
             <div class="grid grid-2">
                 <div>
@@ -184,10 +186,38 @@ function filterJobs() {
     renderJobs(allJobs.filter(j => j.company.toLowerCase().includes(q) || j.position.toLowerCase().includes(q)));
 }
 
+function showMsg(divId, msg, ok) {
+    const el = document.getElementById(divId);
+    if (!el) return;
+    const isOk = ok === true;
+    el.style.display = 'block';
+    el.innerHTML = `<div style="padding:10px 14px;border-radius:8px;font-size:13px;
+        background:${isOk ? 'rgba(16,185,129,0.12)' : 'rgba(239,68,68,0.12)'};
+        border:1px solid ${isOk ? 'rgba(16,185,129,0.35)' : 'rgba(239,68,68,0.35)'};
+        color:${isOk ? 'var(--green-light,#6ee7b7)' : 'var(--red-light,#fca5a5)'};">${msg}</div>`;
+    if (isOk) setTimeout(() => { el.style.display = 'none'; el.innerHTML = ''; }, 4000);
+}
+
+function inlineConfirm(divId, msg, callback) {
+    const el = document.getElementById(divId);
+    if (!el) return;
+    el.style.display = 'block';
+    el.innerHTML = `<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;
+        background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.35);
+        border-radius:8px;font-size:13px;flex-wrap:wrap;">
+        <span style="flex:1;color:var(--red-light,#fca5a5);">⚠️ ${msg}</span>
+        <button class="btn btn-danger btn-sm" id="${divId}_yes">Confirm</button>
+        <button class="btn btn-secondary btn-sm" id="${divId}_no">Cancel</button>
+    </div>`;
+    document.getElementById(divId + '_yes').onclick = () => { el.style.display='none'; el.innerHTML=''; callback(); };
+    document.getElementById(divId + '_no').onclick = () => { el.style.display='none'; el.innerHTML=''; };
+}
+
 async function addJob() {
     const company = document.getElementById('jobCompany').value.trim();
     const position = document.getElementById('jobPosition').value.trim();
-    if (!company || !position) { alert('Company and position are required.'); return; }
+    if (!company || !position) { showMsg('trackerMsg', 'Company and position are required.'); return; }
+    document.getElementById('trackerMsg').style.display = 'none';
     const res = await fetch('/api/jobs/', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({
         company, position, status: document.getElementById('jobStatus').value,
         notes: document.getElementById('jobNotes').value, job_description: document.getElementById('jobJd').value
@@ -197,14 +227,16 @@ async function addJob() {
         document.getElementById('jobPosition').value='';
         document.getElementById('jobNotes').value='';
         document.getElementById('jobJd').value='';
+        showMsg('trackerMsg', '✅ Application added.', true);
         loadJobs();
     }
 }
 
 async function deleteJob(id) {
-    if (!confirm('Delete this application?')) return;
-    await fetch('/api/jobs/'+id, {method:'DELETE'});
-    loadJobs();
+    inlineConfirm('trackerMsg', 'Delete this application? This cannot be undone.', async () => {
+        await fetch('/api/jobs/'+id, {method:'DELETE'});
+        loadJobs();
+    });
 }
 
 function openEdit(id) {
@@ -232,19 +264,20 @@ async function saveEdit() {
 
 async function analyzeJd() {
     const jd = document.getElementById('analyzeJd').value.trim();
-    if (!jd) { alert('Please paste a job description.'); return; }
+    if (!jd) { showMsg('analyzerMsg', 'Please paste a job description.'); return; }
+    document.getElementById('analyzerMsg').style.display = 'none';
     const btn = document.querySelector('#tab-analyzer .btn-primary');
     btn.disabled = true; btn.textContent = 'Analyzing...';
     try {
         const res = await fetch('/api/jobs/analyze-jd', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({job_description:jd})});
         const data = await res.json();
-        if (data.error) { alert('Error: '+data.error); return; }
+        if (data.error) { showMsg('analyzerMsg', 'Error: ' + data.error); btn.disabled=false; btn.textContent='✦ Analyze'; return; }
         document.getElementById('jdSkills').innerHTML = (data.required_skills||[]).map(s=>`<span class="tag">${s}</span>`).join('');
         document.getElementById('jdKeywords').innerHTML = (data.keywords||[]).map(k=>`<span class="tag tag-warning">${k}</span>`).join('');
         document.getElementById('jdLevel').textContent = data.experience_level||'Unknown';
         document.getElementById('jdResponsibilities').innerHTML = (data.key_responsibilities||[]).map(r=>`<p style="margin-bottom:6px;">• ${r}</p>`).join('');
         document.getElementById('jdResult').style.display='block';
-    } catch(e) { alert('Error: '+e.message); }
+    } catch(e) { showMsg('analyzerMsg', 'Error: ' + e.message); }
     btn.disabled=false; btn.textContent='✦ Analyze';
 }
 

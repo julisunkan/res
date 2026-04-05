@@ -26,6 +26,7 @@
             <input type="text" class="form-control" id="liIndustry" placeholder="e.g. Technology, Finance, Healthcare">
         </div>
         <button class="btn btn-primary btn-lg" onclick="optimizeLinkedIn()">✦ Optimize My Profile</button>
+        <div id="liMsg" style="display:none;margin-top:12px;"></div>
     </div>
 
     <div>
@@ -66,11 +67,24 @@
 {% endblock %}
 {% block scripts %}
 <script>
+function showMsg(divId, msg, ok) {
+    const el = document.getElementById(divId);
+    if (!el) return;
+    const isOk = ok === true;
+    el.style.display = 'block';
+    el.innerHTML = `<div style="padding:10px 14px;border-radius:8px;font-size:13px;
+        background:${isOk ? 'rgba(16,185,129,0.12)' : 'rgba(239,68,68,0.12)'};
+        border:1px solid ${isOk ? 'rgba(16,185,129,0.35)' : 'rgba(239,68,68,0.35)'};
+        color:${isOk ? 'var(--green-light,#6ee7b7)' : 'var(--red-light,#fca5a5)'};">${msg}</div>`;
+    if (isOk) setTimeout(() => { el.style.display = 'none'; el.innerHTML = ''; }, 4000);
+}
+
 async function optimizeLinkedIn() {
     const headline = document.getElementById('liHeadline').value.trim();
     const about = document.getElementById('liAbout').value.trim();
-    if (!headline && !about) { alert('Please enter your headline or About section.'); return; }
+    if (!headline && !about) { showMsg('liMsg', 'Please enter your headline or About section.'); return; }
     document.getElementById('loadingOverlay').classList.add('active');
+    document.getElementById('liMsg').style.display = 'none';
     try {
         const res = await fetch('/api/linkedin/optimize', {
             method: 'POST',
@@ -83,20 +97,25 @@ async function optimizeLinkedIn() {
         });
         const data = await res.json();
         document.getElementById('loadingOverlay').classList.remove('active');
-        if (data.error) { alert('Error: '+data.error); return; }
+        if (data.error) { showMsg('liMsg', 'Error: ' + data.error); return; }
         document.getElementById('liResultHeadline').textContent = data.headline || '';
         document.getElementById('liResultAbout').textContent = data.about || '';
         document.getElementById('liResult').style.display = 'block';
         document.getElementById('liPlaceholder').style.display = 'none';
     } catch(e) {
         document.getElementById('loadingOverlay').classList.remove('active');
-        alert('Error: '+e.message);
+        showMsg('liMsg', 'Error: ' + e.message);
     }
 }
 
 function copyText(id) {
     const text = document.getElementById(id).textContent;
-    navigator.clipboard.writeText(text).then(() => alert('Copied!'));
+    const btn = event.target;
+    navigator.clipboard.writeText(text).then(() => {
+        const orig = btn.textContent;
+        btn.textContent = '✅ Copied!';
+        setTimeout(() => { btn.textContent = orig; }, 2000);
+    });
 }
 </script>
 {% endblock %}

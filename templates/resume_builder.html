@@ -47,10 +47,11 @@
         </div>
     </div>
 
-    <div style="display:flex;gap:12px;margin-bottom:28px;flex-wrap:wrap;">
+    <div style="display:flex;gap:12px;margin-bottom:12px;flex-wrap:wrap;">
         <button class="btn btn-primary btn-lg" onclick="runOptimize()">✦ Optimize My Resume</button>
         <button class="btn btn-secondary btn-lg" onclick="runAnalyzeOnly()">📊 Analyze Match Only</button>
     </div>
+    <div id="resumeAlert" style="display:none;margin-bottom:16px;"></div>
 
     <div id="analyzeResults" style="display:none;" class="animate-fade-up">
         <div class="grid grid-2">
@@ -128,6 +129,7 @@
             <textarea class="form-control" id="stuNotes" rows="4" placeholder="Hackathon winner, open-source contributions, personal projects, volunteer work..."></textarea>
         </div>
         <button class="btn btn-brown btn-lg" onclick="generateFromSkills()">✦ Generate My Resume</button>
+        <div id="studentMsg" style="display:none;margin-top:12px;"></div>
         <div id="stuResult" style="margin-top:24px;display:none;">
             <div class="card-title" style="margin-bottom:10px;">Generated Resume</div>
             <div class="result-box" id="stuResultText"></div>
@@ -155,6 +157,7 @@
             <textarea class="form-control" id="secText" rows="8" placeholder="Paste the resume section you want to improve..."></textarea>
         </div>
         <button class="btn btn-warning btn-lg" onclick="rewriteSection()">⚡ Rewrite Section</button>
+        <div id="sectionMsg" style="display:none;margin-top:12px;"></div>
         <div id="secResult" style="margin-top:24px;display:none;">
             <div class="card-title" style="margin-bottom:10px;">Rewritten Section</div>
             <div class="result-box" id="secResultText"></div>
@@ -165,6 +168,7 @@
 
 <!-- TAB: Saved Resumes -->
 <div class="tab-content" id="tab-saved">
+    <div id="savedConfirm" style="display:none;margin-bottom:14px;"></div>
     <div id="savedList">
         <div class="card" style="text-align:center;color:var(--text-muted);padding:40px;">
             <div class="spinner"></div>
@@ -278,37 +282,73 @@ function downloadDoc(type) {
 }
 
 function showAlert(msg, type='warning') {
-    alert(msg);
+    const isOk = type === 'success';
+    const el = document.getElementById('resumeAlert');
+    el.style.display = 'block';
+    el.innerHTML = `<div style="padding:10px 14px;border-radius:8px;font-size:13px;
+        background:${isOk ? 'rgba(16,185,129,0.12)' : 'rgba(239,68,68,0.12)'};
+        border:1px solid ${isOk ? 'rgba(16,185,129,0.35)' : 'rgba(239,68,68,0.35)'};
+        color:${isOk ? 'var(--green-light,#6ee7b7)' : 'var(--red-light,#fca5a5)'};">${msg}</div>`;
+    if (isOk) setTimeout(() => { el.style.display = 'none'; el.innerHTML = ''; }, 4000);
+}
+
+function showMsg(divId, msg, ok) {
+    const el = document.getElementById(divId);
+    if (!el) return;
+    const isOk = ok === true;
+    el.style.display = 'block';
+    el.innerHTML = `<div style="padding:10px 14px;border-radius:8px;font-size:13px;
+        background:${isOk ? 'rgba(16,185,129,0.12)' : 'rgba(239,68,68,0.12)'};
+        border:1px solid ${isOk ? 'rgba(16,185,129,0.35)' : 'rgba(239,68,68,0.35)'};
+        color:${isOk ? 'var(--green-light,#6ee7b7)' : 'var(--red-light,#fca5a5)'};">${msg}</div>`;
+    if (isOk) setTimeout(() => { el.style.display = 'none'; el.innerHTML = ''; }, 4000);
+}
+
+function inlineConfirm(divId, msg, callback) {
+    const el = document.getElementById(divId);
+    if (!el) return;
+    el.style.display = 'block';
+    el.innerHTML = `<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;
+        background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.35);
+        border-radius:8px;font-size:13px;flex-wrap:wrap;">
+        <span style="flex:1;color:var(--red-light,#fca5a5);">⚠️ ${msg}</span>
+        <button class="btn btn-danger btn-sm" id="${divId}_yes">Confirm</button>
+        <button class="btn btn-secondary btn-sm" id="${divId}_no">Cancel</button>
+    </div>`;
+    document.getElementById(divId + '_yes').onclick = () => { el.style.display='none'; el.innerHTML=''; callback(); };
+    document.getElementById(divId + '_no').onclick = () => { el.style.display='none'; el.innerHTML=''; };
 }
 
 async function generateFromSkills() {
     const name = document.getElementById('stuName').value.trim();
     const skills = document.getElementById('stuSkills').value.trim();
-    if (!name || !skills) { alert('Please enter your name and skills.'); return; }
+    if (!name || !skills) { showMsg('studentMsg', 'Please enter your name and skills.'); return; }
+    document.getElementById('studentMsg').style.display = 'none';
     showLoading('Generating your resume...');
     try {
         const res = await fetch('/api/resume/generate-from-skills', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ name, skills, education: document.getElementById('stuEducation').value, experience_notes: document.getElementById('stuNotes').value }) });
         const data = await res.json();
         hideLoading();
-        if (data.error) { alert('Error: ' + data.error); return; }
+        if (data.error) { showMsg('studentMsg', 'Error: ' + data.error); return; }
         document.getElementById('stuResultText').textContent = data.resume_text;
         document.getElementById('stuResult').style.display = 'block';
-    } catch(e) { hideLoading(); alert('Error: ' + e.message); }
+    } catch(e) { hideLoading(); showMsg('studentMsg', 'Error: ' + e.message); }
 }
 
 async function rewriteSection() {
     const sectionText = document.getElementById('secText').value.trim();
     const sectionName = document.getElementById('secName').value.trim() || 'Section';
-    if (!sectionText) { alert('Please enter section content.'); return; }
+    if (!sectionText) { showMsg('sectionMsg', 'Please enter section content.'); return; }
+    document.getElementById('sectionMsg').style.display = 'none';
     showLoading('Rewriting section with AI...');
     try {
         const res = await fetch('/api/resume/rewrite-section', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ section_text: sectionText, section_name: sectionName, job_description: document.getElementById('secJobDesc').value }) });
         const data = await res.json();
         hideLoading();
-        if (data.error) { alert('Error: ' + data.error); return; }
+        if (data.error) { showMsg('sectionMsg', 'Error: ' + data.error); return; }
         document.getElementById('secResultText').textContent = data.rewritten;
         document.getElementById('secResult').style.display = 'block';
-    } catch(e) { hideLoading(); alert('Error: ' + e.message); }
+    } catch(e) { hideLoading(); showMsg('sectionMsg', 'Error: ' + e.message); }
 }
 
 function copyText(id) {
@@ -347,9 +387,12 @@ async function loadSavedResumes() {
 }
 
 async function deleteResume(id) {
-    if (!confirm('Delete this resume permanently?')) return;
-    await fetch('/api/resume/' + id, { method: 'DELETE' });
-    loadSavedResumes();
+    const container = document.getElementById('savedList');
+    const confirmDiv = document.getElementById('savedConfirm');
+    inlineConfirm('savedConfirm', 'Delete this resume permanently? This cannot be undone.', async () => {
+        await fetch('/api/resume/' + id, { method: 'DELETE' });
+        loadSavedResumes();
+    });
 }
 </script>
 {% endblock %}

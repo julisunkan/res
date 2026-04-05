@@ -417,6 +417,7 @@
 
         <!-- ── RESUMES ── -->
         <div class="panel" id="panel-resumes">
+            <div id="resumesAlert" class="alert" style="display:none;margin-bottom:10px;"></div>
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
                 <input type="text" id="resumeSearch" placeholder="Search resumes..." style="max-width:240px;" oninput="filterResumes()">
                 <button class="btn btn-danger btn-sm" onclick="bulkDeleteResumes()">Delete Selected</button>
@@ -442,6 +443,7 @@
 
         <!-- ── JOBS ── -->
         <div class="panel" id="panel-jobs">
+            <div id="jobsAlert" class="alert" style="display:none;margin-bottom:10px;"></div>
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
                 <input type="text" id="jobSearch" placeholder="Search jobs..." style="max-width:240px;" oninput="filterJobs()">
                 <button class="btn btn-danger btn-sm" onclick="bulkDeleteJobs()">Delete Selected</button>
@@ -975,16 +977,17 @@ async function importSettingsJson() {
 async function importSqlDump() {
     const file = document.getElementById('importSqlFile').files[0];
     if (!file) { showAlert('importAlert', 'Please select a .sql file first.', false); return; }
-    if (!confirm('⚠ This will run SQL directly against your live database. Make sure you have a backup. Continue?')) return;
-    const fd = new FormData();
-    fd.append('file', file);
-    showAlert('importAlert', '⏳ Importing SQL dump...', true);
-    const res = await fetch('/julisunkan/api/database/import-sql', { method:'POST', body: fd });
-    const data = await res.json();
-    let msg = data.success ? '✅ ' + data.message : '❌ ' + (data.error || 'Import failed.');
-    if (data.errors && data.errors.length) msg += '\n\nStatement errors:\n• ' + data.errors.join('\n• ');
-    showAlert('importAlert', msg, data.success);
-    if (data.success) document.getElementById('importSqlFile').value = '';
+    inlineConfirm('importAlert', 'This will run SQL directly against your live database. Make sure you have a backup.', async () => {
+        const fd = new FormData();
+        fd.append('file', file);
+        showAlert('importAlert', '⏳ Importing SQL dump...', true);
+        const res = await fetch('/julisunkan/api/database/import-sql', { method:'POST', body: fd });
+        const data = await res.json();
+        let msg = data.success ? '✅ ' + data.message : '❌ ' + (data.error || 'Import failed.');
+        if (data.errors && data.errors.length) msg += ' (' + data.errors.length + ' statement errors)';
+        showAlert('importAlert', msg, data.success);
+        if (data.success) document.getElementById('importSqlFile').value = '';
+    });
 }
 
 function loadAdPlacements(s) {
@@ -1152,25 +1155,28 @@ async function saveResume() {
 }
 
 async function deleteResume(id) {
-    if (!confirm('Delete this resume permanently?')) return;
-    await fetch('/julisunkan/api/resumes/'+id, { method:'DELETE' });
-    loadResumes();
+    inlineConfirm('resumesAlert', 'Delete this resume permanently?', async () => {
+        await fetch('/julisunkan/api/resumes/'+id, { method:'DELETE' });
+        loadResumes();
+    });
 }
 
 async function bulkDeleteResumes() {
     const ids = [...document.querySelectorAll('.resume-cb:checked')].map(c => parseInt(c.dataset.id));
-    if (!ids.length) { alert('Select at least one resume.'); return; }
-    if (!confirm(`Delete ${ids.length} resume(s) permanently?`)) return;
-    await fetch('/julisunkan/api/resumes/bulk-delete', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ ids }) });
-    loadResumes();
+    if (!ids.length) { showAlert('resumesAlert', 'Select at least one resume.', false); return; }
+    inlineConfirm('resumesAlert', `Delete ${ids.length} resume(s) permanently?`, async () => {
+        await fetch('/julisunkan/api/resumes/bulk-delete', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ ids }) });
+        loadResumes();
+    });
 }
 
 async function nukeResumes() {
-    if (!confirm('⚠️ This will permanently delete ALL resumes. Are you sure?')) return;
-    const ids = allResumes.map(r => r.id);
-    if (ids.length) await fetch('/julisunkan/api/resumes/bulk-delete', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ ids }) });
-    loadResumes();
-    showAlert('secAlert', `Deleted ${ids.length} resumes.`, true);
+    inlineConfirm('resumesAlert', 'This will permanently delete ALL resumes. This cannot be undone.', async () => {
+        const ids = allResumes.map(r => r.id);
+        if (ids.length) await fetch('/julisunkan/api/resumes/bulk-delete', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ ids }) });
+        loadResumes();
+        showAlert('secAlert', `Deleted ${ids.length} resumes.`, true);
+    });
 }
 
 // ── Jobs ──────────────────────────────────────────────────────────────────────
@@ -1234,25 +1240,28 @@ async function saveJob() {
 }
 
 async function deleteJob(id) {
-    if (!confirm('Delete this job application?')) return;
-    await fetch('/julisunkan/api/jobs/'+id, { method:'DELETE' });
-    loadJobs();
+    inlineConfirm('jobsAlert', 'Delete this job application? This cannot be undone.', async () => {
+        await fetch('/julisunkan/api/jobs/'+id, { method:'DELETE' });
+        loadJobs();
+    });
 }
 
 async function bulkDeleteJobs() {
     const ids = [...document.querySelectorAll('.job-cb:checked')].map(c => parseInt(c.dataset.id));
-    if (!ids.length) { alert('Select at least one job.'); return; }
-    if (!confirm(`Delete ${ids.length} job(s)?`)) return;
-    await fetch('/julisunkan/api/jobs/bulk-delete', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ ids }) });
-    loadJobs();
+    if (!ids.length) { showAlert('jobsAlert', 'Select at least one job.', false); return; }
+    inlineConfirm('jobsAlert', `Delete ${ids.length} job(s) permanently?`, async () => {
+        await fetch('/julisunkan/api/jobs/bulk-delete', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ ids }) });
+        loadJobs();
+    });
 }
 
 async function nukeJobs() {
-    if (!confirm('⚠️ Delete ALL job applications?')) return;
-    const ids = allJobs.map(j => j.id);
-    if (ids.length) await fetch('/julisunkan/api/jobs/bulk-delete', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ ids }) });
-    loadJobs();
-    showAlert('secAlert', `Deleted ${ids.length} job applications.`, true);
+    inlineConfirm('jobsAlert', 'Delete ALL job applications? This cannot be undone.', async () => {
+        const ids = allJobs.map(j => j.id);
+        if (ids.length) await fetch('/julisunkan/api/jobs/bulk-delete', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ ids }) });
+        loadJobs();
+        showAlert('secAlert', `Deleted ${ids.length} job applications.`, true);
+    });
 }
 
 // ── Job Board ────────────────────────────────────────────────────────────────
@@ -1331,15 +1340,24 @@ async function jbQuickAction(id, status) {
 }
 
 async function jbDelete(id) {
-    if (!confirm('Delete this job post permanently?')) return;
-    await fetch('/api/jobboard/admin/posts/' + id, { method:'DELETE' });
-    loadJobBoard(jbCurrentStatus);
+    inlineConfirm('jbAlert', 'Delete this job post permanently?', async () => {
+        await fetch('/api/jobboard/admin/posts/' + id, { method:'DELETE' });
+        loadJobBoard(jbCurrentStatus);
+    });
 }
 
 async function bulkJobBoardAction(action) {
     const ids = [...document.querySelectorAll('.jb-check:checked')].map(c => parseInt(c.dataset.id));
     if (!ids.length) { showAlert('jbAlert', 'No posts selected.', false); return; }
-    if (action === 'delete' && !confirm(`Delete ${ids.length} post(s) permanently?`)) return;
+    if (action === 'delete') {
+        inlineConfirm('jbAlert', `Delete ${ids.length} post(s) permanently?`, async () => {
+            const res = await fetch('/api/jobboard/admin/posts/bulk', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({action, ids}) });
+            const data = await res.json();
+            showAlert('jbAlert', data.success ? `✅ ${data.affected} post(s) deleted.` : '❌ Error: ' + data.error, data.success);
+            loadJobBoard(jbCurrentStatus);
+        });
+        return;
+    }
     const res = await fetch('/api/jobboard/admin/posts/bulk', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({action, ids}) });
     const data = await res.json();
     showAlert('jbAlert', data.success ? `✅ ${data.affected} post(s) ${action}d.` : '❌ Error: ' + data.error, data.success);
@@ -1504,8 +1522,28 @@ function showAlert(id, msg, ok) {
     const el = document.getElementById(id);
     if (!el) return;
     el.textContent = msg;
+    el.style.display = 'block';
     el.className = 'alert alert-show ' + (ok ? 'alert-ok' : 'alert-err');
-    setTimeout(() => { el.classList.remove('alert-show'); }, 4000);
+    if (ok) setTimeout(() => { el.classList.remove('alert-show'); el.style.display='none'; }, 4000);
+}
+
+function inlineConfirm(divId, msg, callback) {
+    const el = document.getElementById(divId);
+    if (!el) return;
+    el.style.display = 'block';
+    el.className = 'alert alert-show alert-err';
+    el.innerHTML = `<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <span style="flex:1;">⚠️ ${msg}</span>
+        <button class="btn btn-danger btn-sm" id="${divId}_yes">Confirm</button>
+        <button class="btn btn-secondary btn-sm" id="${divId}_no">Cancel</button>
+    </div>`;
+    document.getElementById(divId+'_yes').onclick = () => {
+        el.style.display='none'; el.innerHTML='';
+        callback();
+    };
+    document.getElementById(divId+'_no').onclick = () => {
+        el.style.display='none'; el.innerHTML='';
+    };
 }
 
 async function doLogout() {

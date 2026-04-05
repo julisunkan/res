@@ -14,6 +14,7 @@
             <textarea class="form-control" id="interviewJd" rows="14" placeholder="Paste the full job description here..."></textarea>
         </div>
         <button class="btn btn-primary btn-lg" onclick="generateQuestions()">✦ Generate Interview Questions</button>
+        <div id="interviewMsg" style="display:none;margin-top:12px;"></div>
     </div>
 
     <div>
@@ -33,15 +34,28 @@
 {% endblock %}
 {% block scripts %}
 <script>
+function showMsg(divId, msg, ok) {
+    const el = document.getElementById(divId);
+    if (!el) return;
+    const isOk = ok === true;
+    el.style.display = 'block';
+    el.innerHTML = `<div style="padding:10px 14px;border-radius:8px;font-size:13px;
+        background:${isOk ? 'rgba(16,185,129,0.12)' : 'rgba(239,68,68,0.12)'};
+        border:1px solid ${isOk ? 'rgba(16,185,129,0.35)' : 'rgba(239,68,68,0.35)'};
+        color:${isOk ? 'var(--green-light,#6ee7b7)' : 'var(--red-light,#fca5a5)'};">${msg}</div>`;
+    if (isOk) setTimeout(() => { el.style.display = 'none'; el.innerHTML = ''; }, 4000);
+}
+
 async function generateQuestions() {
     const jd = document.getElementById('interviewJd').value.trim();
-    if (!jd) { alert('Please paste a job description.'); return; }
+    if (!jd) { showMsg('interviewMsg', 'Please paste a job description.'); return; }
     document.getElementById('loadingOverlay').classList.add('active');
+    document.getElementById('interviewMsg').style.display = 'none';
     try {
         const res = await fetch('/api/interview/generate', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({job_description: jd})});
         const data = await res.json();
         document.getElementById('loadingOverlay').classList.remove('active');
-        if (data.error) { alert('Error: '+data.error); return; }
+        if (data.error) { showMsg('interviewMsg', 'Error: ' + data.error); return; }
         const questions = data.questions || [];
         const html = questions.map((q, i) => `
             <div class="accordion-item">
@@ -64,7 +78,7 @@ async function generateQuestions() {
         `;
     } catch(e) {
         document.getElementById('loadingOverlay').classList.remove('active');
-        alert('Error: '+e.message);
+        showMsg('interviewMsg', 'Error: ' + e.message);
     }
 }
 
