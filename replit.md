@@ -35,8 +35,8 @@ python3 -m gunicorn --bind 0.0.0.0:5000 --reuse-port --reload main:app
 - **Admin Panel**: Protected at `/julisunkan`
 
 ## Database Configuration
-- Database type and MySQL credentials are stored in `db_config.json` (gitignored from prod)
-- Default is SQLite (`resume_app.db`)
+- `DATABASE_URL` environment variable is used first (set automatically by Replit's PostgreSQL integration)
+- Falls back to MySQL config in `db_config.json`, then SQLite (`resume_app.db`)
 - Admin can switch to MySQL via the **Database** panel in the admin dashboard at `/julisunkan`
 - `utils/db_manager.py` handles config read/write, MySQL connection testing, and SQL exports
 - Switching database requires an app restart (admin panel has a "Save & Apply" button that triggers this)

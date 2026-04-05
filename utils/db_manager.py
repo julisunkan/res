@@ -21,6 +21,14 @@ def save_config(cfg):
 
 
 def get_db_uri():
+    # Prefer DATABASE_URL from environment (e.g. Replit PostgreSQL)
+    database_url = os.environ.get('DATABASE_URL')
+    if database_url:
+        # SQLAlchemy requires postgresql:// not postgres://
+        if database_url.startswith('postgres://'):
+            database_url = database_url.replace('postgres://', 'postgresql://', 1)
+        return database_url
+
     cfg = load_config()
     if cfg.get('db_type') == 'mysql':
         h = cfg.get('mysql_host', 'localhost')
