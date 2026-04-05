@@ -7,6 +7,7 @@ from extensions import db
 from models.settings import Setting
 from models.resume import Resume
 from models.job import Job
+from models.contact_message import ContactMessage
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -271,7 +272,65 @@ def get_stats():
         'jobs': Job.query.count(),
         'interviews': Job.query.filter_by(status='Interview').count(),
         'offers': Job.query.filter_by(status='Offer').count(),
+        'messages': ContactMessage.query.count(),
+        'unread_messages': ContactMessage.query.filter_by(is_read=False).count(),
     })
+
+
+# ── CONTACT MESSAGES API ──────────────────────────────────────────────────────
+
+@admin_bp.route('/api/messages', methods=['GET'])
+@admin_required
+def list_messages():
+    msgs = ContactMessage.query.order_by(ContactMessage.created_at.desc()).all()
+    return jsonify([m.to_dict() for m in msgs])
+
+
+@admin_bp.route('/api/messages/<int:mid>', methods=['GET'])
+@admin_required
+def get_message(mid):
+    m = ContactMessage.query.get_or_404(mid)
+    if not m.is_read:
+        m.is_read = True
+        db.session.commit()
+    return jsonify(m.to_dict())
+
+
+@admin_bp.route('/api/messages/<int:mid>/read', methods=['POST'])
+@admin_required
+def mark_read(mid):
+    m = ContactMessage.query.get_or_404(mid)
+    m.is_read = True
+    db.session.commit()
+    return jsonify({'success': True})
+
+
+@admin_bp.route('/api/messages/<int:mid>/unread', methods=['POST'])
+@admin_required
+def mark_unread(mid):
+    m = ContactMessage.query.get_or_404(mid)
+    m.is_read = False
+    db.session.commit()
+    return jsonify({'success': True})
+
+
+@admin_bp.route('/api/messages/<int:mid>', methods=['DELETE'])
+@admin_required
+def delete_message(mid):
+    m = ContactMessage.query.get_or_404(mid)
+    db.session.delete(m)
+    db.session.commit()
+    return jsonify({'success': True})
+
+
+@admin_bp.route('/api/messages/bulk-delete', methods=['POST'])
+@admin_required
+def bulk_delete_messages():
+    data = request.get_json()
+    ids = data.get('ids', [])
+    ContactMessage.query.filter(ContactMessage.id.in_(ids)).delete(synchronize_session=False)
+    db.session.commit()
+    return jsonify({'success': True, 'deleted': len(ids)})
 
 
 # ── DATABASE CONFIG ───────────────────────────────────────────────────────────

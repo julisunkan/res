@@ -122,12 +122,13 @@
     </div>
 </div>
 <script>
-function submitContact() {
-    const name = document.getElementById('contactName').value.trim();
-    const email = document.getElementById('contactEmail').value.trim();
+async function submitContact() {
+    const name    = document.getElementById('contactName').value.trim();
+    const email   = document.getElementById('contactEmail').value.trim();
     const subject = document.getElementById('contactSubject').value;
     const message = document.getElementById('contactMessage').value.trim();
     const alertEl = document.getElementById('contactAlert');
+    const btn     = document.querySelector('.submit-btn');
 
     if (!name || !email || !subject || !message) {
         alertEl.className = 'alert-form alert-err';
@@ -139,13 +140,37 @@ function submitContact() {
         alertEl.textContent = 'Please enter a valid email address.';
         return;
     }
-    // Simulate submission (in production, wire to a backend endpoint or email service)
-    alertEl.className = 'alert-form alert-ok';
-    alertEl.textContent = '✅ Thank you! Your message has been received. We\'ll get back to you soon.';
-    document.getElementById('contactName').value = '';
-    document.getElementById('contactEmail').value = '';
-    document.getElementById('contactSubject').value = '';
-    document.getElementById('contactMessage').value = '';
+
+    btn.disabled = true;
+    btn.textContent = 'Sending…';
+    alertEl.className = 'alert-form';
+    alertEl.textContent = '';
+
+    try {
+        const res = await fetch('/api/contact', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, email, subject, message })
+        });
+        const data = await res.json();
+        if (data.success) {
+            alertEl.className = 'alert-form alert-ok';
+            alertEl.textContent = '✅ Thank you! Your message has been received. We\'ll get back to you soon.';
+            document.getElementById('contactName').value = '';
+            document.getElementById('contactEmail').value = '';
+            document.getElementById('contactSubject').value = '';
+            document.getElementById('contactMessage').value = '';
+        } else {
+            alertEl.className = 'alert-form alert-err';
+            alertEl.textContent = data.error || 'Something went wrong. Please try again.';
+        }
+    } catch(e) {
+        alertEl.className = 'alert-form alert-err';
+        alertEl.textContent = 'Network error. Please check your connection and try again.';
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'Send Message';
+    }
 }
 </script>
 {% endblock %}

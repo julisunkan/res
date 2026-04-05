@@ -221,6 +221,7 @@
         <button class="nav-item" onclick="show('resumes')"><span class="icon">📄</span> Resumes</button>
         <button class="nav-item" onclick="show('jobs')"><span class="icon">💼</span> Job Applications</button>
         <button class="nav-item" onclick="show('jobboard')"><span class="icon">🌐</span> Job Board</button>
+        <button class="nav-item" onclick="show('messages')" id="nav-messages"><span class="icon">✉️</span> Messages <span id="msgBadge" style="display:none;background:#ef4444;color:#fff;font-size:10px;font-weight:700;border-radius:10px;padding:1px 6px;margin-left:4px;"></span></button>
         <button class="nav-item" onclick="show('monetization')"><span class="icon">💰</span> Monetization</button>
         <button class="nav-item" onclick="show('security')"><span class="icon">🔐</span> Security</button>
         <button class="nav-item" onclick="show('database')"><span class="icon">🗄️</span> Database</button>
@@ -249,6 +250,7 @@
                 <div class="stat"><div class="stat-val" id="ov-jobs">—</div><div class="stat-lbl">Job Applications</div></div>
                 <div class="stat"><div class="stat-val" id="ov-interviews" style="color:var(--warning)">—</div><div class="stat-lbl">Interviews</div></div>
                 <div class="stat"><div class="stat-val" id="ov-offers" style="color:var(--success)">—</div><div class="stat-lbl">Offers</div></div>
+                <div class="stat" onclick="show('messages')" style="cursor:pointer;"><div class="stat-val" id="ov-messages" style="color:#818cf8;">—</div><div class="stat-lbl">Messages <span id="ov-unread" style="display:none;font-size:11px;color:#ef4444;font-weight:700;"></span></div></div>
             </div>
 
             <div class="card">
@@ -690,6 +692,50 @@
             </div>
         </div>
 
+        <!-- ── MESSAGES ── -->
+        <div class="panel" id="panel-messages">
+            <div id="msgAlert" class="alert" style="display:none;margin-bottom:12px;"></div>
+            <div class="tab-bar">
+                <span style="font-size:13px;color:var(--muted);" id="msgSummary">Loading…</span>
+                <div class="spacer"></div>
+                <button class="btn btn-secondary btn-sm" onclick="loadMessages()">↻ Refresh</button>
+                <button class="btn btn-sm" style="background:rgba(239,68,68,.15);color:#fca5a5;border:1px solid rgba(239,68,68,.3);" onclick="bulkDeleteMessages()">🗑 Delete Selected</button>
+            </div>
+            <div class="card" style="padding:0;overflow:hidden;">
+                <table id="msgTable">
+                    <thead>
+                        <tr>
+                            <th style="width:32px;"><input type="checkbox" id="msgSelectAll" onchange="toggleMsgSelect(this.checked)"></th>
+                            <th>From</th>
+                            <th>Subject</th>
+                            <th>Date</th>
+                            <th style="width:120px;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="msgTbody"></tbody>
+                </table>
+            </div>
+
+            <!-- Message detail modal -->
+            <div id="msgModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1000;display:none;align-items:center;justify-content:center;padding:24px;">
+                <div style="background:#12121f;border:1px solid #1e1e3a;border-radius:14px;max-width:620px;width:100%;max-height:85vh;overflow-y:auto;padding:28px;position:relative;">
+                    <button onclick="closeMsgModal()" style="position:absolute;top:14px;right:18px;background:none;border:none;color:#64748b;font-size:20px;cursor:pointer;">✕</button>
+                    <div style="font-size:11px;font-weight:600;text-transform:uppercase;color:#64748b;letter-spacing:.07em;margin-bottom:4px;" id="mdSubject"></div>
+                    <div style="font-size:18px;font-weight:700;color:#e2e8f0;margin-bottom:16px;" id="mdFrom"></div>
+                    <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:18px;font-size:13px;color:#64748b;">
+                        <span>📧 <a id="mdEmail" href="#" style="color:#818cf8;"></a></span>
+                        <span>🕐 <span id="mdDate"></span></span>
+                    </div>
+                    <div style="background:#0f0f1a;border:1px solid #1e1e3a;border-radius:8px;padding:16px;font-size:14px;color:#cbd5e1;line-height:1.7;white-space:pre-wrap;" id="mdBody"></div>
+                    <div style="display:flex;gap:10px;margin-top:18px;flex-wrap:wrap;">
+                        <a id="mdReplyBtn" href="#" class="btn btn-sm" style="background:#4f46e5;color:#fff;">✉ Reply via Email</a>
+                        <button id="mdToggleRead" class="btn btn-secondary btn-sm" onclick="toggleMsgRead()"></button>
+                        <button class="btn btn-sm" style="background:rgba(239,68,68,.15);color:#fca5a5;border:1px solid rgba(239,68,68,.3);" onclick="deleteMsgFromModal()">🗑 Delete</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- ── SECURITY ── -->
         <div class="panel" id="panel-security">
             <div id="secAlert" class="alert"></div>
@@ -927,8 +973,8 @@ let allJobs = [];
 let settings = {};
 
 // ── Navigation ──────────────────────────────────────────────────────────────
-const panelOrder = ['overview','settings','ai','resumes','jobs','jobboard','monetization','security','database'];
-const panelTitles = { overview:'Overview', settings:'App Settings', ai:'AI Configuration', resumes:'Manage Resumes', jobs:'Job Applications', jobboard:'Job Board Manager', monetization:'Monetization & Analytics', security:'Security', database:'Database' };
+const panelOrder = ['overview','settings','ai','resumes','jobs','jobboard','messages','monetization','security','database'];
+const panelTitles = { overview:'Overview', settings:'App Settings', ai:'AI Configuration', resumes:'Manage Resumes', jobs:'Job Applications', jobboard:'Job Board Manager', messages:'Contact Messages', monetization:'Monetization & Analytics', security:'Security', database:'Database' };
 
 function show(name) {
     document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
@@ -943,6 +989,7 @@ function show(name) {
     if (['settings','ai','security','monetization'].includes(name)) loadSettings();
     if (name === 'monetization') loadAdsTxt();
     if (name === 'database') loadDbConfig();
+    if (name === 'messages') loadMessages();
 }
 
 // ── Settings ────────────────────────────────────────────────────────────────
@@ -1648,6 +1695,168 @@ async function applyDbConfig() {
     setTimeout(() => location.reload(), 3500);
 }
 
+// ── Messages ─────────────────────────────────────────────────────────────────
+
+let allMessages = [];
+let currentMsgId = null;
+
+function _fmtMsgDate(iso) {
+    if (!iso) return '';
+    const d = new Date(iso);
+    const diff = Math.floor((Date.now() - d) / 86400000);
+    if (diff === 0) return 'Today ' + d.toLocaleTimeString('en-US', {hour:'2-digit',minute:'2-digit'});
+    if (diff === 1) return 'Yesterday';
+    if (diff < 7)  return diff + 'd ago';
+    return d.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
+}
+
+async function loadMessages() {
+    try {
+        const res = await fetch('/julisunkan/api/messages');
+        allMessages = await res.json();
+        renderMessages(allMessages);
+        const unread = allMessages.filter(m => !m.is_read).length;
+        document.getElementById('msgSummary').textContent =
+            `${allMessages.length} message${allMessages.length !== 1 ? 's' : ''} · ${unread} unread`;
+        updateMsgBadge(unread);
+    } catch(e) {
+        document.getElementById('msgSummary').textContent = 'Failed to load messages.';
+    }
+}
+
+function updateMsgBadge(unread) {
+    const badge = document.getElementById('msgBadge');
+    const ovUnread = document.getElementById('ov-unread');
+    if (unread > 0) {
+        badge.textContent = unread;
+        badge.style.display = 'inline';
+        ovUnread.textContent = `(${unread} new)`;
+        ovUnread.style.display = 'inline';
+    } else {
+        badge.style.display = 'none';
+        ovUnread.style.display = 'none';
+    }
+}
+
+function renderMessages(msgs) {
+    const tbody = document.getElementById('msgTbody');
+    if (!msgs.length) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--muted);">No messages yet. Messages submitted via the contact form will appear here.</td></tr>`;
+        return;
+    }
+    tbody.innerHTML = msgs.map(m => {
+        const unreadDot = m.is_read ? '' : `<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#ef4444;margin-right:6px;flex-shrink:0;"></span>`;
+        const nameStyle = m.is_read ? 'color:var(--muted);' : 'font-weight:600;color:var(--text);';
+        return `<tr style="cursor:pointer;" onclick="openMsg(${m.id})">
+            <td onclick="event.stopPropagation()"><input type="checkbox" class="msg-cb" data-id="${m.id}"></td>
+            <td style="${nameStyle}">${unreadDot}${esc(m.name)} <span style="color:var(--muted);font-size:12px;">&lt;${esc(m.email)}&gt;</span></td>
+            <td style="${nameStyle}font-size:13px;">${esc(m.subject)}</td>
+            <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${_fmtMsgDate(m.created_at)}</td>
+            <td>
+                <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();openMsg(${m.id})">View</button>
+                <button class="btn btn-sm" style="background:rgba(239,68,68,.1);color:#fca5a5;border:1px solid rgba(239,68,68,.25);" onclick="event.stopPropagation();deleteMsg(${m.id})">✕</button>
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+function esc(s) {
+    return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+async function openMsg(id) {
+    const m = allMessages.find(x => x.id === id);
+    if (!m) return;
+    currentMsgId = id;
+    document.getElementById('mdSubject').textContent = m.subject;
+    document.getElementById('mdFrom').textContent = m.name;
+    document.getElementById('mdEmail').textContent = m.email;
+    document.getElementById('mdEmail').href = `mailto:${m.email}?subject=Re: ${encodeURIComponent(m.subject)}`;
+    document.getElementById('mdReplyBtn').href = `mailto:${m.email}?subject=Re: ${encodeURIComponent(m.subject)}`;
+    document.getElementById('mdDate').textContent = m.created_at ? new Date(m.created_at).toLocaleString() : '';
+    document.getElementById('mdBody').textContent = m.message;
+    document.getElementById('mdToggleRead').textContent = m.is_read ? '◯ Mark Unread' : '✓ Mark Read';
+    const modal = document.getElementById('msgModal');
+    modal.style.display = 'flex';
+    if (!m.is_read) {
+        try {
+            await fetch(`/julisunkan/api/messages/${id}/read`, { method: 'POST' });
+            m.is_read = true;
+            const unread = allMessages.filter(x => !x.is_read).length;
+            updateMsgBadge(unread);
+            renderMessages(allMessages);
+        } catch(e) {}
+    }
+}
+
+function closeMsgModal() {
+    document.getElementById('msgModal').style.display = 'none';
+    currentMsgId = null;
+}
+
+async function toggleMsgRead() {
+    if (!currentMsgId) return;
+    const m = allMessages.find(x => x.id === currentMsgId);
+    if (!m) return;
+    const endpoint = m.is_read ? 'unread' : 'read';
+    try {
+        await fetch(`/julisunkan/api/messages/${currentMsgId}/${endpoint}`, { method: 'POST' });
+        m.is_read = !m.is_read;
+        document.getElementById('mdToggleRead').textContent = m.is_read ? '◯ Mark Unread' : '✓ Mark Read';
+        const unread = allMessages.filter(x => !x.is_read).length;
+        updateMsgBadge(unread);
+        renderMessages(allMessages);
+    } catch(e) {}
+}
+
+async function deleteMsg(id) {
+    if (!confirm('Delete this message?')) return;
+    try {
+        await fetch(`/julisunkan/api/messages/${id}`, { method: 'DELETE' });
+        allMessages = allMessages.filter(m => m.id !== id);
+        renderMessages(allMessages);
+        const unread = allMessages.filter(m => !m.is_read).length;
+        updateMsgBadge(unread);
+        document.getElementById('msgSummary').textContent =
+            `${allMessages.length} message${allMessages.length !== 1 ? 's' : ''} · ${unread} unread`;
+    } catch(e) {}
+}
+
+async function deleteMsgFromModal() {
+    if (!currentMsgId) return;
+    closeMsgModal();
+    await deleteMsg(currentMsgId);
+}
+
+function toggleMsgSelect(checked) {
+    document.querySelectorAll('.msg-cb').forEach(cb => cb.checked = checked);
+}
+
+async function bulkDeleteMessages() {
+    const ids = [...document.querySelectorAll('.msg-cb:checked')].map(cb => parseInt(cb.dataset.id));
+    if (!ids.length) { alert('Select messages to delete first.'); return; }
+    if (!confirm(`Delete ${ids.length} message(s)?`)) return;
+    try {
+        await fetch('/julisunkan/api/messages/bulk-delete', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({ ids })
+        });
+        allMessages = allMessages.filter(m => !ids.includes(m.id));
+        renderMessages(allMessages);
+        const unread = allMessages.filter(m => !m.is_read).length;
+        updateMsgBadge(unread);
+        document.getElementById('msgSummary').textContent =
+            `${allMessages.length} message${allMessages.length !== 1 ? 's' : ''} · ${unread} unread`;
+        document.getElementById('msgSelectAll').checked = false;
+    } catch(e) {}
+}
+
+// Close modal when clicking outside
+document.getElementById('msgModal').addEventListener('click', function(e) {
+    if (e.target === this) closeMsgModal();
+});
+
 // ── Init ──────────────────────────────────────────────────────────────────────
 async function init() {
     try {
@@ -1657,6 +1866,8 @@ async function init() {
         document.getElementById('ov-jobs').textContent = d.jobs;
         document.getElementById('ov-interviews').textContent = d.interviews;
         document.getElementById('ov-offers').textContent = d.offers;
+        document.getElementById('ov-messages').textContent = d.messages || 0;
+        updateMsgBadge(d.unread_messages || 0);
     } catch(e) {}
     testGroq(false);
 }

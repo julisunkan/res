@@ -77,6 +77,26 @@ def create_app():
     def contact():
         return render_template('contact.html')
 
+    @app.route('/api/contact', methods=['POST'])
+    def contact_submit():
+        from models.contact_message import ContactMessage
+        from flask import request as req, jsonify
+        data = req.get_json(silent=True) or {}
+        name = (data.get('name') or '').strip()
+        email = (data.get('email') or '').strip()
+        subject = (data.get('subject') or '').strip()
+        message = (data.get('message') or '').strip()
+        if not all([name, email, subject, message]):
+            return jsonify({'success': False, 'error': 'All fields are required.'}), 400
+        if '@' not in email or '.' not in email.split('@')[-1]:
+            return jsonify({'success': False, 'error': 'Please enter a valid email address.'}), 400
+        if len(message) < 10:
+            return jsonify({'success': False, 'error': 'Message is too short.'}), 400
+        msg = ContactMessage(name=name, email=email, subject=subject, message=message)
+        db.session.add(msg)
+        db.session.commit()
+        return jsonify({'success': True})
+
     @app.route('/about')
     def about():
         return render_template('about.html')
@@ -151,6 +171,7 @@ def create_app():
         import models.job
         import models.settings
         import models.job_post
+        import models.contact_message
         db.create_all()
 
     return app
