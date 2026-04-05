@@ -109,6 +109,64 @@ def create_app():
         post = JobPost.query.filter_by(id=post_id, status='published').first_or_404()
         return render_template('job_board_detail.html', post=post)
 
+    @app.route('/sitemap.xml')
+    def sitemap():
+        from flask import Response, request
+        from models.settings import Setting
+        from models.job_post import JobPost
+        from datetime import datetime
+
+        base_url = (Setting.get('site_url') or '').rstrip('/')
+        if not base_url:
+            base_url = request.url_root.rstrip('/')
+
+        static_pages = [
+            ('/', 'weekly', '1.0'),
+            ('/resume-builder', 'weekly', '0.9'),
+            ('/job-tracker', 'weekly', '0.9'),
+            ('/interview-prep', 'weekly', '0.9'),
+            ('/career-chat', 'weekly', '0.9'),
+            ('/linkedin-optimizer', 'weekly', '0.9'),
+            ('/job-board', 'daily', '0.8'),
+            ('/about', 'monthly', '0.7'),
+            ('/contact', 'monthly', '0.6'),
+            ('/privacy-policy', 'monthly', '0.4'),
+            ('/terms-of-service', 'monthly', '0.4'),
+            ('/cookie-policy', 'monthly', '0.4'),
+        ]
+
+        today = datetime.utcnow().strftime('%Y-%m-%d')
+        urls = []
+        for path, changefreq, priority in static_pages:
+            urls.append(
+                f'  <url>\n'
+                f'    <loc>{base_url}{path}</loc>\n'
+                f'    <lastmod>{today}</lastmod>\n'
+                f'    <changefreq>{changefreq}</changefreq>\n'
+                f'    <priority>{priority}</priority>\n'
+                f'  </url>'
+            )
+
+        posts = JobPost.query.filter_by(status='published').order_by(JobPost.updated_at.desc()).all()
+        for post in posts:
+            lastmod = (post.updated_at or post.created_at or datetime.utcnow()).strftime('%Y-%m-%d')
+            urls.append(
+                f'  <url>\n'
+                f'    <loc>{base_url}/job-board/{post.id}</loc>\n'
+                f'    <lastmod>{lastmod}</lastmod>\n'
+                f'    <changefreq>weekly</changefreq>\n'
+                f'    <priority>0.6</priority>\n'
+                f'  </url>'
+            )
+
+        xml = (
+            '<?xml version="1.0" encoding="UTF-8"?>\n'
+            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+            + '\n'.join(urls) +
+            '\n</urlset>'
+        )
+        return Response(xml, mimetype='application/xml')
+
     @app.route('/ads.txt')
     def ads_txt():
         from flask import Response
