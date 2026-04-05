@@ -164,6 +164,34 @@ def optimize_linkedin_profile(headline, about, job_title, industry):
     return ai_generate(system, user, max_tokens=800)
 
 
+def rewrite_job_description(title: str, company: str, raw_description: str) -> str:
+    """
+    Rewrite a raw job description into a clean, structured, professional posting.
+    Returns the rewritten text (plain text with section headers + bullet points).
+    Raises on failure so callers can decide whether to fall back to the original.
+    """
+    system = (
+        "You are a professional job description writer. "
+        "Your task is to rewrite raw job postings into clean, well-structured, engaging descriptions. "
+        "Rules:\n"
+        "- Preserve all factual details: requirements, responsibilities, salary, benefits, apply link\n"
+        "- Use fresh, original language — do not copy phrases verbatim\n"
+        "- Structure output with these sections (only include sections that have content):\n"
+        "  About the Role, Key Responsibilities, Requirements, Nice to Have, Benefits\n"
+        "- Use bullet points (• ) for list items\n"
+        "- Write in a professional, engaging tone — no fluff, no filler\n"
+        "- Output plain text only — no markdown, no HTML, no code fences\n"
+        "- Do NOT add any preamble or commentary — just the rewritten job post"
+    )
+    user = (
+        f"Job Title: {title}\n"
+        f"Company: {company}\n\n"
+        f"Raw description:\n{raw_description[:3500]}\n\n"
+        "Rewrite this job posting following the rules above."
+    )
+    return ai_generate(system, user, max_tokens=1200, temperature=0.6)
+
+
 def generate_resume_from_skills(name, skills, education, experience_notes):
     system = (
         "You are an expert resume writer specializing in helping students and career changers. "

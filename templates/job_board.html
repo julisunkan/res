@@ -131,6 +131,24 @@
     .export-spinner { display:none; width:14px; height:14px; border:2px solid rgba(255,255,255,.3);
                       border-top-color:#fff; border-radius:50%; animation:spin .6s linear infinite; }
     @keyframes spin { to { transform:rotate(360deg); } }
+
+    /* AI rewrite progress banner */
+    .ai-rewrite-banner {
+        display:none; align-items:center; gap:12px; flex-wrap:wrap;
+        background:linear-gradient(135deg,rgba(79,70,229,.12),rgba(16,185,129,.08));
+        border:1px solid rgba(79,70,229,.25); border-radius:12px;
+        padding:12px 18px; margin-bottom:18px;
+        font-size:13px; color:#a5b4fc;
+    }
+    .ai-rewrite-banner.visible { display:flex; }
+    .ai-rewrite-banner.done { border-color:rgba(16,185,129,.35); color:#34d399; background:rgba(16,185,129,.08); }
+    .ai-rewrite-icon { font-size:16px; flex-shrink:0; animation:sparkle 1.2s ease-in-out infinite; }
+    @keyframes sparkle { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.6;transform:scale(1.2)} }
+    .ai-rewrite-icon.done { animation:none; }
+    .ai-rewrite-msg { flex:1; min-width:180px; }
+    .ai-rewrite-bar-wrap { width:160px; height:4px; background:#1e1e3a; border-radius:4px; overflow:hidden; flex-shrink:0; }
+    .ai-rewrite-bar { height:100%; background:linear-gradient(90deg,#4f46e5,#7c3aed); border-radius:4px;
+                      transition:width .4s ease; width:0%; }
 </style>
 
 <div class="jb-hero">
@@ -177,6 +195,13 @@
             <span class="export-spinner" id="spTxt"></span>🗒️ TXT
         </button>
     </div>
+</div>
+
+<!-- AI rewrite progress banner -->
+<div class="ai-rewrite-banner" id="rewriteBanner">
+    <span class="ai-rewrite-icon" id="rewriteIcon">✨</span>
+    <span class="ai-rewrite-msg" id="rewriteMsg">AI is polishing job descriptions…</span>
+    <div class="ai-rewrite-bar-wrap"><div class="ai-rewrite-bar" id="rewriteBar"></div></div>
 </div>
 
 <div class="jb-stats" id="jbStats" style="display:none;">
@@ -562,7 +587,91 @@ async function exportSelected(fmt) {
     }
 }
 
+// ── AI Rewrite Progress ───────────────────────────────────────────────────────
+
+let _rewriteTotal = 0;
+let _rewriteDone = 0;
+let _rewritePolling = false;
+
+function _updateRewriteBanner(pending, total, finished) {
+    const banner = document.getElementById('rewriteBanner');
+    const icon   = document.getElementById('rewriteIcon');
+    const msg    = document.getElementById('rewriteMsg');
+    const bar    = document.getElementById('rewriteBar');
+
+    if (finished) {
+        const wasVisible = banner.classList.contains('visible');
+        banner.classList.add('visible', 'done');
+        icon.className = 'ai-rewrite-icon done';
+        icon.textContent = '✅';
+        msg.textContent = 'All job descriptions have been polished by AI';
+        bar.style.width = '100%';
+        if (wasVisible) {
+            // Refresh cards so users see updated descriptions, then hide banner
+            setTimeout(() => { fetchBrowse(currentPage); }, 800);
+            setTimeout(() => { banner.classList.remove('visible'); }, 3500);
+        } else {
+            setTimeout(() => { banner.classList.remove('visible'); }, 2000);
+        }
+        return;
+    }
+
+    banner.classList.add('visible');
+    banner.classList.remove('done');
+    icon.className = 'ai-rewrite-icon';
+    icon.textContent = '✨';
+    const done = total - pending;
+    const pct  = total > 0 ? Math.round((done / total) * 100) : 0;
+    msg.textContent = `AI is polishing job descriptions… ${done} / ${total} complete`;
+    bar.style.width = pct + '%';
+}
+
+async function startRewritePoll() {
+    if (_rewritePolling) return;
+    try {
+        const res = await fetch('/api/jobboard/rewrite-status');
+        const data = await res.json();
+        if (data.finished || data.pending === 0) {
+            return; // Nothing to do
+        }
+        _rewriteTotal = data.total;
+        _rewriteDone  = data.total - data.pending;
+        _rewritePolling = true;
+        _updateRewriteBanner(data.pending, data.total, false);
+        _runRewriteBatch(data.pending, data.total);
+    } catch(e) {
+        // Silently skip if no API key or network error
+    }
+}
+
+async function _runRewriteBatch(remaining, total) {
+    if (remaining <= 0) {
+        _rewritePolling = false;
+        _updateRewriteBanner(0, total, true);
+        return;
+    }
+    try {
+        const res = await fetch('/api/jobboard/auto-rewrite', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({batch: 5})
+        });
+        const data = await res.json();
+        if (data.finished) {
+            _rewritePolling = false;
+            _updateRewriteBanner(0, total, true);
+        } else {
+            _updateRewriteBanner(data.remaining, total, false);
+            // Small pause before next batch to avoid hammering
+            setTimeout(() => _runRewriteBatch(data.remaining, total), 400);
+        }
+    } catch(e) {
+        _rewritePolling = false;
+    }
+}
+
 // ── Init ──────────────────────────────────────────────────────────────────────
 fetchBrowse(1);
+startRewritePoll();
 </script>
 {% endblock %}

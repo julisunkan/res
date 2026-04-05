@@ -62,6 +62,86 @@ def public_detail(post_id):
     return jsonify(post.to_dict())
 
 
+def _ai_rewrite_job(post_dict: dict) -> str:
+    """Rewrite a single job description via AI. Returns rewritten text or original on failure."""
+    from utils.ai_engine import rewrite_job_description
+    src = (post_dict.get('original_description') or post_dict.get('description') or '').strip()
+    if len(src) < 80:
+        return src
+    try:
+        return rewrite_job_description(
+            title=post_dict.get('title', ''),
+            company=post_dict.get('company', ''),
+            raw_description=src,
+        )
+    except Exception as e:
+        logger.warning('AI rewrite skipped (%s – %s): %s', post_dict.get('title', '?'), post_dict.get('source', '?'), e)
+        return src
+
+
+@job_board_bp.post('/auto-rewrite')
+def auto_rewrite():
+    """
+    Background batch-rewrite endpoint.
+    Finds up to `batch` published jobs that haven't been AI-rewritten yet,
+    rewrites them concurrently, saves to DB, and returns progress info.
+    """
+    import concurrent.futures
+    batch = min(int(request.json.get('batch', 5)) if request.is_json else 5, 10)
+
+    pending = JobPost.query.filter_by(status='published', ai_rewritten=False).limit(batch).all()
+    total_remaining = JobPost.query.filter_by(status='published', ai_rewritten=False).count()
+
+    if not pending:
+        return jsonify({'done': 0, 'remaining': 0, 'finished': True})
+
+    def _rewrite_one(post):
+        src = (post.original_description or post.description or '').strip()
+        if len(src) < 80:
+            post.ai_rewritten = True
+            return post, None
+        try:
+            from utils.ai_engine import rewrite_job_description
+            rewritten = rewrite_job_description(
+                title=post.title or '',
+                company=post.company or '',
+                raw_description=src,
+            )
+            return post, rewritten
+        except Exception as e:
+            logger.warning('Auto-rewrite failed for job %s: %s', post.id, e)
+            return post, None
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=min(batch, 5)) as ex:
+        futures = {ex.submit(_rewrite_one, p): p for p in pending}
+        results = []
+        for f in concurrent.futures.as_completed(futures, timeout=60):
+            try:
+                results.append(f.result())
+            except Exception:
+                pass
+
+    done = 0
+    for post, rewritten in results:
+        if rewritten:
+            post.description = rewritten
+        post.ai_rewritten = True
+        post.updated_at = datetime.utcnow()
+        done += 1
+
+    db.session.commit()
+    still_remaining = JobPost.query.filter_by(status='published', ai_rewritten=False).count()
+    return jsonify({'done': done, 'remaining': still_remaining, 'finished': still_remaining == 0})
+
+
+@job_board_bp.get('/rewrite-status')
+def rewrite_status():
+    """Return count of jobs still pending AI rewrite."""
+    pending = JobPost.query.filter_by(status='published', ai_rewritten=False).count()
+    total = JobPost.query.filter_by(status='published').count()
+    return jsonify({'pending': pending, 'total': total, 'finished': pending == 0})
+
+
 @job_board_bp.get('/live-search')
 def live_search():
     """Search local DB + live external APIs simultaneously, return merged results."""
@@ -91,7 +171,7 @@ def live_search():
         d['is_live'] = False
         local_results.append(d)
 
-    # --- Live external API results (parallel fetch, only if query provided) ---
+    # --- Live external API results + AI rewrite (parallel) ---
     live_results = []
     if q:
         def _remotive():
@@ -120,11 +200,12 @@ def live_search():
             except Exception:
                 return []
 
+        raw_live = []
         with concurrent.futures.ThreadPoolExecutor(max_workers=3) as ex:
-            futures = [ex.submit(_remotive), ex.submit(_arbeitnow), ex.submit(_remoteok)]
-            for f in concurrent.futures.as_completed(futures, timeout=12):
+            fetch_futures = [ex.submit(_remotive), ex.submit(_arbeitnow), ex.submit(_remoteok)]
+            for f in concurrent.futures.as_completed(fetch_futures, timeout=12):
                 try:
-                    live_results.extend(f.result())
+                    raw_live.extend(f.result())
                 except Exception:
                     pass
 
@@ -132,8 +213,8 @@ def live_search():
         local_ext_ids = {p.external_id for p in db_posts if p.external_id}
         local_keys = {(p.title or '').lower() + '|' + (p.company or '').lower() for p in db_posts}
         seen_live = set()
-        filtered_live = []
-        for r in live_results:
+        deduped_live = []
+        for r in raw_live:
             ext_id = r.get('external_id', '')
             key = (r.get('title') or '').lower() + '|' + (r.get('company') or '').lower()
             if ext_id and ext_id in local_ext_ids:
@@ -143,12 +224,23 @@ def live_search():
             seen_live.add(key)
             r['is_live'] = True
             r['id'] = None
-            filtered_live.append(r)
+            deduped_live.append(r)
 
         if job_type:
-            filtered_live = [r for r in filtered_live if job_type in (r.get('job_type') or '').lower()]
+            deduped_live = [r for r in deduped_live if job_type in (r.get('job_type') or '').lower()]
 
-        live_results = filtered_live
+        # AI-rewrite live job descriptions concurrently
+        if deduped_live:
+            with concurrent.futures.ThreadPoolExecutor(max_workers=min(len(deduped_live), 8)) as ex:
+                rewrite_futures = {ex.submit(_ai_rewrite_job, job): i for i, job in enumerate(deduped_live)}
+                for f, idx in rewrite_futures.items():
+                    try:
+                        deduped_live[idx]['description'] = f.result(timeout=15)
+                        deduped_live[idx]['ai_rewritten'] = True
+                    except Exception:
+                        pass
+
+        live_results = deduped_live
 
     all_results = local_results + live_results
     return jsonify({
@@ -373,30 +465,13 @@ def admin_rewrite(post_id):
     source_text = post.original_description or post.description
     if not source_text or len(source_text.strip()) < 50:
         return jsonify({'success': False, 'error': 'Job description is too short to rewrite.'}), 400
-
     try:
-        client = _get_groq_client()
-        model = Setting.get('ai_model', 'llama-3.3-70b-versatile')
-        prompt = f"""You are a professional job description writer. Rewrite the following job posting completely in your own words. 
-
-Rules:
-- Preserve all key requirements, qualifications, responsibilities, and benefits
-- Use fresh, original language — do not copy phrases verbatim
-- Keep the same job title, company references, and location
-- Structure with clear sections: Overview, Responsibilities, Requirements, Nice to Have, Benefits
-- Write in a professional, engaging tone
-- Output plain text with section headers followed by bullet points using "• "
-- Do NOT add any commentary or preamble — just the rewritten job post
-
-Original posting:
-{source_text[:4000]}"""
-
-        response = client.chat.completions.create(
-            model=model,
-            messages=[{'role': 'user', 'content': prompt}],
-            max_tokens=2000,
+        from utils.ai_engine import rewrite_job_description
+        rewritten = rewrite_job_description(
+            title=post.title or '',
+            company=post.company or '',
+            raw_description=source_text,
         )
-        rewritten = response.choices[0].message.content.strip()
         post.description = rewritten
         post.ai_rewritten = True
         post.updated_at = datetime.utcnow()
@@ -456,4 +531,11 @@ def admin_fetch():
         added += 1
 
     db.session.commit()
-    return jsonify({'success': True, 'added': added, 'skipped': skipped, 'total': len(posts_data)})
+    pending_rewrite = JobPost.query.filter_by(status='published', ai_rewritten=False).count()
+    return jsonify({
+        'success': True,
+        'added': added,
+        'skipped': skipped,
+        'total': len(posts_data),
+        'pending_rewrite': pending_rewrite,
+    })
