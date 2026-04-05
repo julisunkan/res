@@ -36,7 +36,10 @@ def public_list():
     if search:
         posts = [p for p in posts if search in (p.title or '').lower()
                  or search in (p.company or '').lower()
-                 or search in (p.location or '').lower()]
+                 or search in (p.location or '').lower()
+                 or search in (p.tags or '').lower()
+                 or search in (p.description or '').lower()
+                 or search in (p.original_description or '').lower()]
     if job_type:
         posts = [p for p in posts if job_type in (p.job_type or '').lower()]
     if tag:
@@ -85,7 +88,10 @@ def export_jobs():
         if search:
             posts = [p for p in posts if search in (p.title or '').lower()
                      or search in (p.company or '').lower()
-                     or search in (p.location or '').lower()]
+                     or search in (p.location or '').lower()
+                     or search in (p.tags or '').lower()
+                     or search in (p.description or '').lower()
+                     or search in (p.original_description or '').lower()]
         if job_type:
             posts = [p for p in posts if job_type in (p.job_type or '').lower()]
 
