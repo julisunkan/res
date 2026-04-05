@@ -93,6 +93,7 @@ def get_settings():
         'google_search_console': '',
         # Performance
         'max_upload_mb': '10',
+        'use_fake_stats': '0',
         # Security
         ADMIN_PASSWORD_KEY: '',
         # Analytics & monetization
