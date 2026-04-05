@@ -109,6 +109,7 @@ def create_app():
             google_search_console='',
             social=dict(twitter='', linkedin='', facebook='', instagram='', youtube=''),
             current_year=datetime.utcnow().year, ads=_empty_ads,
+            hide_footer=False,
         )
         try:
             from models.settings import Setting
@@ -140,6 +141,7 @@ def create_app():
                 social=social,
                 current_year=datetime.utcnow().year,
                 ads=ads,
+                hide_footer=Setting.get('hide_footer', '0') == '1',
             )
         except Exception:
             return _defaults

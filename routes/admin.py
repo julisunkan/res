@@ -107,6 +107,8 @@ def get_settings():
         # Job board APIs
         'adzuna_app_id': '',
         'adzuna_app_key': '',
+        # Appearance
+        'hide_footer': '0',
     }
     for k, v in defaults.items():
         if k not in result:

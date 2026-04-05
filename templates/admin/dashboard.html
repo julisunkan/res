@@ -287,7 +287,15 @@
                         <input type="text" id="s-app_tagline" placeholder="Your AI job assistant">
                     </div>
                 </div>
-                <button class="btn btn-primary" onclick="saveSettings(['app_name','app_tagline'])">Save Branding</button>
+                <div class="toggle-wrap" style="margin-top:14px;">
+                    <label class="toggle" style="margin:0;">
+                        <input type="checkbox" id="s-hide_footer_toggle" onchange="document.getElementById('s-hide_footer').value=this.checked?'1':'0';saveSettings(['hide_footer'])">
+                        <span class="slider"></span>
+                    </label>
+                    <input type="hidden" id="s-hide_footer" value="0">
+                    <span class="toggle-label">Hide footer on all pages</span>
+                </div>
+                <button class="btn btn-primary" onclick="saveSettings(['app_name','app_tagline','hide_footer'])">Save Branding</button>
             </div>
 
             <div class="card">
@@ -946,6 +954,9 @@ async function loadSettings() {
     // Handle auto ads toggle (backed by hidden input)
     const autoAdsChk = document.getElementById('s-adsense_auto_ads_toggle');
     if (autoAdsChk) autoAdsChk.checked = (settings['adsense_auto_ads'] || '0') === '1';
+    // Handle hide footer toggle
+    const hideFooterChk = document.getElementById('s-hide_footer_toggle');
+    if (hideFooterChk) hideFooterChk.checked = (settings['hide_footer'] || '0') === '1';
     loadAdPlacements(settings);
 }
 
