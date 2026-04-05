@@ -2,6 +2,22 @@ from datetime import datetime
 from app import db
 
 
+def _c1(v):
+    """Clean a single-line text field."""
+    if not v:
+        return v
+    from utils.job_aggregator import clean_text
+    return clean_text(v, multiline=False)
+
+
+def _cm(v):
+    """Clean a multi-line text field."""
+    if not v:
+        return v
+    from utils.job_aggregator import clean_text
+    return clean_text(v, multiline=True)
+
+
 class JobPost(db.Model):
     __tablename__ = 'job_post'
 
@@ -24,17 +40,20 @@ class JobPost(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     def to_dict(self):
+        raw_tags = self.tags or ''
+        tag_list = [_c1(t.strip()) for t in raw_tags.split(',') if t.strip()] if raw_tags else []
+        desc = _cm(self.description or self.original_description)
         return {
             'id': self.id,
-            'source': self.source,
-            'title': self.title,
-            'company': self.company,
-            'location': self.location,
-            'job_type': self.job_type,
-            'salary': self.salary,
-            'tags': self.tags.split(',') if self.tags else [],
-            'apply_url': self.apply_url,
-            'description': self.description or self.original_description,
+            'source': _c1(self.source),
+            'title': _c1(self.title),
+            'company': _c1(self.company),
+            'location': _c1(self.location),
+            'job_type': _c1(self.job_type),
+            'salary': _c1(self.salary),
+            'tags': tag_list,
+            'apply_url': _c1(self.apply_url),
+            'description': desc,
             'ai_rewritten': self.ai_rewritten,
             'status': self.status,
             'featured': self.featured,
