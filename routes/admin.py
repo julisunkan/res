@@ -2,7 +2,7 @@ import json
 import os
 import datetime
 from functools import wraps
-from flask import Blueprint, render_template, request, jsonify, session, redirect, url_for, Response
+from flask import Blueprint, render_template, request, jsonify, session, redirect, url_for, Response, abort
 from extensions import db
 from models.settings import Setting
 from models.resume import Resume

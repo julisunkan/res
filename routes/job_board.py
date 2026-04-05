@@ -98,7 +98,7 @@ def auto_rewrite():
     rewrites them concurrently, saves to DB, and returns progress info.
     """
     import concurrent.futures
-    batch = min(int(request.json.get('batch', 5)) if request.is_json else 5, 10)
+    batch = min(int((request.get_json(silent=True) or {}).get('batch', 5)), 10)
 
     pending = JobPost.query.filter_by(status='published', ai_rewritten=False).limit(batch).all()
     total_remaining = JobPost.query.filter_by(status='published', ai_rewritten=False).count()
@@ -276,7 +276,7 @@ def featured_posts():
 @job_board_bp.post('/export')
 @admin_required
 def export_jobs():
-    data = request.json or {}
+    data = request.get_json(silent=True) or {}
     ids = data.get('ids', [])
     fmt = data.get('format', 'txt').lower()
     search = data.get('search', '').strip().lower()
@@ -432,7 +432,7 @@ def admin_get(post_id):
 @admin_required
 def admin_update(post_id):
     post = JobPost.query.get_or_404(post_id)
-    data = request.json or {}
+    data = request.get_json(silent=True) or {}
     for field in ['title', 'company', 'location', 'job_type', 'salary', 'apply_url', 'description']:
         if field in data:
             setattr(post, field, data[field])
@@ -460,7 +460,7 @@ def admin_delete(post_id):
 @job_board_bp.post('/admin/posts/bulk')
 @admin_required
 def admin_bulk():
-    data = request.json or {}
+    data = request.get_json(silent=True) or {}
     action = data.get('action')
     ids = data.get('ids', [])
     if not ids or action not in ('publish', 'archive', 'draft', 'delete'):
@@ -504,7 +504,7 @@ def admin_rewrite(post_id):
 @job_board_bp.post('/admin/fetch')
 @admin_required
 def admin_fetch():
-    data = request.json or {}
+    data = request.get_json(silent=True) or {}
     sources = data.get('sources', ['remotive', 'arbeitnow', 'remoteok'])
     search = data.get('search', '')
     limit = int(data.get('limit_per_source', 15))
