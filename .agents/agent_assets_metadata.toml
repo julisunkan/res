@@ -6,3 +6,9 @@ id = "J621bXTgEg2WHtMFNcN1x"
 uri = "file://app_description.txt"
 type = "text"
 title = "AI Resume & Cover Letter Creator — Marketing Description"
+
+[[outputs]]
+id = "e4XDTlze6RNjAvCMOe1k8"
+uri = "file://DEPLOYMENT.txt"
+type = "text"
+title = "Render Deployment Instructions"
