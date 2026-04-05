@@ -28,24 +28,54 @@ def get_db_uri():
         d = cfg.get('mysql_database', '')
         u = cfg.get('mysql_user', '')
         pw = cfg.get('mysql_password', '')
-        return f'mysql+pymysql://{u}:{pw}@{h}:{p}/{d}'
+        # Verify connection is reachable before committing to MySQL
+        ok, _ = test_mysql_connection(h, p, d, u, pw)
+        if ok:
+            return f'mysql+pymysql://{u}:{pw}@{h}:{p}/{d}'
+        import logging
+        logging.warning(
+            'MySQL database configured but unreachable (%s:%s). '
+            'Falling back to SQLite. Fix the connection in the admin Database panel.',
+            h, p
+        )
     db_path = os.path.join(os.path.dirname(DB_CONFIG_PATH), 'resume_app.db')
     return f'sqlite:///{db_path}'
 
 
-def test_mysql_connection(host, port, database, user, password):
+def test_mysql_connection(host, port, database, user, password, use_ssl=False):
     try:
         import pymysql
-        conn = pymysql.connect(
+        kwargs = dict(
             host=host,
             port=int(port),
             database=database,
             user=user,
             password=password,
-            connect_timeout=5,
+            connect_timeout=8,
         )
+        if use_ssl:
+            kwargs['ssl'] = {'ca': None}
+        conn = pymysql.connect(**kwargs)
+        version = conn.get_server_info()
         conn.close()
-        return True, None
+        return True, f'Connected — MySQL server version {version}'
+    except pymysql.err.OperationalError as e:
+        code = e.args[0] if e.args else 0
+        msg = e.args[1] if len(e.args) > 1 else str(e)
+        if code == 2003 or 'timed out' in str(msg).lower() or 'connection refused' in str(msg).lower():
+            hint = (
+                f'Cannot reach {host}:{port}. Common causes:\n'
+                '• The host blocks external IPs (e.g. PythonAnywhere only allows connections from their own network)\n'
+                '• Port 3306 is firewalled — ask your host to allowlist this server\'s IP\n'
+                '• Wrong host/port — double-check your database provider\'s connection details\n'
+                '• Try enabling SSL if your host requires it'
+            )
+            return False, hint
+        if code == 1045:
+            return False, f'Access denied for user "{user}" — check your username and password'
+        if code == 1049:
+            return False, f'Unknown database "{database}" — make sure the database exists on the server'
+        return False, f'MySQL error ({code}): {msg}'
     except Exception as e:
         return False, str(e)
 

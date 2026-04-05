@@ -1,6 +1,6 @@
 {
   "db_type": "sqlite",
-  "mysql_host": "localhost",
+  "mysql_host": "cloudpos.mysql.pythonanywhere-services.com",
   "mysql_port": 3306,
   "mysql_database": "",
   "mysql_user": "",

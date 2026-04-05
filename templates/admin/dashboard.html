@@ -679,8 +679,18 @@
                             <button class="btn btn-secondary btn-sm" onclick="toggleDbPw()">👁</button>
                         </div>
                     </div>
+                    <div class="form-group" style="margin-bottom:12px;">
+                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                            <input type="checkbox" id="db-use_ssl" style="width:15px;height:15px;">
+                            Use SSL/TLS (required by some cloud hosts)
+                        </label>
+                    </div>
                     <button class="btn btn-secondary" style="margin-bottom:14px;" onclick="testMysqlConn()">🔌 Test Connection</button>
-                    <div id="mysqlTestResult" style="font-size:13px;margin-bottom:12px;display:none;"></div>
+                    <div id="mysqlTestResult" style="font-size:13px;margin-bottom:12px;display:none;white-space:pre-wrap;line-height:1.6;padding:10px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);"></div>
+                    <div style="font-size:12px;color:var(--muted);margin-bottom:14px;padding:10px 12px;border-radius:8px;background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.2);">
+                        <strong style="color:var(--warning);">⚠ Connection requirements:</strong><br>
+                        Your MySQL host must allow connections from this server's IP. Some providers (e.g. PythonAnywhere, PlanetScale, Railway) only permit connections from specific IPs or their own network. Check your host's firewall or allowlist settings if you see a timeout error.
+                    </div>
                 </div>
                 <div style="display:flex;gap:8px;flex-wrap:wrap;">
                     <button class="btn btn-primary" onclick="saveDbConfig()">💾 Save Configuration</button>
@@ -1373,9 +1383,11 @@ async function loadDbConfig() {
         document.getElementById('db-mysql_password').value = cfg.mysql_password ? '••••••••' : '';
         toggleMysqlFields();
         const info = document.getElementById('dbStatusInfo');
-        const dbType = cfg.db_type || 'sqlite';
-        if (dbType === 'mysql') {
+        const activeDb = cfg.active_db || cfg.db_type || 'sqlite';
+        if (activeDb === 'mysql') {
             info.innerHTML = `<span style="color:var(--success)">●</span> Active: <strong>MySQL</strong> — ${escHtmlAdmin(cfg.mysql_host)}:${cfg.mysql_port}/${escHtmlAdmin(cfg.mysql_database)}`;
+        } else if (cfg.fallback_warning) {
+            info.innerHTML = `<span style="color:var(--warning)">●</span> <strong>Fallback: SQLite</strong> — MySQL (${escHtmlAdmin(cfg.mysql_host)}) was unreachable at startup. The app is using the local SQLite database. Fix the MySQL connection and use "Save &amp; Apply" to retry.`;
         } else {
             info.innerHTML = `<span style="color:var(--primary-l)">●</span> Active: <strong>SQLite</strong> — resume_app.db (local file)`;
         }
@@ -1401,11 +1413,13 @@ async function testMysqlConn() {
         mysql_database: document.getElementById('db-mysql_database').value,
         mysql_user: document.getElementById('db-mysql_user').value,
         mysql_password: document.getElementById('db-mysql_password').value,
+        use_ssl: document.getElementById('db-use_ssl').checked,
     };
     const resultEl = document.getElementById('mysqlTestResult');
     resultEl.style.display = 'block';
-    resultEl.textContent = '⏳ Testing connection...';
+    resultEl.textContent = '⏳ Testing connection (up to 8s)...';
     resultEl.style.color = 'var(--muted)';
+    resultEl.style.borderColor = 'var(--border)';
     try {
         const res = await fetch('/julisunkan/api/database/test-mysql', {
             method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload)
@@ -1414,13 +1428,16 @@ async function testMysqlConn() {
         if (data.success) {
             resultEl.textContent = '✅ ' + data.message;
             resultEl.style.color = 'var(--success)';
+            resultEl.style.borderColor = 'rgba(16,185,129,0.3)';
         } else {
             resultEl.textContent = '❌ ' + data.error;
             resultEl.style.color = 'var(--danger)';
+            resultEl.style.borderColor = 'rgba(239,68,68,0.3)';
         }
     } catch(e) {
         resultEl.textContent = '❌ Network error: ' + e.message;
         resultEl.style.color = 'var(--danger)';
+        resultEl.style.borderColor = 'rgba(239,68,68,0.3)';
     }
 }
 

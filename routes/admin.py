@@ -256,10 +256,19 @@ def get_stats():
 @admin_required
 def get_db_config():
     from utils.db_manager import load_config
+    from extensions import db
     cfg = load_config()
     safe = dict(cfg)
     if safe.get('mysql_password'):
         safe['mysql_password'] = '••••••••'
+    # Report the actual URI the app is using (may differ from config if fallback occurred)
+    actual_uri = str(db.engine.url)
+    if 'mysql' in actual_uri:
+        safe['active_db'] = 'mysql'
+    else:
+        safe['active_db'] = 'sqlite'
+        if cfg.get('db_type') == 'mysql':
+            safe['fallback_warning'] = True
     return jsonify(safe)
 
 
@@ -293,10 +302,11 @@ def test_mysql():
     password = data.get('mysql_password', '')
     if password == '••••••••':
         password = cfg.get('mysql_password', '')
-    ok, err = test_mysql_connection(host, port, database, user, password)
+    use_ssl = bool(data.get('use_ssl', False))
+    ok, msg = test_mysql_connection(host, port, database, user, password, use_ssl=use_ssl)
     if ok:
-        return jsonify({'success': True, 'message': 'Connected successfully!'})
-    return jsonify({'success': False, 'error': err})
+        return jsonify({'success': True, 'message': msg})
+    return jsonify({'success': False, 'error': msg})
 
 
 # ── DATABASE EXPORT ───────────────────────────────────────────────────────────
