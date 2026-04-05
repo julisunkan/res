@@ -9,7 +9,7 @@ def create_app():
     app = Flask(__name__)
     CORS(app)
 
-    app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'julisunkan-super-secret-key-2024')
+    app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
     from utils.db_manager import get_db_uri
     app.config['SQLALCHEMY_DATABASE_URI'] = get_db_uri()
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False

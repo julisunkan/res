@@ -31,7 +31,7 @@ python3 -m gunicorn --bind 0.0.0.0:5000 --reuse-port --reload main:app
 
 ## Configuration
 - **Groq API Key**: Set via Admin Panel at `/julisunkan` (stored in DB Settings model) or via `GROQ_API_KEY` environment secret
-- **Secret Key**: `SECRET_KEY` env var (defaults to a built-in value)
+- **Secret Key**: `SECRET_KEY` env var (required — set as an environment variable in Replit Secrets)
 - **Admin Panel**: Protected at `/julisunkan`
 
 ## Database Configuration
