@@ -34,9 +34,22 @@ python3 -m gunicorn --bind 0.0.0.0:5000 --reuse-port --reload main:app
 - **Secret Key**: `SECRET_KEY` env var (defaults to a built-in value)
 - **Admin Panel**: Protected at `/julisunkan`
 
+## Database Configuration
+- Database type and MySQL credentials are stored in `db_config.json` (gitignored from prod)
+- Default is SQLite (`resume_app.db`)
+- Admin can switch to MySQL via the **Database** panel in the admin dashboard at `/julisunkan`
+- `utils/db_manager.py` handles config read/write, MySQL connection testing, and SQL exports
+- Switching database requires an app restart (admin panel has a "Save & Apply" button that triggers this)
+
+## Database Export
+- Admin can export the current database as SQLite-compatible SQL or MySQL-compatible SQL
+- Export endpoints: `/julisunkan/api/database/export/sqlite` and `/julisunkan/api/database/export/mysql`
+- Works regardless of which DB engine is active (converts automatically)
+
 ## Dependencies
 All dependencies listed in `requirements.txt`. Key packages:
 - flask, flask-sqlalchemy, flask-cors
 - groq
 - pdfplumber, python-docx, reportlab
 - gunicorn, psycopg2-binary, email_validator
+- pymysql (for MySQL support)

@@ -1,4 +1,6 @@
 import json
+import os
+import datetime
 from functools import wraps
 from flask import Blueprint, render_template, request, jsonify, session, redirect, url_for, Response
 from extensions import db
@@ -246,3 +248,99 @@ def get_stats():
         'interviews': Job.query.filter_by(status='Interview').count(),
         'offers': Job.query.filter_by(status='Offer').count(),
     })
+
+
+# ── DATABASE CONFIG ───────────────────────────────────────────────────────────
+
+@admin_bp.route('/api/database/config', methods=['GET'])
+@admin_required
+def get_db_config():
+    from utils.db_manager import load_config
+    cfg = load_config()
+    safe = dict(cfg)
+    if safe.get('mysql_password'):
+        safe['mysql_password'] = '••••••••'
+    return jsonify(safe)
+
+
+@admin_bp.route('/api/database/config', methods=['POST'])
+@admin_required
+def save_db_config():
+    from utils.db_manager import load_config, save_config
+    data = request.get_json()
+    cfg = load_config()
+    cfg['db_type'] = data.get('db_type', 'sqlite')
+    cfg['mysql_host'] = data.get('mysql_host', 'localhost')
+    cfg['mysql_port'] = int(data.get('mysql_port', 3306))
+    cfg['mysql_database'] = data.get('mysql_database', '')
+    cfg['mysql_user'] = data.get('mysql_user', '')
+    if data.get('mysql_password') and data['mysql_password'] != '••••••••':
+        cfg['mysql_password'] = data['mysql_password']
+    save_config(cfg)
+    return jsonify({'success': True})
+
+
+@admin_bp.route('/api/database/test-mysql', methods=['POST'])
+@admin_required
+def test_mysql():
+    from utils.db_manager import load_config, test_mysql_connection
+    data = request.get_json()
+    cfg = load_config()
+    host = data.get('mysql_host', cfg.get('mysql_host', 'localhost'))
+    port = data.get('mysql_port', cfg.get('mysql_port', 3306))
+    database = data.get('mysql_database', cfg.get('mysql_database', ''))
+    user = data.get('mysql_user', cfg.get('mysql_user', ''))
+    password = data.get('mysql_password', '')
+    if password == '••••••••':
+        password = cfg.get('mysql_password', '')
+    ok, err = test_mysql_connection(host, port, database, user, password)
+    if ok:
+        return jsonify({'success': True, 'message': 'Connected successfully!'})
+    return jsonify({'success': False, 'error': err})
+
+
+# ── DATABASE EXPORT ───────────────────────────────────────────────────────────
+
+@admin_bp.route('/api/database/export/sqlite', methods=['GET'])
+@admin_required
+def export_sqlite():
+    from utils.db_manager import export_as_sqlite
+    try:
+        data = export_as_sqlite()
+        ts = datetime.datetime.utcnow().strftime('%Y%m%d_%H%M%S')
+        return Response(
+            data,
+            mimetype='application/octet-stream',
+            headers={'Content-Disposition': f'attachment; filename=resume_app_{ts}.sqlite.sql'}
+        )
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@admin_bp.route('/api/database/export/mysql', methods=['GET'])
+@admin_required
+def export_mysql():
+    from utils.db_manager import export_as_mysql
+    try:
+        data = export_as_mysql()
+        ts = datetime.datetime.utcnow().strftime('%Y%m%d_%H%M%S')
+        return Response(
+            data,
+            mimetype='application/octet-stream',
+            headers={'Content-Disposition': f'attachment; filename=resume_app_{ts}.mysql.sql'}
+        )
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@admin_bp.route('/api/database/restart', methods=['POST'])
+@admin_required
+def restart_app():
+    import threading
+    def _restart():
+        import time
+        import signal
+        time.sleep(0.8)
+        os.kill(os.getpid(), signal.SIGTERM)
+    threading.Thread(target=_restart, daemon=True).start()
+    return jsonify({'success': True})

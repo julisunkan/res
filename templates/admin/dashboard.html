@@ -223,6 +223,7 @@
         <button class="nav-item" onclick="show('jobboard')"><span class="icon">🌐</span> Job Board</button>
         <button class="nav-item" onclick="show('monetization')"><span class="icon">💰</span> Monetization</button>
         <button class="nav-item" onclick="show('security')"><span class="icon">🔐</span> Security</button>
+        <button class="nav-item" onclick="show('database')"><span class="icon">🗄️</span> Database</button>
     </nav>
     <div class="sidebar-footer">
         <a href="/" class="back-link" target="_blank">← View Website</a>
@@ -635,6 +636,78 @@
             </div>
         </div>
 
+        <!-- ── DATABASE ── -->
+        <div class="panel" id="panel-database">
+            <div id="dbAlert" class="alert"></div>
+
+            <div class="card">
+                <div class="card-title"><span class="icon">🗄️</span> Database Engine</div>
+                <p style="font-size:13px;color:var(--muted);margin-bottom:16px;">Select which database the application uses. Changes take effect after restarting the server.</p>
+                <div class="form-group" style="max-width:260px;">
+                    <label>Active Database</label>
+                    <select id="db-type" onchange="toggleMysqlFields()">
+                        <option value="sqlite">SQLite (internal, default)</option>
+                        <option value="mysql">MySQL (external)</option>
+                    </select>
+                </div>
+                <div id="mysqlFields" style="display:none;">
+                    <div class="section-title">MySQL Connection</div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Host</label>
+                            <input type="text" id="db-mysql_host" placeholder="localhost">
+                        </div>
+                        <div class="form-group">
+                            <label>Port</label>
+                            <input type="number" id="db-mysql_port" placeholder="3306" style="max-width:120px;">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Database Name</label>
+                            <input type="text" id="db-mysql_database" placeholder="resume_app">
+                        </div>
+                        <div class="form-group">
+                            <label>Username</label>
+                            <input type="text" id="db-mysql_user" placeholder="root">
+                        </div>
+                    </div>
+                    <div class="form-group" style="max-width:300px;">
+                        <label>Password</label>
+                        <div class="input-row">
+                            <input type="password" id="db-mysql_password" placeholder="••••••••">
+                            <button class="btn btn-secondary btn-sm" onclick="toggleDbPw()">👁</button>
+                        </div>
+                    </div>
+                    <button class="btn btn-secondary" style="margin-bottom:14px;" onclick="testMysqlConn()">🔌 Test Connection</button>
+                    <div id="mysqlTestResult" style="font-size:13px;margin-bottom:12px;display:none;"></div>
+                </div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                    <button class="btn btn-primary" onclick="saveDbConfig()">💾 Save Configuration</button>
+                    <button class="btn btn-secondary" onclick="applyDbConfig()" title="Saves config and restarts the application">⚡ Save &amp; Apply (Restart)</button>
+                </div>
+                <p style="font-size:12px;color:var(--muted);margin-top:10px;">Tip: Use "Save &amp; Apply" to immediately restart the app and activate the new database.</p>
+            </div>
+
+            <div class="card">
+                <div class="card-title"><span class="icon">📤</span> Export Database</div>
+                <p style="font-size:13px;color:var(--muted);margin-bottom:16px;">Download a full SQL dump of the current active database. Works with both SQLite and MySQL sources.</p>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                    <a href="/julisunkan/api/database/export/sqlite" class="btn btn-secondary">⬇ Export as SQLite SQL</a>
+                    <a href="/julisunkan/api/database/export/mysql" class="btn btn-secondary">⬇ Export as MySQL SQL</a>
+                </div>
+                <p style="font-size:12px;color:var(--muted);margin-top:12px;">
+                    <strong>SQLite export</strong> — compatible with <code style="background:rgba(255,255,255,.06);padding:1px 5px;border-radius:3px;">sqlite3</code> CLI.<br>
+                    <strong>MySQL export</strong> — compatible with <code style="background:rgba(255,255,255,.06);padding:1px 5px;border-radius:3px;">mysql</code> CLI and phpMyAdmin.
+                </p>
+            </div>
+
+            <div class="card">
+                <div class="card-title"><span class="icon">ℹ️</span> Current Status</div>
+                <div id="dbStatusInfo" style="font-size:13px;color:var(--muted);">Loading...</div>
+            </div>
+        </div>
+
     </div><!-- /.content -->
 </div><!-- /.main -->
 
@@ -732,8 +805,8 @@ let allJobs = [];
 let settings = {};
 
 // ── Navigation ──────────────────────────────────────────────────────────────
-const panelOrder = ['overview','settings','ai','resumes','jobs','jobboard','monetization','security'];
-const panelTitles = { overview:'Overview', settings:'App Settings', ai:'AI Configuration', resumes:'Manage Resumes', jobs:'Job Applications', jobboard:'Job Board Manager', monetization:'Monetization & Analytics', security:'Security' };
+const panelOrder = ['overview','settings','ai','resumes','jobs','jobboard','monetization','security','database'];
+const panelTitles = { overview:'Overview', settings:'App Settings', ai:'AI Configuration', resumes:'Manage Resumes', jobs:'Job Applications', jobboard:'Job Board Manager', monetization:'Monetization & Analytics', security:'Security', database:'Database' };
 
 function show(name) {
     document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
@@ -747,6 +820,7 @@ function show(name) {
     if (name === 'jobboard') loadJobBoard('draft');
     if (['settings','ai','security','monetization'].includes(name)) loadSettings();
     if (name === 'monetization') loadAdsTxt();
+    if (name === 'database') loadDbConfig();
 }
 
 // ── Settings ────────────────────────────────────────────────────────────────
@@ -1284,6 +1358,96 @@ function showAlert(id, msg, ok) {
 async function doLogout() {
     await fetch('/julisunkan/logout', { method:'POST' });
     window.location.href = '/julisunkan';
+}
+
+// ── Database ──────────────────────────────────────────────────────────────────
+async function loadDbConfig() {
+    try {
+        const res = await fetch('/julisunkan/api/database/config');
+        const cfg = await res.json();
+        document.getElementById('db-type').value = cfg.db_type || 'sqlite';
+        document.getElementById('db-mysql_host').value = cfg.mysql_host || 'localhost';
+        document.getElementById('db-mysql_port').value = cfg.mysql_port || 3306;
+        document.getElementById('db-mysql_database').value = cfg.mysql_database || '';
+        document.getElementById('db-mysql_user').value = cfg.mysql_user || '';
+        document.getElementById('db-mysql_password').value = cfg.mysql_password ? '••••••••' : '';
+        toggleMysqlFields();
+        const info = document.getElementById('dbStatusInfo');
+        const dbType = cfg.db_type || 'sqlite';
+        if (dbType === 'mysql') {
+            info.innerHTML = `<span style="color:var(--success)">●</span> Active: <strong>MySQL</strong> — ${escHtmlAdmin(cfg.mysql_host)}:${cfg.mysql_port}/${escHtmlAdmin(cfg.mysql_database)}`;
+        } else {
+            info.innerHTML = `<span style="color:var(--primary-l)">●</span> Active: <strong>SQLite</strong> — resume_app.db (local file)`;
+        }
+    } catch(e) {
+        document.getElementById('dbStatusInfo').textContent = 'Could not load database config.';
+    }
+}
+
+function toggleMysqlFields() {
+    const isMysql = document.getElementById('db-type').value === 'mysql';
+    document.getElementById('mysqlFields').style.display = isMysql ? 'block' : 'none';
+}
+
+function toggleDbPw() {
+    const el = document.getElementById('db-mysql_password');
+    el.type = el.type === 'password' ? 'text' : 'password';
+}
+
+async function testMysqlConn() {
+    const payload = {
+        mysql_host: document.getElementById('db-mysql_host').value,
+        mysql_port: parseInt(document.getElementById('db-mysql_port').value) || 3306,
+        mysql_database: document.getElementById('db-mysql_database').value,
+        mysql_user: document.getElementById('db-mysql_user').value,
+        mysql_password: document.getElementById('db-mysql_password').value,
+    };
+    const resultEl = document.getElementById('mysqlTestResult');
+    resultEl.style.display = 'block';
+    resultEl.textContent = '⏳ Testing connection...';
+    resultEl.style.color = 'var(--muted)';
+    try {
+        const res = await fetch('/julisunkan/api/database/test-mysql', {
+            method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.success) {
+            resultEl.textContent = '✅ ' + data.message;
+            resultEl.style.color = 'var(--success)';
+        } else {
+            resultEl.textContent = '❌ ' + data.error;
+            resultEl.style.color = 'var(--danger)';
+        }
+    } catch(e) {
+        resultEl.textContent = '❌ Network error: ' + e.message;
+        resultEl.style.color = 'var(--danger)';
+    }
+}
+
+async function saveDbConfig() {
+    const payload = {
+        db_type: document.getElementById('db-type').value,
+        mysql_host: document.getElementById('db-mysql_host').value,
+        mysql_port: parseInt(document.getElementById('db-mysql_port').value) || 3306,
+        mysql_database: document.getElementById('db-mysql_database').value,
+        mysql_user: document.getElementById('db-mysql_user').value,
+        mysql_password: document.getElementById('db-mysql_password').value,
+    };
+    const res = await fetch('/julisunkan/api/database/config', {
+        method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    showAlert('dbAlert', data.success ? '✅ Configuration saved. Restart the app to apply.' : '❌ Save failed.', data.success);
+    if (data.success) loadDbConfig();
+}
+
+async function applyDbConfig() {
+    await saveDbConfig();
+    showAlert('dbAlert', '⏳ Saved. Restarting application...', true);
+    try {
+        await fetch('/julisunkan/api/database/restart', { method: 'POST' });
+    } catch(e) {}
+    setTimeout(() => location.reload(), 3500);
 }
 
 // ── Init ──────────────────────────────────────────────────────────────────────

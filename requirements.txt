@@ -11,3 +11,4 @@ python-dotenv
 email_validator
 psycopg2-binary
 requests
+pymysql

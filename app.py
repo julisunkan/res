@@ -10,8 +10,8 @@ def create_app():
     CORS(app)
 
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'julisunkan-super-secret-key-2024')
-    db_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'resume_app.db')
-    app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
+    from utils.db_manager import get_db_uri
+    app.config['SQLALCHEMY_DATABASE_URI'] = get_db_uri()
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024  # 10MB
     app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(__file__), 'uploads')
