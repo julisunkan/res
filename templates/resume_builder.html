@@ -278,7 +278,7 @@ function showAnalysis(data) {
 
 function downloadDoc(type) {
     if (!currentResumeId) { showAlert('Please optimize your resume first.'); return; }
-    window.open(`/api/resume/export/${currentResumeId}/${type}`);
+    window.location.href = `/api/resume/export/${currentResumeId}/${type}`;
 }
 
 function showAlert(msg, type='warning') {
@@ -378,8 +378,8 @@ async function loadSavedResumes() {
                 </div>
                 <div style="font-size:12px;color:var(--text-muted);margin-bottom:14px;">Saved ${r.created_at ? new Date(r.created_at).toLocaleDateString() : '—'}</div>
                 <div style="display:flex;gap:8px;flex-wrap:wrap;">
-                    <button class="btn btn-success btn-sm" onclick="window.open('/api/resume/export/${r.id}/resume')">⬇ Resume PDF</button>
-                    <button class="btn btn-secondary btn-sm" onclick="window.open('/api/resume/export/${r.id}/cover_letter')">⬇ Cover Letter</button>
+                    <button class="btn btn-success btn-sm" onclick="window.location.href='/api/resume/export/${r.id}/resume'">⬇ Resume PDF</button>
+                    <button class="btn btn-secondary btn-sm" onclick="window.location.href='/api/resume/export/${r.id}/cover_letter'">⬇ Cover Letter</button>
                     <button class="btn btn-danger btn-sm" onclick="deleteResume(${r.id})">🗑 Delete</button>
                 </div>
             </div>`).join('')}</div>`;
