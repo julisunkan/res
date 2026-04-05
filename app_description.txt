@@ -1,0 +1,252 @@
+================================================================================
+  AI RESUME & COVER LETTER CREATOR — PRODUCT DESCRIPTION, FEATURES & KEYWORDS
+================================================================================
+
+
+────────────────────────────────────────────────────────────────────────────────
+  TAGLINE
+────────────────────────────────────────────────────────────────────────────────
+
+Your intelligent job application assistant — from resume to offer letter,
+powered by AI.
+
+
+────────────────────────────────────────────────────────────────────────────────
+  SHORT DESCRIPTION  (suitable for app stores, directories & landing pages)
+────────────────────────────────────────────────────────────────────────────────
+
+AI Resume & Cover Letter Creator is the all-in-one AI-powered career platform
+that helps job seekers land more interviews and offers — faster. Powered by
+cutting-edge large language models, the app transforms the entire job search
+process: upload your existing resume and get it rewritten and scored in seconds,
+generate tailored cover letters with a single click, track every application in
+one dashboard, practice interview questions curated for your exact role, and
+optimize your LinkedIn profile to attract recruiters. Whether you are a recent
+graduate or a seasoned professional, our platform gives you a competitive edge
+at every stage of your career journey.
+
+
+────────────────────────────────────────────────────────────────────────────────
+  LONG DESCRIPTION  (suitable for website About pages, press kits & pitches)
+────────────────────────────────────────────────────────────────────────────────
+
+In today's competitive job market, standing out is no longer optional — it is
+essential. AI Resume & Cover Letter Creator is a next-generation career
+intelligence platform designed to put the power of artificial intelligence
+directly in the hands of every job seeker.
+
+From the moment you upload your resume, our AI engine gets to work. It performs
+a deep analysis of your document, identifies gaps, surfaces keyword
+opportunities, scores your resume against industry benchmarks, and rewrites
+every section to be sharper, more impactful, and tailored to the roles you want.
+No more staring at a blank page. No more generic cover letters that get ignored.
+With one click, the platform generates a compelling, personalised cover letter
+that speaks directly to the job description — every single time.
+
+Our smart Job Tracker keeps every application organised in one place. Log
+companies, positions, and statuses, add private notes, and get an instant
+overview of your pipeline. Never lose track of where you stand with any employer
+again.
+
+Preparing for interviews has never been more targeted. Our AI Interview Prep
+feature generates role-specific questions based on the actual job description and
+provides model answers so you can walk into every interview with confidence.
+
+Struggling to get noticed on LinkedIn? Our LinkedIn Profile Optimizer analyses
+your profile content and rewrites your headline, About section, and experience
+bullets using recruiter-friendly language and high-impact keywords — turning your
+profile into a magnet for opportunity.
+
+And when you need real-time guidance, our Career Chat AI is always available —
+a knowledgeable career advisor ready to discuss salary negotiation, career
+pivots, job search strategies, or anything else on your mind, available around
+the clock.
+
+Built as a Progressive Web App (PWA), AI Resume & Cover Letter Creator works
+seamlessly on any device — desktop, tablet, or mobile — with no app store
+download required. It is fast, responsive, and designed to meet job seekers
+exactly where they are.
+
+
+────────────────────────────────────────────────────────────────────────────────
+  CORE FEATURES
+────────────────────────────────────────────────────────────────────────────────
+
+  1. AI RESUME BUILDER & OPTIMIZER
+     • Upload existing resumes in PDF or DOCX format
+     • Instant AI-powered resume analysis with a match score
+     • Section-by-section AI rewriting (summary, experience, skills, education)
+     • Keyword gap analysis against target job descriptions
+     • Student Mode — generate a complete resume from skills alone (no experience
+       needed)
+     • Export finished resumes as polished PDF or DOCX files
+
+  2. AI COVER LETTER GENERATOR
+     • One-click personalised cover letters tailored to any job description
+     • Adapts tone and content to match the company and role
+     • Editable output — refine and download instantly
+
+  3. JOB APPLICATION TRACKER
+     • Centralised dashboard to log and manage every application
+     • Status tracking: Applied → Interview → Offer → Rejected
+     • Private notes per application
+     • Real-time analytics: total applications, interview rate, offer rate
+     • Application overview stats with growth tracking
+
+  4. AI INTERVIEW PREPARATION
+     • Generates role-specific interview questions from any job description
+     • Provides detailed model answers for every question
+     • Covers behavioural, technical, and situational question types
+     • Helps candidates prepare faster and perform better
+
+  5. LINKEDIN PROFILE OPTIMIZER
+     • AI-powered rewrite of headline, About section, and experience bullets
+     • Keyword optimisation for LinkedIn search and recruiter visibility
+     • Actionable recommendations to improve profile completeness and appeal
+
+  6. AI CAREER CHAT ADVISOR
+     • Real-time conversational AI for career coaching and job search guidance
+     • Topics include: salary negotiation, career pivots, interview tips,
+       workplace challenges, industry trends, and more
+     • Available 24/7 — like having a personal career coach on demand
+
+  7. JOB BOARD
+     • Curated job listings aggregated from multiple external sources
+     • Featured job widget on the dashboard for instant discovery
+     • Admin-managed job posts with AI-assisted rewriting tools
+
+  8. ADMIN PANEL
+     • Full-featured admin dashboard for site owners and operators
+     • Manage resumes, job applications, settings, and branding
+     • Configure AI model, API keys, and performance limits
+     • Control footer visibility, SEO metadata, social media links, and ads
+     • Google AdSense integration with placement controls
+     • Google Analytics support
+     • Export / import database (SQLite & MySQL compatible)
+     • Switch between SQLite and MySQL without code changes
+
+  9. PROGRESSIVE WEB APP (PWA)
+     • Installable on any device — works like a native app
+     • Responsive design optimised for desktop, tablet, and mobile
+     • Service worker support for fast load times
+
+  10. SECURITY & CUSTOMISATION
+      • Password-protected admin panel
+      • Configurable branding: app name, tagline, colours, and logo
+      • Cookie consent management built in
+      • Privacy Policy, Terms of Service, and Cookie Policy pages included
+
+
+────────────────────────────────────────────────────────────────────────────────
+  TARGET AUDIENCE
+────────────────────────────────────────────────────────────────────────────────
+
+  • Recent graduates and first-time job seekers
+  • Mid-career professionals looking for a new role
+  • Career changers pivoting to a new industry
+  • Remote job seekers competing in a global market
+  • Executives and senior professionals refreshing their personal brand
+  • Students with no work experience (Student Mode)
+  • Recruitment agencies and career coaching businesses (white-label ready)
+
+
+────────────────────────────────────────────────────────────────────────────────
+  SEO & MARKETING KEYWORDS
+────────────────────────────────────────────────────────────────────────────────
+
+  PRIMARY KEYWORDS
+  ----------------
+  AI resume builder
+  AI cover letter generator
+  resume optimizer
+  cover letter creator
+  job application tracker
+  AI career assistant
+  AI interview preparation
+  LinkedIn profile optimizer
+  career coaching AI
+  resume writer AI
+
+  LONG-TAIL KEYWORDS
+  ------------------
+  free AI resume builder online
+  AI-powered cover letter generator for job seekers
+  how to optimize my resume with AI
+  best job application tracker app
+  AI interview questions and answers generator
+  LinkedIn profile rewrite tool
+  career chat AI advisor
+  resume builder for students with no experience
+  job tracker dashboard online
+  AI resume scoring tool
+  cover letter tailored to job description
+  resume keyword optimizer for ATS
+  ATS-friendly resume builder
+  best resume builder for 2024 2025
+  AI job search assistant
+  progressive web app resume builder
+  resume builder no sign up required
+  free career coaching chatbot
+
+  CATEGORY / NICHE KEYWORDS
+  --------------------------
+  job search tools
+  career development platform
+  recruitment technology
+  HR tech
+  jobseeker tools
+  career productivity app
+  employment tools
+  personal branding for job seekers
+  professional resume template generator
+  Groq AI powered app
+  LLM career tools
+  generative AI for job seekers
+
+
+────────────────────────────────────────────────────────────────────────────────
+  VALUE PROPOSITIONS
+────────────────────────────────────────────────────────────────────────────────
+
+  ✦ Land more interviews — AI-optimised resumes and cover letters tailored to
+    every job description dramatically improve response rates.
+
+  ✦ Save hours of preparation — what used to take days now takes minutes.
+    Upload, analyse, rewrite, and apply — all from one platform.
+
+  ✦ Never miss an opportunity — the job tracker keeps your entire pipeline
+    visible and organised so nothing falls through the cracks.
+
+  ✦ Walk in confident — AI-generated interview questions and model answers mean
+    you are always prepared, never caught off guard.
+
+  ✦ Get found on LinkedIn — recruiter-optimised profile rewrites put you in
+    front of the right people at the right time.
+
+  ✦ Works on any device — no install required. Open a browser and start
+    building your career from anywhere in the world.
+
+
+────────────────────────────────────────────────────────────────────────────────
+  SOCIAL MEDIA / AD COPY SNIPPETS
+────────────────────────────────────────────────────────────────────────────────
+
+  "Stop sending generic resumes. Our AI rewrites yours for every job — in
+   seconds. Try AI Resume & Cover Letter Creator today."
+
+  "Got an interview? Our AI generates custom practice questions for your exact
+   role so you walk in ready to impress."
+
+  "Upload your resume. Our AI scores it, fixes it, and builds you a
+   personalised cover letter. All in one place."
+
+  "Your LinkedIn is your digital handshake. Let AI optimise it so recruiters
+   can't scroll past."
+
+  "Track every application, practise every interview, optimise every profile.
+   One platform. Unlimited career potential."
+
+
+================================================================================
+  END OF DOCUMENT
+================================================================================
