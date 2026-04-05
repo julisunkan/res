@@ -5,13 +5,53 @@
     .jb-hero { text-align:center; padding:40px 0 32px; }
     .jb-hero-title { font-size:clamp(26px,4vw,40px); font-weight:700; margin-bottom:10px; }
     .jb-hero-sub { color:var(--text-muted); font-size:15px; margin-bottom:28px; }
-    .jb-search-wrap { display:flex; gap:10px; max-width:560px; margin:0 auto 12px; }
+    .jb-search-wrap { display:flex; gap:10px; max-width:600px; margin:0 auto 12px; }
     .jb-search-wrap input { flex:1; }
     .filter-bar { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-bottom:32px; }
     .filter-pill { padding:6px 16px; border-radius:20px; border:1px solid #1e1e3a; background:#12121f; color:var(--text-muted); font-size:13px; cursor:pointer; transition:all .15s; }
     .filter-pill:hover, .filter-pill.active { background:rgba(79,70,229,.18); border-color:#4f46e5; color:#818cf8; }
+
+    /* Selection toolbar */
+    .selection-bar {
+        position:sticky; top:0; z-index:50;
+        display:none; align-items:center; gap:12px; flex-wrap:wrap;
+        background:#1a1a2e; border:1px solid #4f46e5; border-radius:12px;
+        padding:12px 18px; margin-bottom:20px;
+        box-shadow:0 4px 20px rgba(79,70,229,.25);
+    }
+    .selection-bar.visible { display:flex; }
+    .sel-count { font-weight:600; color:#818cf8; font-size:14px; white-space:nowrap; }
+    .sel-actions { display:flex; gap:8px; flex-wrap:wrap; margin-left:auto; align-items:center; }
+    .btn-sel-all { padding:6px 14px; border-radius:8px; border:1px solid #475569; background:transparent;
+                   color:#94a3b8; font-size:12px; cursor:pointer; transition:all .15s; }
+    .btn-sel-all:hover { border-color:#818cf8; color:#818cf8; }
+    .btn-clear-sel { padding:6px 14px; border-radius:8px; border:1px solid #475569; background:transparent;
+                     color:#94a3b8; font-size:12px; cursor:pointer; transition:all .15s; }
+    .btn-clear-sel:hover { border-color:#f87171; color:#f87171; }
+    .export-label { font-size:12px; color:#64748b; white-space:nowrap; }
+    .btn-export { display:inline-flex; align-items:center; gap:5px; padding:7px 14px; border-radius:8px;
+                  font-size:12px; font-weight:600; cursor:pointer; border:none; transition:all .15s; }
+    .btn-export.pdf  { background:#ef4444; color:#fff; }
+    .btn-export.docx { background:#2563eb; color:#fff; }
+    .btn-export.txt  { background:#059669; color:#fff; }
+    .btn-export:hover { opacity:.85; transform:translateY(-1px); }
+    .btn-export:disabled { opacity:.4; cursor:not-allowed; transform:none; }
+
+    /* Select-all row */
+    .select-all-row { display:flex; align-items:center; gap:10px; margin-bottom:14px; padding:0 2px; }
+    .select-all-row label { font-size:13px; color:#94a3b8; cursor:pointer; }
+    .cb-all { width:16px; height:16px; accent-color:#4f46e5; cursor:pointer; }
+
+    /* Grid */
     .job-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:20px; margin-bottom:40px; }
-    .job-card { background:#12121f; border:1px solid #1e1e3a; border-radius:14px; padding:22px; display:flex; flex-direction:column; gap:10px; transition:border-color .2s,transform .2s; cursor:pointer; text-decoration:none; color:inherit; }
+    .job-card-wrap { position:relative; }
+    .job-cb { position:absolute; top:14px; left:14px; z-index:10; width:17px; height:17px; accent-color:#4f46e5; cursor:pointer; display:none; }
+    .job-card-wrap:hover .job-cb,
+    .job-card-wrap.selected .job-cb { display:block; }
+    .job-card-wrap.selected .job-card { border-color:#4f46e5; background:#16163a; }
+    .job-card { background:#12121f; border:1px solid #1e1e3a; border-radius:14px; padding:22px 22px 22px 36px;
+                display:flex; flex-direction:column; gap:10px; transition:border-color .2s,transform .2s;
+                cursor:pointer; text-decoration:none; color:inherit; }
     .job-card:hover { border-color:#4f46e5; transform:translateY(-2px); }
     .job-card-top { display:flex; justify-content:space-between; align-items:flex-start; gap:8px; }
     .job-title { font-size:16px; font-weight:600; color:#e2e8f0; line-height:1.35; }
@@ -39,14 +79,16 @@
     .jb-stat { text-align:center; }
     .jb-stat-num { font-size:24px; font-weight:700; color:#818cf8; }
     .jb-stat-lbl { font-size:12px; color:#64748b; }
+    .export-spinner { display:none; width:14px; height:14px; border:2px solid rgba(255,255,255,.3); border-top-color:#fff; border-radius:50%; animation:spin .6s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
 </style>
 
 <div class="jb-hero">
     <div class="jb-hero-title">🌐 Remote Job Board</div>
-    <p class="jb-hero-sub">Curated remote & tech roles, updated daily from top sources</p>
+    <p class="jb-hero-sub">Curated remote &amp; tech roles, updated daily from top sources</p>
 
     <div class="jb-search-wrap">
-        <input type="text" id="searchInput" placeholder="Search by title, company, or location..." class="form-control" oninput="debounceSearch()">
+        <input type="text" id="searchInput" placeholder="Search by title, company, or location..." class="form-control" oninput="debounceSearch()" onkeydown="if(event.key==='Enter') fetchJobs(1)">
         <button class="btn btn-primary" onclick="fetchJobs(1)">Search</button>
     </div>
 
@@ -60,9 +102,33 @@
     </div>
 </div>
 
+<!-- Sticky selection toolbar -->
+<div class="selection-bar" id="selectionBar">
+    <span class="sel-count" id="selCount">0 selected</span>
+    <div class="sel-actions">
+        <button class="btn-sel-all" onclick="selectAllLoaded()">Select all on page</button>
+        <button class="btn-clear-sel" onclick="clearSelection()">Clear</button>
+        <span class="export-label">Export as:</span>
+        <button class="btn-export pdf" onclick="exportSelected('pdf')" id="btnPdf">
+            <span class="export-spinner" id="spPdf"></span>📄 PDF
+        </button>
+        <button class="btn-export docx" onclick="exportSelected('docx')" id="btnDocx">
+            <span class="export-spinner" id="spDocx"></span>📝 DOCX
+        </button>
+        <button class="btn-export txt" onclick="exportSelected('txt')" id="btnTxt">
+            <span class="export-spinner" id="spTxt"></span>🗒️ TXT
+        </button>
+    </div>
+</div>
+
 <div class="jb-stats" id="jbStats" style="display:none;">
     <div class="jb-stat"><div class="jb-stat-num" id="statJobs">0</div><div class="jb-stat-lbl">Positions</div></div>
     <div class="jb-stat"><div class="jb-stat-num" id="statPages">0</div><div class="jb-stat-lbl">Pages</div></div>
+</div>
+
+<div id="selectAllRow" class="select-all-row" style="display:none;">
+    <input type="checkbox" class="cb-all" id="cbSelectAll" onchange="toggleSelectAll(this.checked)">
+    <label for="cbSelectAll">Select all jobs on this page</label>
 </div>
 
 <div class="job-grid" id="jobGrid">
@@ -77,6 +143,7 @@
 let currentPage = 1;
 let currentType = '';
 let searchTimer = null;
+let selectedIds = new Set();
 
 function debounceSearch() {
     clearTimeout(searchTimer);
@@ -110,9 +177,124 @@ function typeClass(t) {
     return '';
 }
 
+function escHtml(s) {
+    if (!s) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function toggleCard(id, el) {
+    if (selectedIds.has(id)) {
+        selectedIds.delete(id);
+        el.classList.remove('selected');
+        el.querySelector('.job-cb').checked = false;
+    } else {
+        selectedIds.add(id);
+        el.classList.add('selected');
+        el.querySelector('.job-cb').checked = true;
+    }
+    updateSelectionBar();
+}
+
+function toggleCheckbox(id, checked, wrapEl) {
+    if (checked) {
+        selectedIds.add(id);
+        wrapEl.classList.add('selected');
+    } else {
+        selectedIds.delete(id);
+        wrapEl.classList.remove('selected');
+    }
+    updateSelectionBar();
+}
+
+function updateSelectionBar() {
+    const n = selectedIds.size;
+    const bar = document.getElementById('selectionBar');
+    const cbAll = document.getElementById('cbSelectAll');
+    document.getElementById('selCount').textContent = n === 0 ? '0 selected' : `${n} job${n>1?'s':''} selected`;
+    bar.classList.toggle('visible', n > 0);
+
+    // Sync select-all checkbox state
+    const wraps = document.querySelectorAll('.job-card-wrap');
+    const allChecked = wraps.length > 0 && [...wraps].every(w => w.classList.contains('selected'));
+    if (cbAll) cbAll.checked = allChecked;
+}
+
+function selectAllLoaded() {
+    document.querySelectorAll('.job-card-wrap').forEach(w => {
+        const id = parseInt(w.dataset.id);
+        selectedIds.add(id);
+        w.classList.add('selected');
+        const cb = w.querySelector('.job-cb');
+        if (cb) cb.checked = true;
+    });
+    updateSelectionBar();
+}
+
+function clearSelection() {
+    selectedIds.clear();
+    document.querySelectorAll('.job-card-wrap').forEach(w => {
+        w.classList.remove('selected');
+        const cb = w.querySelector('.job-cb');
+        if (cb) cb.checked = false;
+    });
+    const cbAll = document.getElementById('cbSelectAll');
+    if (cbAll) cbAll.checked = false;
+    updateSelectionBar();
+}
+
+function toggleSelectAll(checked) {
+    if (checked) selectAllLoaded(); else clearSelection();
+}
+
+async function exportSelected(fmt) {
+    const ids = [...selectedIds];
+    const btnId = 'btn' + fmt.charAt(0).toUpperCase() + fmt.slice(1);
+    const spId = 'sp' + fmt.charAt(0).toUpperCase() + fmt.slice(1);
+    const btn = document.getElementById(btnId);
+    const sp = document.getElementById(spId);
+
+    btn.disabled = true;
+    sp.style.display = 'inline-block';
+
+    const payload = {
+        format: fmt,
+        ids: ids,
+        search: document.getElementById('searchInput').value.trim(),
+        job_type: currentType
+    };
+
+    try {
+        const res = await fetch('/api/jobboard/export', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(payload)
+        });
+        if (!res.ok) {
+            const err = await res.json();
+            alert(err.error || 'Export failed. Please try again.');
+            return;
+        }
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        const ext = fmt === 'docx' ? 'docx' : fmt === 'pdf' ? 'pdf' : 'txt';
+        a.href = url;
+        a.download = `job_listings.${ext}`;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 1000);
+    } catch(e) {
+        alert('Export failed. Please check your connection and try again.');
+    } finally {
+        btn.disabled = false;
+        sp.style.display = 'none';
+    }
+}
+
 function renderJobs(data) {
     const grid = document.getElementById('jobGrid');
     const stats = document.getElementById('jbStats');
+    const selRow = document.getElementById('selectAllRow');
 
     if (!data.posts || data.posts.length === 0) {
         grid.innerHTML = `<div class="jb-empty" style="grid-column:1/-1">
@@ -121,11 +303,13 @@ function renderJobs(data) {
             <p style="font-size:13px;margin-top:8px;">Try different keywords or clear filters.</p>
         </div>`;
         stats.style.display = 'none';
+        selRow.style.display = 'none';
         document.getElementById('pagination').innerHTML = '';
         return;
     }
 
     stats.style.display = 'flex';
+    selRow.style.display = 'flex';
     document.getElementById('statJobs').textContent = data.total;
     document.getElementById('statPages').textContent = data.pages;
 
@@ -133,33 +317,44 @@ function renderJobs(data) {
         const tagsArr = Array.isArray(j.tags) ? j.tags : [];
         const visibleTags = tagsArr.slice(0, 4);
         const desc = (j.description || '').substring(0, 150);
-        return `<a class="job-card" href="/job-board/${j.id}" onclick="return navigateTo(event, '/job-board/${j.id}')">
-            <div class="job-card-top">
-                <div class="job-title">${escHtml(j.title)}</div>
-                ${j.featured ? '<span class="featured-star" title="Featured">⭐</span>' : ''}
+        const isSelected = selectedIds.has(j.id);
+        return `<div class="job-card-wrap${isSelected?' selected':''}" data-id="${j.id}" onclick="handleCardClick(event,${j.id},this)">
+            <input type="checkbox" class="job-cb" ${isSelected?'checked':''} onclick="event.stopPropagation(); toggleCheckbox(${j.id},this.checked,this.closest('.job-card-wrap'))">
+            <div class="job-card">
+                <div class="job-card-top">
+                    <div class="job-title">${escHtml(j.title)}</div>
+                    ${j.featured ? '<span class="featured-star" title="Featured">⭐</span>' : ''}
+                </div>
+                <div class="job-company">🏢 ${escHtml(j.company || 'Company')}</div>
+                <div class="job-meta">
+                    ${j.location ? `<span class="job-badge">📍 ${escHtml(j.location)}</span>` : ''}
+                    ${j.job_type ? `<span class="job-badge ${typeClass(j.job_type)}">${escHtml(j.job_type)}</span>` : ''}
+                    ${j.salary ? `<span class="job-badge salary">💰 ${escHtml(j.salary)}</span>` : ''}
+                    <span class="job-badge source">${escHtml(j.source)}</span>
+                </div>
+                ${desc ? `<div class="job-desc-preview">${escHtml(desc)}…</div>` : ''}
+                ${visibleTags.length ? `<div class="job-tags">${visibleTags.map(t=>`<span class="job-tag">${escHtml(t)}</span>`).join('')}</div>` : ''}
+                <div class="job-card-footer">
+                    <span class="job-date">${fmtDate(j.updated_at)}</span>
+                    <span class="btn-apply">View & Apply →</span>
+                </div>
             </div>
-            <div class="job-company">🏢 ${escHtml(j.company || 'Company')}</div>
-            <div class="job-meta">
-                ${j.location ? `<span class="job-badge">📍 ${escHtml(j.location)}</span>` : ''}
-                ${j.job_type ? `<span class="job-badge ${typeClass(j.job_type)}">${escHtml(j.job_type)}</span>` : ''}
-                ${j.salary ? `<span class="job-badge salary">💰 ${escHtml(j.salary)}</span>` : ''}
-                <span class="job-badge source">${escHtml(j.source)}</span>
-            </div>
-            ${desc ? `<div class="job-desc-preview">${escHtml(desc)}…</div>` : ''}
-            ${visibleTags.length ? `<div class="job-tags">${visibleTags.map(t=>`<span class="job-tag">${escHtml(t)}</span>`).join('')}</div>` : ''}
-            <div class="job-card-footer">
-                <span class="job-date">${fmtDate(j.updated_at)}</span>
-                <span class="btn-apply">View & Apply →</span>
-            </div>
-        </a>`;
+        </div>`;
     }).join('');
 
     renderPagination(data.page, data.pages);
+    updateSelectionBar();
 }
 
-function navigateTo(e, url) {
-    window.location.href = url;
-    return false;
+function handleCardClick(event, id, wrapEl) {
+    // If checkbox was clicked, it handles itself
+    if (event.target.classList.contains('job-cb')) return;
+    // If any items are selected, clicking a card toggles selection
+    if (selectedIds.size > 0) {
+        toggleCard(id, wrapEl);
+    } else {
+        window.location.href = `/job-board/${id}`;
+    }
 }
 
 function renderPagination(page, pages) {
@@ -191,11 +386,6 @@ async function fetchJobs(page) {
     } catch(e) {
         document.getElementById('jobGrid').innerHTML = '<div class="jb-empty" style="grid-column:1/-1;color:var(--red-light);">Failed to load jobs. Please try again.</div>';
     }
-}
-
-function escHtml(s) {
-    if (!s) return '';
-    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 fetchJobs(1);
