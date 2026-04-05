@@ -788,6 +788,7 @@
                     <select id="db-type" onchange="toggleMysqlFields()">
                         <option value="sqlite">SQLite (internal, default)</option>
                         <option value="mysql">MySQL (external)</option>
+                        <option value="firebase">Firebase / Firestore (cloud)</option>
                     </select>
                 </div>
                 <div id="mysqlFields" style="display:none;">
@@ -831,6 +832,11 @@
                         <strong style="color:var(--warning);">⚠ Connection requirements:</strong><br>
                         Your MySQL host must allow connections from this server's IP. Some providers (e.g. PythonAnywhere, PlanetScale, Railway) only permit connections from specific IPs or their own network. Check your host's firewall or allowlist settings if you see a timeout error.
                     </div>
+                </div>
+                <div id="dbFirebaseNote" style="display:none;padding:12px 14px;border-radius:8px;background:rgba(249,115,22,0.08);border:1px solid rgba(249,115,22,0.25);font-size:13px;color:var(--text);margin-bottom:14px;">
+                    <strong style="color:#f97316;">🔥 Firebase selected</strong><br>
+                    <span style="color:var(--muted);">All resumes, jobs, and contact messages will be stored in and read from Firestore. App settings always stay in the local SQLite database.<br>
+                    Make sure you have configured and tested your Firebase credentials in the <a href="#" onclick="show('firebase');return false;" style="color:var(--primary-l);">Firebase panel</a> before applying.</span>
                 </div>
                 <div style="display:flex;gap:8px;flex-wrap:wrap;">
                     <button class="btn btn-primary" onclick="saveDbConfig()">💾 Save Configuration</button>
@@ -893,6 +899,22 @@
             <div class="card" id="fbStatusCard">
                 <div class="card-title"><span class="icon">🔥</span> Firebase / Firestore Status</div>
                 <div id="fbStatusBody" style="font-size:13px;color:var(--muted);">Loading...</div>
+            </div>
+
+            <!-- Set as Default DB -->
+            <div class="card">
+                <div class="card-title"><span class="icon">⚡</span> Use Firebase as Default Database</div>
+                <p style="font-size:13px;color:var(--muted);margin-bottom:14px;">
+                    When enabled, all resumes, jobs, and contact messages will be stored in and read from Firestore. App settings (API keys, admin password, etc.) always stay in the local SQLite database.
+                </p>
+                <div id="fbDefaultStatus" style="font-size:13px;padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);margin-bottom:14px;">
+                    Checking...
+                </div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                    <button class="btn btn-primary" id="btnSetFirebaseDefault" onclick="setFirebaseDefault()">🔥 Set Firebase as Default</button>
+                    <button class="btn btn-secondary" id="btnUnsetFirebaseDefault" onclick="unsetFirebaseDefault()" style="display:none;">↩ Switch Back to SQLite</button>
+                </div>
+                <p style="font-size:12px;color:var(--muted);margin-top:10px;">Changes take effect immediately — no restart required.</p>
             </div>
 
             <!-- Setup Instructions -->
@@ -1789,7 +1811,9 @@ async function loadDbConfig() {
         toggleMysqlFields();
         const info = document.getElementById('dbStatusInfo');
         const activeDb = cfg.active_db || cfg.db_type || 'sqlite';
-        if (activeDb === 'mysql') {
+        if (activeDb === 'firebase' || cfg.db_type === 'firebase') {
+            info.innerHTML = `<span style="color:#f97316">●</span> Active: <strong>Firebase / Firestore</strong> — all resumes, jobs, and messages read from &amp; written to Firestore. Settings remain in local SQLite.`;
+        } else if (activeDb === 'mysql') {
             info.innerHTML = `<span style="color:var(--success)">●</span> Active: <strong>MySQL</strong> — ${escHtmlAdmin(cfg.mysql_host)}:${cfg.mysql_port}/${escHtmlAdmin(cfg.mysql_database)}`;
         } else if (cfg.fallback_warning) {
             info.innerHTML = `<span style="color:var(--warning)">●</span> <strong>Fallback: SQLite</strong> — MySQL (${escHtmlAdmin(cfg.mysql_host)}) was unreachable at startup. The app is using the local SQLite database. Fix the MySQL connection and use "Save &amp; Apply" to retry.`;
@@ -1802,8 +1826,10 @@ async function loadDbConfig() {
 }
 
 function toggleMysqlFields() {
-    const isMysql = document.getElementById('db-type').value === 'mysql';
-    document.getElementById('mysqlFields').style.display = isMysql ? 'block' : 'none';
+    const val = document.getElementById('db-type').value;
+    document.getElementById('mysqlFields').style.display = val === 'mysql' ? 'block' : 'none';
+    const fbNote = document.getElementById('dbFirebaseNote');
+    if (fbNote) fbNote.style.display = val === 'firebase' ? 'block' : 'none';
 }
 
 function toggleDbPw() {
@@ -2038,8 +2064,14 @@ document.getElementById('msgModal').addEventListener('click', function(e) {
 async function loadFirebaseStatus() {
     const body = document.getElementById('fbStatusBody');
     try {
-        const res = await fetch('/julisunkan/api/firebase/status');
-        const d = await res.json();
+        const [statusRes, dbRes] = await Promise.all([
+            fetch('/julisunkan/api/firebase/status'),
+            fetch('/julisunkan/api/database/config'),
+        ]);
+        const d = await statusRes.json();
+        const cfg = await dbRes.json();
+        const isDefault = (cfg.db_type === 'firebase');
+
         if (d.configured) {
             body.innerHTML = `
                 <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
@@ -2058,8 +2090,79 @@ async function loadFirebaseStatus() {
                 </div>
             `;
         }
+
+        // Update Default DB status card
+        updateDefaultDbCard(isDefault, d.configured);
     } catch(e) {
         body.textContent = 'Failed to load status.';
+    }
+}
+
+function updateDefaultDbCard(isDefault, hasCredentials) {
+    const statusDiv = document.getElementById('fbDefaultStatus');
+    const btnSet = document.getElementById('btnSetFirebaseDefault');
+    const btnUnset = document.getElementById('btnUnsetFirebaseDefault');
+    if (!statusDiv) return;
+
+    if (isDefault) {
+        statusDiv.innerHTML = `<span style="color:#f97316;font-weight:600;">🔥 Firebase is the active database</span><br><span style="color:var(--muted);font-size:12px;">All resumes, jobs, and messages are being read from and written to Firestore.</span>`;
+        statusDiv.style.borderColor = 'rgba(249,115,22,0.3)';
+        statusDiv.style.background = 'rgba(249,115,22,0.06)';
+        if (btnSet) btnSet.style.display = 'none';
+        if (btnUnset) btnUnset.style.display = '';
+    } else if (!hasCredentials) {
+        statusDiv.innerHTML = `<span style="color:var(--warning);font-weight:600;">⚠ Firebase credentials not saved</span><br><span style="color:var(--muted);font-size:12px;">Save and test your credentials first, then set Firebase as the default database.</span>`;
+        statusDiv.style.borderColor = 'rgba(245,158,11,0.3)';
+        statusDiv.style.background = 'rgba(245,158,11,0.06)';
+        if (btnSet) { btnSet.style.display = ''; btnSet.disabled = true; btnSet.title = 'Save credentials first'; }
+        if (btnUnset) btnUnset.style.display = 'none';
+    } else {
+        statusDiv.innerHTML = `<span style="color:var(--muted);">Currently using <strong style="color:var(--text);">SQLite / MySQL / PostgreSQL</strong> as the primary database.<br>Click "Set Firebase as Default" to switch all reads and writes to Firestore.</span>`;
+        statusDiv.style.borderColor = '';
+        statusDiv.style.background = '';
+        if (btnSet) { btnSet.style.display = ''; btnSet.disabled = false; btnSet.title = ''; }
+        if (btnUnset) btnUnset.style.display = 'none';
+    }
+}
+
+async function setFirebaseDefault() {
+    showAlert('fbAlert', '⏳ Setting Firebase as default database...', true);
+    try {
+        const res = await fetch('/julisunkan/api/database/config', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ db_type: 'firebase' }),
+        });
+        const d = await res.json();
+        if (d.success) {
+            showAlert('fbAlert', '✅ Firebase is now the active database. New reads and writes go to Firestore immediately.', true);
+            loadFirebaseStatus();
+        } else {
+            showAlert('fbAlert', `❌ Failed to update: ${d.error || 'Unknown error'}`, false);
+        }
+    } catch(e) {
+        showAlert('fbAlert', `❌ Request failed: ${e}`, false);
+    }
+}
+
+async function unsetFirebaseDefault() {
+    if (!confirm('Switch the default database back to SQLite? Firestore data will remain intact.')) return;
+    showAlert('fbAlert', '⏳ Switching back to SQLite...', true);
+    try {
+        const res = await fetch('/julisunkan/api/database/config', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ db_type: 'sqlite' }),
+        });
+        const d = await res.json();
+        if (d.success) {
+            showAlert('fbAlert', '✅ Switched back to SQLite. Firestore data is still available for export/import.', true);
+            loadFirebaseStatus();
+        } else {
+            showAlert('fbAlert', `❌ Failed: ${d.error || 'Unknown error'}`, false);
+        }
+    } catch(e) {
+        showAlert('fbAlert', `❌ Request failed: ${e}`, false);
     }
 }
 

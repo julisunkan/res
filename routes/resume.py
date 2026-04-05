@@ -1,20 +1,14 @@
 import json
 from flask import Blueprint, request, jsonify, send_file, abort
-from extensions import db
-from models.resume import Resume
+from utils.data_layer import (
+    resume_list, resume_get, resume_create, resume_update, resume_delete,
+)
 from utils.parser import extract_text
 from utils.ai_engine import optimize_resume, generate_cover_letter, rewrite_section, generate_resume_from_skills
 from utils.analyzer import get_match_analysis
 from utils.pdf_exporter import generate_pdf
 
 resume_bp = Blueprint('resume', __name__)
-
-
-def get_or_404(model, id):
-    obj = db.session.get(model, id)
-    if obj is None:
-        abort(404)
-    return obj
 
 
 @resume_bp.route('/upload', methods=['POST'])
@@ -63,20 +57,18 @@ def optimize():
         cover = generate_cover_letter(resume_text, job_description)
         analysis = get_match_analysis(resume_text, job_description)
 
-        resume = Resume(
-            label=label,
-            original_text=resume_text,
-            optimized_text=optimized,
-            cover_letter=cover,
-            match_score=analysis.get('score', 0),
-            missing_keywords=json.dumps(analysis.get('missing_keywords', [])),
-            suggestions=json.dumps(analysis.get('suggestions', [])),
-        )
-        db.session.add(resume)
-        db.session.commit()
+        resume = resume_create({
+            'label': label,
+            'original_text': resume_text,
+            'optimized_text': optimized,
+            'cover_letter': cover,
+            'match_score': analysis.get('score', 0),
+            'missing_keywords': json.dumps(analysis.get('missing_keywords', [])),
+            'suggestions': json.dumps(analysis.get('suggestions', [])),
+        })
 
         return jsonify({
-            'id': resume.id,
+            'id': resume['id'],
             'optimized_text': optimized,
             'cover_letter': cover,
             'match_score': analysis.get('score', 0),
@@ -84,7 +76,6 @@ def optimize():
             'suggestions': analysis.get('suggestions', []),
         })
     except Exception as e:
-        db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
 
@@ -121,35 +112,37 @@ def generate_from_skills():
 
 @resume_bp.route('/list', methods=['GET'])
 def list_resumes():
-    resumes = Resume.query.order_by(Resume.created_at.desc()).all()
-    return jsonify([r.to_dict() for r in resumes])
+    return jsonify(resume_list())
 
 
-@resume_bp.route('/<int:resume_id>', methods=['GET'])
+@resume_bp.route('/<resume_id>', methods=['GET'])
 def get_resume(resume_id):
-    resume = get_or_404(Resume, resume_id)
-    return jsonify(resume.to_dict())
+    r = resume_get(resume_id)
+    if r is None:
+        abort(404)
+    return jsonify(r)
 
 
-@resume_bp.route('/<int:resume_id>', methods=['DELETE'])
+@resume_bp.route('/<resume_id>', methods=['DELETE'])
 def delete_resume(resume_id):
-    resume = get_or_404(Resume, resume_id)
-    db.session.delete(resume)
-    db.session.commit()
+    if not resume_delete(resume_id):
+        abort(404)
     return jsonify({'success': True})
 
 
-@resume_bp.route('/export/<int:resume_id>/<doc_type>', methods=['GET'])
+@resume_bp.route('/export/<resume_id>/<doc_type>', methods=['GET'])
 def export_resume(resume_id, doc_type):
-    resume = get_or_404(Resume, resume_id)
+    r = resume_get(resume_id)
+    if r is None:
+        abort(404)
     if doc_type == 'resume':
-        content = resume.optimized_text or resume.original_text or ''
-        title = f"Resume - {resume.label}"
-        filename = f"resume_{resume.id}.pdf"
+        content = r.get('optimized_text') or r.get('original_text') or ''
+        title = f"Resume - {r.get('label', '')}"
+        filename = f"resume_{r['id']}.pdf"
     elif doc_type == 'cover_letter':
-        content = resume.cover_letter or ''
-        title = f"Cover Letter - {resume.label}"
-        filename = f"cover_letter_{resume.id}.pdf"
+        content = r.get('cover_letter') or ''
+        title = f"Cover Letter - {r.get('label', '')}"
+        filename = f"cover_letter_{r['id']}.pdf"
     else:
         return jsonify({'error': 'Invalid doc_type. Use "resume" or "cover_letter"'}), 400
 

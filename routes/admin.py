@@ -157,46 +157,48 @@ def test_groq():
 @admin_bp.route('/api/resumes', methods=['GET'])
 @admin_required
 def list_resumes():
-    resumes = Resume.query.order_by(Resume.created_at.desc()).all()
-    return jsonify([r.to_dict() for r in resumes])
+    from utils.data_layer import resume_list
+    return jsonify(resume_list())
 
 
-@admin_bp.route('/api/resumes/<int:rid>', methods=['GET'])
+@admin_bp.route('/api/resumes/<rid>', methods=['GET'])
 @admin_required
 def get_resume(rid):
-    r = Resume.query.get_or_404(rid)
-    return jsonify(r.to_dict())
+    from utils.data_layer import resume_get
+    r = resume_get(rid)
+    if r is None:
+        abort(404)
+    return jsonify(r)
 
 
-@admin_bp.route('/api/resumes/<int:rid>', methods=['PUT'])
+@admin_bp.route('/api/resumes/<rid>', methods=['PUT'])
 @admin_required
 def update_resume(rid):
-    r = Resume.query.get_or_404(rid)
-    data = request.get_json()
-    for field in ('label', 'original_text', 'optimized_text', 'cover_letter', 'match_score', 'missing_keywords', 'suggestions'):
-        if field in data:
-            setattr(r, field, data[field])
-    db.session.commit()
-    return jsonify(r.to_dict())
+    from utils.data_layer import resume_update
+    data = request.get_json(silent=True) or {}
+    r = resume_update(rid, data)
+    if r is None:
+        abort(404)
+    return jsonify(r)
 
 
-@admin_bp.route('/api/resumes/<int:rid>', methods=['DELETE'])
+@admin_bp.route('/api/resumes/<rid>', methods=['DELETE'])
 @admin_required
 def delete_resume(rid):
-    r = Resume.query.get_or_404(rid)
-    db.session.delete(r)
-    db.session.commit()
+    from utils.data_layer import resume_delete
+    if not resume_delete(rid):
+        abort(404)
     return jsonify({'success': True})
 
 
 @admin_bp.route('/api/resumes/bulk-delete', methods=['POST'])
 @admin_required
 def bulk_delete_resumes():
-    data = request.get_json()
+    from utils.data_layer import resume_bulk_delete
+    data = request.get_json(silent=True) or {}
     ids = data.get('ids', [])
-    Resume.query.filter(Resume.id.in_(ids)).delete(synchronize_session=False)
-    db.session.commit()
-    return jsonify({'success': True, 'deleted': len(ids)})
+    deleted = resume_bulk_delete(ids)
+    return jsonify({'success': True, 'deleted': deleted})
 
 
 # ── JOBS API ──────────────────────────────────────────────────────────────────
@@ -204,39 +206,38 @@ def bulk_delete_resumes():
 @admin_bp.route('/api/jobs', methods=['GET'])
 @admin_required
 def list_jobs():
-    jobs = Job.query.order_by(Job.created_at.desc()).all()
-    return jsonify([j.to_dict() for j in jobs])
+    from utils.data_layer import job_list
+    return jsonify(job_list())
 
 
-@admin_bp.route('/api/jobs/<int:jid>', methods=['PUT'])
+@admin_bp.route('/api/jobs/<jid>', methods=['PUT'])
 @admin_required
 def update_job(jid):
-    j = Job.query.get_or_404(jid)
-    data = request.get_json()
-    for field in ('company', 'position', 'status', 'notes', 'job_description'):
-        if field in data:
-            setattr(j, field, data[field])
-    db.session.commit()
-    return jsonify(j.to_dict())
+    from utils.data_layer import job_update
+    data = request.get_json(silent=True) or {}
+    j = job_update(jid, data)
+    if j is None:
+        abort(404)
+    return jsonify(j)
 
 
-@admin_bp.route('/api/jobs/<int:jid>', methods=['DELETE'])
+@admin_bp.route('/api/jobs/<jid>', methods=['DELETE'])
 @admin_required
 def delete_job(jid):
-    j = Job.query.get_or_404(jid)
-    db.session.delete(j)
-    db.session.commit()
+    from utils.data_layer import job_delete
+    if not job_delete(jid):
+        abort(404)
     return jsonify({'success': True})
 
 
 @admin_bp.route('/api/jobs/bulk-delete', methods=['POST'])
 @admin_required
 def bulk_delete_jobs():
-    data = request.get_json()
+    from utils.data_layer import job_bulk_delete
+    data = request.get_json(silent=True) or {}
     ids = data.get('ids', [])
-    Job.query.filter(Job.id.in_(ids)).delete(synchronize_session=False)
-    db.session.commit()
-    return jsonify({'success': True, 'deleted': len(ids)})
+    deleted = job_bulk_delete(ids)
+    return jsonify({'success': True, 'deleted': deleted})
 
 
 # ── ADS.TXT ───────────────────────────────────────────────────────────────────
@@ -268,13 +269,18 @@ def save_ads_txt():
 @admin_bp.route('/api/stats', methods=['GET'])
 @admin_required
 def get_stats():
+    from utils.data_layer import (
+        resume_count, job_count, job_count_by_status,
+        message_count, message_count_unread,
+    )
+    by_status = job_count_by_status()
     return jsonify({
-        'resumes': Resume.query.count(),
-        'jobs': Job.query.count(),
-        'interviews': Job.query.filter_by(status='Interview').count(),
-        'offers': Job.query.filter_by(status='Offer').count(),
-        'messages': ContactMessage.query.count(),
-        'unread_messages': ContactMessage.query.filter_by(is_read=False).count(),
+        'resumes': resume_count(),
+        'jobs': job_count(),
+        'interviews': by_status.get('Interview', 0),
+        'offers': by_status.get('Offer', 0),
+        'messages': message_count(),
+        'unread_messages': message_count_unread(),
     })
 
 
@@ -283,55 +289,58 @@ def get_stats():
 @admin_bp.route('/api/messages', methods=['GET'])
 @admin_required
 def list_messages():
-    msgs = ContactMessage.query.order_by(ContactMessage.created_at.desc()).all()
-    return jsonify([m.to_dict() for m in msgs])
+    from utils.data_layer import message_list
+    return jsonify(message_list())
 
 
-@admin_bp.route('/api/messages/<int:mid>', methods=['GET'])
+@admin_bp.route('/api/messages/<mid>', methods=['GET'])
 @admin_required
 def get_message(mid):
-    m = ContactMessage.query.get_or_404(mid)
-    if not m.is_read:
-        m.is_read = True
-        db.session.commit()
-    return jsonify(m.to_dict())
+    from utils.data_layer import message_get, message_set_read
+    m = message_get(mid)
+    if m is None:
+        abort(404)
+    if not m.get('is_read'):
+        message_set_read(mid, True)
+        m['is_read'] = True
+    return jsonify(m)
 
 
-@admin_bp.route('/api/messages/<int:mid>/read', methods=['POST'])
+@admin_bp.route('/api/messages/<mid>/read', methods=['POST'])
 @admin_required
 def mark_read(mid):
-    m = ContactMessage.query.get_or_404(mid)
-    m.is_read = True
-    db.session.commit()
+    from utils.data_layer import message_set_read
+    if not message_set_read(mid, True):
+        abort(404)
     return jsonify({'success': True})
 
 
-@admin_bp.route('/api/messages/<int:mid>/unread', methods=['POST'])
+@admin_bp.route('/api/messages/<mid>/unread', methods=['POST'])
 @admin_required
 def mark_unread(mid):
-    m = ContactMessage.query.get_or_404(mid)
-    m.is_read = False
-    db.session.commit()
+    from utils.data_layer import message_set_read
+    if not message_set_read(mid, False):
+        abort(404)
     return jsonify({'success': True})
 
 
-@admin_bp.route('/api/messages/<int:mid>', methods=['DELETE'])
+@admin_bp.route('/api/messages/<mid>', methods=['DELETE'])
 @admin_required
 def delete_message(mid):
-    m = ContactMessage.query.get_or_404(mid)
-    db.session.delete(m)
-    db.session.commit()
+    from utils.data_layer import message_delete
+    if not message_delete(mid):
+        abort(404)
     return jsonify({'success': True})
 
 
 @admin_bp.route('/api/messages/bulk-delete', methods=['POST'])
 @admin_required
 def bulk_delete_messages():
-    data = request.get_json()
+    from utils.data_layer import message_bulk_delete
+    data = request.get_json(silent=True) or {}
     ids = data.get('ids', [])
-    ContactMessage.query.filter(ContactMessage.id.in_(ids)).delete(synchronize_session=False)
-    db.session.commit()
-    return jsonify({'success': True, 'deleted': len(ids)})
+    deleted = message_bulk_delete(ids)
+    return jsonify({'success': True, 'deleted': deleted})
 
 
 # ── DATABASE CONFIG ───────────────────────────────────────────────────────────

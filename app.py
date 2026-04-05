@@ -79,8 +79,8 @@ def create_app():
 
     @app.route('/api/contact', methods=['POST'])
     def contact_submit():
-        from models.contact_message import ContactMessage
         from flask import request as req, jsonify
+        from utils.data_layer import message_create
         data = req.get_json(silent=True) or {}
         name = (data.get('name') or '').strip()
         email = (data.get('email') or '').strip()
@@ -92,9 +92,7 @@ def create_app():
             return jsonify({'success': False, 'error': 'Please enter a valid email address.'}), 400
         if len(message) < 10:
             return jsonify({'success': False, 'error': 'Message is too short.'}), 400
-        msg = ContactMessage(name=name, email=email, subject=subject, message=message)
-        db.session.add(msg)
-        db.session.commit()
+        message_create({'name': name, 'email': email, 'subject': subject, 'message': message})
         return jsonify({'success': True})
 
     @app.route('/about')

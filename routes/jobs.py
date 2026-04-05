@@ -1,6 +1,8 @@
 from flask import Blueprint, request, jsonify, abort
-from extensions import db
-from models.job import Job
+from utils.data_layer import (
+    job_list, job_get, job_create, job_update, job_delete,
+    job_count, job_count_by_status,
+)
 from utils.analyzer import get_job_analysis
 
 jobs_bp = Blueprint('jobs', __name__)
@@ -8,17 +10,9 @@ jobs_bp = Blueprint('jobs', __name__)
 VALID_STATUSES = {'Applied', 'Interview', 'Offer', 'Rejected'}
 
 
-def get_or_404(model, id):
-    obj = db.session.get(model, id)
-    if obj is None:
-        abort(404)
-    return obj
-
-
 @jobs_bp.route('/', methods=['GET'])
 def list_jobs():
-    jobs = Job.query.order_by(Job.created_at.desc()).all()
-    return jsonify([j.to_dict() for j in jobs])
+    return jsonify(job_list())
 
 
 @jobs_bp.route('/', methods=['POST'])
@@ -32,41 +26,31 @@ def add_job():
     if status not in VALID_STATUSES:
         status = 'Applied'
 
-    job = Job(
-        company=company,
-        position=position,
-        status=status,
-        job_description=data.get('job_description', ''),
-        notes=data.get('notes', ''),
-    )
-    db.session.add(job)
-    db.session.commit()
-    return jsonify(job.to_dict()), 201
+    j = job_create({
+        'company': company,
+        'position': position,
+        'status': status,
+        'job_description': data.get('job_description', ''),
+        'notes': data.get('notes', ''),
+    })
+    return jsonify(j), 201
 
 
-@jobs_bp.route('/<int:job_id>', methods=['PUT'])
+@jobs_bp.route('/<job_id>', methods=['PUT'])
 def update_job(job_id):
-    job = get_or_404(Job, job_id)
     data = request.get_json(silent=True) or {}
-    if 'company' in data:
-        job.company = data['company'].strip() or job.company
-    if 'position' in data:
-        job.position = data['position'].strip() or job.position
-    if 'status' in data and data['status'] in VALID_STATUSES:
-        job.status = data['status']
-    if 'job_description' in data:
-        job.job_description = data['job_description']
-    if 'notes' in data:
-        job.notes = data['notes']
-    db.session.commit()
-    return jsonify(job.to_dict())
+    if 'status' in data and data['status'] not in VALID_STATUSES:
+        data.pop('status')
+    j = job_update(job_id, data)
+    if j is None:
+        abort(404)
+    return jsonify(j)
 
 
-@jobs_bp.route('/<int:job_id>', methods=['DELETE'])
+@jobs_bp.route('/<job_id>', methods=['DELETE'])
 def delete_job(job_id):
-    job = get_or_404(Job, job_id)
-    db.session.delete(job)
-    db.session.commit()
+    if not job_delete(job_id):
+        abort(404)
     return jsonify({'success': True})
 
 
@@ -115,11 +99,12 @@ def get_stats():
             'offer_rate': round((offer / total * 100), 1) if total > 0 else 0,
         })
 
-    total = Job.query.count()
-    applied = Job.query.filter_by(status='Applied').count()
-    interview = Job.query.filter_by(status='Interview').count()
-    offer = Job.query.filter_by(status='Offer').count()
-    rejected = Job.query.filter_by(status='Rejected').count()
+    total = job_count()
+    by_status = job_count_by_status()
+    applied = by_status.get('Applied', 0)
+    interview = by_status.get('Interview', 0)
+    offer = by_status.get('Offer', 0)
+    rejected = by_status.get('Rejected', 0)
     interview_rate = round((interview / total * 100), 1) if total > 0 else 0
     offer_rate = round((offer / total * 100), 1) if total > 0 else 0
 
