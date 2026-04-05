@@ -1,15 +1,25 @@
 import io
 import logging
 from datetime import datetime
+from functools import wraps
 
-from flask import Blueprint, jsonify, request, send_file
+from flask import Blueprint, jsonify, request, send_file, session
 
-from app import db
+from extensions import db
 from models.job_post import JobPost
 from models.settings import Setting
 
 logger = logging.getLogger(__name__)
 job_board_bp = Blueprint('job_board', __name__, url_prefix='/api/jobboard')
+
+
+def admin_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if not session.get('admin_logged_in'):
+            return jsonify({'error': 'Unauthorized'}), 401
+        return f(*args, **kwargs)
+    return decorated
 
 
 def _get_groq_client():
@@ -80,6 +90,7 @@ def _ai_rewrite_job(post_dict: dict) -> str:
 
 
 @job_board_bp.post('/auto-rewrite')
+@admin_required
 def auto_rewrite():
     """
     Background batch-rewrite endpoint.
@@ -135,6 +146,7 @@ def auto_rewrite():
 
 
 @job_board_bp.get('/rewrite-status')
+@admin_required
 def rewrite_status():
     """Return count of jobs still pending AI rewrite."""
     pending = JobPost.query.filter_by(status='published', ai_rewritten=False).count()
@@ -262,6 +274,7 @@ def featured_posts():
 # ── Export API ──────────────────────────────────────────────────────────────
 
 @job_board_bp.post('/export')
+@admin_required
 def export_jobs():
     data = request.json or {}
     ids = data.get('ids', [])
@@ -388,6 +401,7 @@ def export_jobs():
 # ── Admin API ───────────────────────────────────────────────────────────────
 
 @job_board_bp.get('/admin/posts')
+@admin_required
 def admin_list():
     status = request.args.get('status', 'all')
     q = JobPost.query.order_by(JobPost.created_at.desc())
@@ -405,6 +419,7 @@ def admin_list():
 
 
 @job_board_bp.get('/admin/posts/<int:post_id>')
+@admin_required
 def admin_get(post_id):
     post = JobPost.query.get_or_404(post_id)
     d = post.to_dict()
@@ -414,6 +429,7 @@ def admin_get(post_id):
 
 
 @job_board_bp.put('/admin/posts/<int:post_id>')
+@admin_required
 def admin_update(post_id):
     post = JobPost.query.get_or_404(post_id)
     data = request.json or {}
@@ -433,6 +449,7 @@ def admin_update(post_id):
 
 
 @job_board_bp.delete('/admin/posts/<int:post_id>')
+@admin_required
 def admin_delete(post_id):
     post = JobPost.query.get_or_404(post_id)
     db.session.delete(post)
@@ -441,6 +458,7 @@ def admin_delete(post_id):
 
 
 @job_board_bp.post('/admin/posts/bulk')
+@admin_required
 def admin_bulk():
     data = request.json or {}
     action = data.get('action')
@@ -460,6 +478,7 @@ def admin_bulk():
 
 
 @job_board_bp.post('/admin/posts/<int:post_id>/rewrite')
+@admin_required
 def admin_rewrite(post_id):
     post = JobPost.query.get_or_404(post_id)
     source_text = post.original_description or post.description
@@ -483,6 +502,7 @@ def admin_rewrite(post_id):
 
 
 @job_board_bp.post('/admin/fetch')
+@admin_required
 def admin_fetch():
     data = request.json or {}
     sources = data.get('sources', ['remotive', 'arbeitnow', 'remoteok'])

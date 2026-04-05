@@ -34,7 +34,7 @@ def login_page():
 
 @admin_bp.route('/login', methods=['POST'])
 def login():
-    data = request.get_json()
+    data = request.get_json(silent=True) or {}
     password = data.get('password', '')
     stored = Setting.get(ADMIN_PASSWORD_KEY, DEFAULT_PASSWORD)
     if password == stored:

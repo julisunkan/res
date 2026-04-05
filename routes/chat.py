@@ -6,7 +6,7 @@ chat_bp = Blueprint('chat', __name__)
 
 @chat_bp.route('/message', methods=['POST'])
 def send_message():
-    data = request.get_json()
+    data = request.get_json(silent=True) or {}
     messages = data.get('messages', [])
     if not messages:
         return jsonify({'error': 'messages are required'}), 400
