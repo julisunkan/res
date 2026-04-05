@@ -62,6 +62,103 @@ def public_detail(post_id):
     return jsonify(post.to_dict())
 
 
+@job_board_bp.get('/live-search')
+def live_search():
+    """Search local DB + live external APIs simultaneously, return merged results."""
+    import concurrent.futures
+    from utils.job_aggregator import fetch_remotive, fetch_arbeitnow, fetch_remoteok
+
+    q = request.args.get('q', '').strip()
+    job_type = request.args.get('type', '').strip().lower()
+    search = q.lower()
+
+    # --- Local DB results (instant) ---
+    db_posts = JobPost.query.filter_by(status='published').order_by(
+        JobPost.featured.desc(), JobPost.updated_at.desc()).all()
+    if search:
+        db_posts = [p for p in db_posts if search in (p.title or '').lower()
+                    or search in (p.company or '').lower()
+                    or search in (p.location or '').lower()
+                    or search in (p.tags or '').lower()
+                    or search in (p.description or '').lower()
+                    or search in (p.original_description or '').lower()]
+    if job_type:
+        db_posts = [p for p in db_posts if job_type in (p.job_type or '').lower()]
+
+    local_results = []
+    for p in db_posts:
+        d = p.to_dict()
+        d['is_live'] = False
+        local_results.append(d)
+
+    # --- Live external API results (parallel fetch, only if query provided) ---
+    live_results = []
+    if q:
+        def _remotive():
+            try:
+                return fetch_remotive(search=q, limit=10)
+            except Exception:
+                return []
+
+        def _arbeitnow():
+            try:
+                raw = fetch_arbeitnow(limit=30)
+                return [r for r in raw if search in (r.get('title') or '').lower()
+                        or search in (r.get('company') or '').lower()
+                        or search in (r.get('tags') or '').lower()
+                        or search in (r.get('original_description') or '').lower()][:10]
+            except Exception:
+                return []
+
+        def _remoteok():
+            try:
+                raw = fetch_remoteok(limit=50)
+                return [r for r in raw if search in (r.get('title') or '').lower()
+                        or search in (r.get('company') or '').lower()
+                        or search in (r.get('tags') or '').lower()
+                        or search in (r.get('original_description') or '').lower()][:10]
+            except Exception:
+                return []
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=3) as ex:
+            futures = [ex.submit(_remotive), ex.submit(_arbeitnow), ex.submit(_remoteok)]
+            for f in concurrent.futures.as_completed(futures, timeout=12):
+                try:
+                    live_results.extend(f.result())
+                except Exception:
+                    pass
+
+        # Deduplicate live vs local by external_id / title+company
+        local_ext_ids = {p.external_id for p in db_posts if p.external_id}
+        local_keys = {(p.title or '').lower() + '|' + (p.company or '').lower() for p in db_posts}
+        seen_live = set()
+        filtered_live = []
+        for r in live_results:
+            ext_id = r.get('external_id', '')
+            key = (r.get('title') or '').lower() + '|' + (r.get('company') or '').lower()
+            if ext_id and ext_id in local_ext_ids:
+                continue
+            if key in local_keys or key in seen_live:
+                continue
+            seen_live.add(key)
+            r['is_live'] = True
+            r['id'] = None
+            filtered_live.append(r)
+
+        if job_type:
+            filtered_live = [r for r in filtered_live if job_type in (r.get('job_type') or '').lower()]
+
+        live_results = filtered_live
+
+    all_results = local_results + live_results
+    return jsonify({
+        'total': len(all_results),
+        'local_count': len(local_results),
+        'live_count': len(live_results),
+        'results': all_results,
+    })
+
+
 @job_board_bp.get('/featured')
 def featured_posts():
     posts = JobPost.query.filter_by(status='published', featured=True).order_by(JobPost.updated_at.desc()).limit(6).all()
