@@ -12,3 +12,6 @@ env/
 uploads/
 .env
 *.log
+*.db
+instance/
+uv.lock
