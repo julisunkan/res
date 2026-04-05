@@ -70,21 +70,43 @@ def get_settings():
             result[r.key] = r.value or ''
     # Always include known keys even if unset
     defaults = {
+        # AI
         'groq_api_key': '',
-        'app_name': 'AI Resume & Cover Letter Creator',
-        'app_tagline': 'Your intelligent job application assistant — from resume to offer letter.',
-        'max_upload_mb': '10',
         'ai_model': 'llama-3.3-70b-versatile',
         'ai_max_tokens': '4096',
+        # Branding
+        'app_name': 'AI Resume & Cover Letter Creator',
+        'app_tagline': 'Your intelligent job application assistant — from resume to offer letter.',
+        # Website identity
+        'site_url': '',
+        'contact_email': '',
+        'meta_description': 'AI-powered resume builder, cover letter generator, and career assistant.',
+        'meta_keywords': 'resume builder, cover letter, AI, job application, career',
+        # Social media
+        'twitter_url': '',
+        'linkedin_url': '',
+        'facebook_url': '',
+        'instagram_url': '',
+        'youtube_url': '',
+        # SEO & verification
+        'google_search_console': '',
+        # Performance
+        'max_upload_mb': '10',
+        # Security
         ADMIN_PASSWORD_KEY: '',
+        # Analytics & monetization
         'analytics_id': '',
         'adsense_publisher_id': '',
+        'adsense_auto_ads': '0',
         'ad_top_banner_enabled': '0',
         'ad_top_banner_slot': '',
         'ad_results_enabled': '0',
         'ad_results_slot': '',
         'ad_sidebar_enabled': '0',
         'ad_sidebar_slot': '',
+        # Job board APIs
+        'adzuna_app_id': '',
+        'adzuna_app_key': '',
     }
     for k, v in defaults.items():
         if k not in result:
@@ -286,7 +308,84 @@ def save_db_config():
     if data.get('mysql_password') and data['mysql_password'] != '••••••••':
         cfg['mysql_password'] = data['mysql_password']
     save_config(cfg)
+    # Mirror db connection config into Settings table so it's exportable
+    try:
+        Setting.set('db_type', cfg['db_type'])
+        Setting.set('mysql_host', cfg.get('mysql_host', ''))
+        Setting.set('mysql_port', str(cfg.get('mysql_port', 3306)))
+        Setting.set('mysql_database', cfg.get('mysql_database', ''))
+        Setting.set('mysql_user', cfg.get('mysql_user', ''))
+        if cfg.get('mysql_password'):
+            Setting.set('mysql_password', cfg['mysql_password'])
+    except Exception:
+        pass
     return jsonify({'success': True})
+
+
+# ── SETTINGS JSON EXPORT / IMPORT ─────────────────────────────────────────────
+
+@admin_bp.route('/api/settings/export-json', methods=['GET'])
+@admin_required
+def export_settings_json():
+    import json as _json
+    sensitive = {'admin_password', 'groq_api_key', 'mysql_password'}
+    rows = Setting.query.order_by(Setting.key).all()
+    data = {}
+    for r in rows:
+        data[r.key] = '[REDACTED]' if r.key in sensitive else (r.value or '')
+    ts = datetime.datetime.utcnow().strftime('%Y%m%d_%H%M%S')
+    return Response(
+        _json.dumps(data, indent=2),
+        mimetype='application/json',
+        headers={'Content-Disposition': f'attachment; filename=settings_{ts}.json'}
+    )
+
+
+@admin_bp.route('/api/settings/import-json', methods=['POST'])
+@admin_required
+def import_settings_json():
+    import json as _json
+    sensitive = {'admin_password', 'groq_api_key', 'mysql_password'}
+    f = request.files.get('file')
+    if not f:
+        raw = request.get_json(silent=True) or {}
+        data = raw
+    else:
+        try:
+            data = _json.loads(f.read().decode('utf-8'))
+        except Exception as e:
+            return jsonify({'success': False, 'error': f'Invalid JSON: {e}'}), 400
+    count = 0
+    skipped = []
+    for key, value in data.items():
+        if value == '[REDACTED]':
+            skipped.append(key)
+            continue
+        if key in sensitive:
+            skipped.append(key)
+            continue
+        Setting.set(str(key), str(value))
+        count += 1
+    msg = f'Imported {count} settings.'
+    if skipped:
+        msg += f' Skipped {len(skipped)} sensitive/redacted keys: {", ".join(skipped)}'
+    return jsonify({'success': True, 'message': msg, 'imported': count, 'skipped': skipped})
+
+
+@admin_bp.route('/api/database/import-sql', methods=['POST'])
+@admin_required
+def import_sql():
+    from utils.db_manager import load_config, import_sql_dump
+    f = request.files.get('file')
+    if not f:
+        return jsonify({'success': False, 'error': 'No file uploaded'}), 400
+    try:
+        sql_text = f.read().decode('utf-8', errors='replace')
+        cfg = load_config()
+        result = import_sql_dump(sql_text, cfg)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 
 @admin_bp.route('/api/database/test-mysql', methods=['POST'])

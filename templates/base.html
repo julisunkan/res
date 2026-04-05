@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}AI Resume & Cover Letter Creator{% endblock %}</title>
-    <meta name="description" content="AI-powered job application assistant for resumes, cover letters, and career prep.">
+    <title>{% block title %}{{ site_app_name }}{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}{{ meta_description or 'AI-powered job application assistant for resumes, cover letters, and career prep.' }}{% endblock %}">
+    {% if meta_keywords %}<meta name="keywords" content="{{ meta_keywords }}">{% endif %}
+    {% if site_url %}<link rel="canonical" href="{{ site_url }}{{ request.path }}">{% endif %}
     <meta name="theme-color" content="#4f46e5">
     <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
     <link rel="manifest" href="/static/manifest.json">
@@ -12,6 +14,10 @@
     <link rel="stylesheet" href="/static/css/style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    {% if google_search_console %}
+    <meta name="google-site-verification" content="{{ google_search_console }}">
+    {% endif %}
 
     {% if site_analytics_id %}
     <!-- Google Analytics -->
@@ -27,6 +33,14 @@
     {% if site_adsense_id %}
     <!-- Google AdSense -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={{ site_adsense_id }}" crossorigin="anonymous"></script>
+    {% if ads.auto_ads %}
+    <script>
+        (adsbygoogle = window.adsbygoogle || []).push({
+            google_ad_client: "{{ site_adsense_id }}",
+            enable_page_level_ads: true
+        });
+    </script>
+    {% endif %}
     {% endif %}
 
     <style>
@@ -110,6 +124,22 @@
             line-height: 1.7;
             max-width: 320px;
         }
+        .footer-social {
+            display: flex;
+            gap: 12px;
+            margin-top: 14px;
+            flex-wrap: wrap;
+        }
+        .footer-social a {
+            color: #64748b;
+            text-decoration: none;
+            font-size: 12px;
+            padding: 4px 10px;
+            border: 1px solid #1e1e3a;
+            border-radius: 20px;
+            transition: color 0.15s, border-color 0.15s;
+        }
+        .footer-social a:hover { color: #818cf8; border-color: #4f46e5; }
         .footer-col h4 {
             color: #e2e8f0;
             font-size: 13px;
@@ -205,7 +235,7 @@
         <div class="nav-brand">
             <a href="/">
                 <span class="brand-icon">✦</span>
-                <span class="brand-name">AI Resume & Cover Letter Creator</span>
+                <span class="brand-name">{{ site_app_name }}</span>
             </a>
         </div>
         <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">☰</button>
@@ -243,8 +273,18 @@
         <div class="footer-inner">
             <div class="footer-grid">
                 <div class="footer-brand">
-                    <h3>✦ AI Resume & Cover Letter Creator</h3>
-                    <p>Your intelligent job application assistant — from resume optimization to cover letters and interview prep, powered by AI.</p>
+                    <h3>✦ {{ site_app_name }}</h3>
+                    <p>{{ site_app_tagline }}</p>
+                    {% set has_social = social.twitter or social.linkedin or social.facebook or social.instagram or social.youtube %}
+                    {% if has_social %}
+                    <div class="footer-social">
+                        {% if social.twitter %}<a href="{{ social.twitter }}" target="_blank" rel="noopener">𝕏 Twitter</a>{% endif %}
+                        {% if social.linkedin %}<a href="{{ social.linkedin }}" target="_blank" rel="noopener">in LinkedIn</a>{% endif %}
+                        {% if social.facebook %}<a href="{{ social.facebook }}" target="_blank" rel="noopener">f Facebook</a>{% endif %}
+                        {% if social.instagram %}<a href="{{ social.instagram }}" target="_blank" rel="noopener">📸 Instagram</a>{% endif %}
+                        {% if social.youtube %}<a href="{{ social.youtube }}" target="_blank" rel="noopener">▶ YouTube</a>{% endif %}
+                    </div>
+                    {% endif %}
                 </div>
                 <div class="footer-col">
                     <h4>Tools</h4>
@@ -268,7 +308,7 @@
                 </div>
             </div>
             <div class="footer-bottom">
-                <span>&copy; {{ current_year }} AI Resume & Cover Letter Creator. All rights reserved.</span>
+                <span>&copy; {{ current_year }} {{ site_app_name }}. All rights reserved.{% if contact_email %} · <a href="mailto:{{ contact_email }}">{{ contact_email }}</a>{% endif %}</span>
                 <div>
                     <a href="/privacy-policy">Privacy</a>
                     <a href="/terms-of-service">Terms</a>

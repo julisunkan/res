@@ -101,34 +101,48 @@ def create_app():
     @app.context_processor
     def inject_site_settings():
         from datetime import datetime
+        _empty_ads = dict(publisher_id='', auto_ads=False, top_banner=dict(enabled=False, slot=''), results=dict(enabled=False, slot=''), sidebar=dict(enabled=False, slot=''))
+        _defaults = dict(
+            site_analytics_id='', site_adsense_id='', site_app_name='AI Resume & Cover Letter Creator',
+            site_app_tagline='Your intelligent job application assistant.',
+            site_url='', contact_email='', meta_description='', meta_keywords='',
+            google_search_console='',
+            social=dict(twitter='', linkedin='', facebook='', instagram='', youtube=''),
+            current_year=datetime.utcnow().year, ads=_empty_ads,
+        )
         try:
             from models.settings import Setting
             pub_id = Setting.get('adsense_publisher_id', '')
             ads = dict(
                 publisher_id=pub_id,
-                top_banner=dict(
-                    enabled=Setting.get('ad_top_banner_enabled', '0') == '1',
-                    slot=Setting.get('ad_top_banner_slot', ''),
-                ),
-                results=dict(
-                    enabled=Setting.get('ad_results_enabled', '0') == '1',
-                    slot=Setting.get('ad_results_slot', ''),
-                ),
-                sidebar=dict(
-                    enabled=Setting.get('ad_sidebar_enabled', '0') == '1',
-                    slot=Setting.get('ad_sidebar_slot', ''),
-                ),
+                auto_ads=Setting.get('adsense_auto_ads', '0') == '1',
+                top_banner=dict(enabled=Setting.get('ad_top_banner_enabled', '0') == '1', slot=Setting.get('ad_top_banner_slot', '')),
+                results=dict(enabled=Setting.get('ad_results_enabled', '0') == '1', slot=Setting.get('ad_results_slot', '')),
+                sidebar=dict(enabled=Setting.get('ad_sidebar_enabled', '0') == '1', slot=Setting.get('ad_sidebar_slot', '')),
+            )
+            social = dict(
+                twitter=Setting.get('twitter_url', ''),
+                linkedin=Setting.get('linkedin_url', ''),
+                facebook=Setting.get('facebook_url', ''),
+                instagram=Setting.get('instagram_url', ''),
+                youtube=Setting.get('youtube_url', ''),
             )
             return dict(
                 site_analytics_id=Setting.get('analytics_id', ''),
                 site_adsense_id=pub_id,
                 site_app_name=Setting.get('app_name', 'AI Resume & Cover Letter Creator'),
+                site_app_tagline=Setting.get('app_tagline', 'Your intelligent job application assistant.'),
+                site_url=Setting.get('site_url', ''),
+                contact_email=Setting.get('contact_email', ''),
+                meta_description=Setting.get('meta_description', ''),
+                meta_keywords=Setting.get('meta_keywords', ''),
+                google_search_console=Setting.get('google_search_console', ''),
+                social=social,
                 current_year=datetime.utcnow().year,
                 ads=ads,
             )
         except Exception:
-            empty_ads = dict(publisher_id='', top_banner=dict(enabled=False, slot=''), results=dict(enabled=False, slot=''), sidebar=dict(enabled=False, slot=''))
-            return dict(site_analytics_id='', site_adsense_id='', site_app_name='AI Resume & Cover Letter Creator', current_year=datetime.utcnow().year, ads=empty_ads)
+            return _defaults
 
     with app.app_context():
         import models.resume

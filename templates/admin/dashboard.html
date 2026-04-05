@@ -291,6 +291,71 @@
             </div>
 
             <div class="card">
+                <div class="card-title"><span class="icon">🌐</span> Website Identity</div>
+                <p style="font-size:13px;color:var(--muted);margin-bottom:14px;">These values are used in meta tags, the footer, and contact info across the site.</p>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Site URL (for canonical tags)</label>
+                        <input type="url" id="s-site_url" placeholder="https://yourdomain.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Contact Email</label>
+                        <input type="email" id="s-contact_email" placeholder="hello@yourdomain.com">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Meta Description (SEO)</label>
+                    <textarea id="s-meta_description" rows="2" placeholder="AI-powered resume builder, cover letter generator and career assistant."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Meta Keywords (SEO)</label>
+                    <input type="text" id="s-meta_keywords" placeholder="resume builder, cover letter, AI, job application, career">
+                </div>
+                <button class="btn btn-primary" onclick="saveSettings(['site_url','contact_email','meta_description','meta_keywords'])">Save Website Identity</button>
+            </div>
+
+            <div class="card">
+                <div class="card-title"><span class="icon">🔍</span> SEO &amp; Search Console</div>
+                <p style="font-size:13px;color:var(--muted);margin-bottom:14px;">Verify your site with Google Search Console. Find the verification code in your Search Console property settings under <em>HTML tag</em> method — paste just the content value.</p>
+                <div class="form-group" style="max-width:420px;">
+                    <label>Google Search Console Verification Code</label>
+                    <input type="text" id="s-google_search_console" placeholder="abc123def456...">
+                    <small style="color:var(--muted);font-size:12px;">Only the code from <code style="background:rgba(255,255,255,.07);padding:1px 4px;border-radius:3px;">&lt;meta name="google-site-verification" content="<strong>HERE</strong>"&gt;</code></small>
+                </div>
+                <button class="btn btn-primary" onclick="saveSettings(['google_search_console'])">Save Verification Code</button>
+            </div>
+
+            <div class="card">
+                <div class="card-title"><span class="icon">📣</span> Social Media Links</div>
+                <p style="font-size:13px;color:var(--muted);margin-bottom:14px;">Displayed as links in the site footer. Leave blank to hide.</p>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Twitter / X URL</label>
+                        <input type="url" id="s-twitter_url" placeholder="https://twitter.com/yourhandle">
+                    </div>
+                    <div class="form-group">
+                        <label>LinkedIn URL</label>
+                        <input type="url" id="s-linkedin_url" placeholder="https://linkedin.com/company/yourpage">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Facebook URL</label>
+                        <input type="url" id="s-facebook_url" placeholder="https://facebook.com/yourpage">
+                    </div>
+                    <div class="form-group">
+                        <label>Instagram URL</label>
+                        <input type="url" id="s-instagram_url" placeholder="https://instagram.com/yourhandle">
+                    </div>
+                </div>
+                <div class="form-group" style="max-width:380px;">
+                    <label>YouTube URL</label>
+                    <input type="url" id="s-youtube_url" placeholder="https://youtube.com/@yourchannel">
+                </div>
+                <button class="btn btn-primary" onclick="saveSettings(['twitter_url','linkedin_url','facebook_url','instagram_url','youtube_url'])">Save Social Links</button>
+            </div>
+
+            <div class="card">
                 <div class="card-title"><span class="icon">⚡</span> Performance</div>
                 <div class="form-group" style="max-width:260px;">
                     <label>Max Upload Size (MB)</label>
@@ -499,7 +564,17 @@
                     <label>Publisher ID (e.g. ca-pub-XXXXXXXXXXXXXXXX)</label>
                     <input type="text" id="s-adsense_publisher_id" placeholder="ca-pub-XXXXXXXXXXXXXXXX">
                 </div>
-                <button class="btn btn-primary" onclick="saveSettings(['adsense_publisher_id'])">Save Publisher ID</button>
+                <div class="form-group" style="margin-top:12px;">
+                    <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-weight:400;">
+                        <label class="toggle" style="margin:0;">
+                            <input type="checkbox" id="s-adsense_auto_ads_toggle" onchange="document.getElementById('s-adsense_auto_ads').value=this.checked?'1':'0';saveSettings(['adsense_publisher_id','adsense_auto_ads'])">
+                            <span class="slider"></span>
+                        </label>
+                        <span>Enable Auto Ads (AdSense automatically places ads)</span>
+                    </label>
+                    <input type="hidden" id="s-adsense_auto_ads" value="0">
+                </div>
+                <button class="btn btn-primary" onclick="saveSettings(['adsense_publisher_id','adsense_auto_ads'])">Save AdSense Settings</button>
             </div>
 
             <div class="card">
@@ -700,16 +775,43 @@
             </div>
 
             <div class="card">
-                <div class="card-title"><span class="icon">📤</span> Export Database</div>
-                <p style="font-size:13px;color:var(--muted);margin-bottom:16px;">Download a full SQL dump of the current active database. Works with both SQLite and MySQL sources.</p>
-                <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                <div class="card-title"><span class="icon">📤</span> Export</div>
+                <p style="font-size:13px;color:var(--muted);margin-bottom:14px;"><strong>Full Database</strong> — SQL dump of every table. Use to back up or migrate the entire database.</p>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;">
                     <a href="/julisunkan/api/database/export/sqlite" class="btn btn-secondary">⬇ Export as SQLite SQL</a>
                     <a href="/julisunkan/api/database/export/mysql" class="btn btn-secondary">⬇ Export as MySQL SQL</a>
                 </div>
+                <p style="font-size:13px;color:var(--muted);margin-bottom:10px;"><strong>Settings Only</strong> — JSON file with just the settings table (API keys &amp; sensitive fields redacted).</p>
+                <a href="/julisunkan/api/settings/export-json" class="btn btn-secondary">⬇ Export Settings as JSON</a>
                 <p style="font-size:12px;color:var(--muted);margin-top:12px;">
                     <strong>SQLite export</strong> — compatible with <code style="background:rgba(255,255,255,.06);padding:1px 5px;border-radius:3px;">sqlite3</code> CLI.<br>
-                    <strong>MySQL export</strong> — compatible with <code style="background:rgba(255,255,255,.06);padding:1px 5px;border-radius:3px;">mysql</code> CLI and phpMyAdmin.
+                    <strong>MySQL export</strong> — compatible with <code style="background:rgba(255,255,255,.06);padding:1px 5px;border-radius:3px;">mysql</code> CLI and phpMyAdmin.<br>
+                    <strong>JSON export</strong> — re-import via the Import section below; API keys must be re-entered manually.
                 </p>
+            </div>
+
+            <div class="card">
+                <div class="card-title"><span class="icon">📥</span> Import</div>
+                <div id="importAlert" class="alert"></div>
+
+                <div style="margin-bottom:20px;">
+                    <div style="font-weight:600;font-size:13px;color:var(--text);margin-bottom:6px;">Settings JSON Import</div>
+                    <p style="font-size:13px;color:var(--muted);margin-bottom:10px;">Upload a settings JSON file (exported from this panel). Merges into existing settings — sensitive keys (API keys, passwords) are always skipped and must be set manually.</p>
+                    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                        <input type="file" id="importSettingsFile" accept=".json,application/json" style="flex:1;min-width:0;padding:7px 10px;font-size:13px;cursor:pointer;">
+                        <button class="btn btn-primary btn-sm" onclick="importSettingsJson()">⬆ Import JSON</button>
+                    </div>
+                </div>
+
+                <div class="section-title">— Full SQL Import —</div>
+                <p style="font-size:13px;color:var(--muted);margin-bottom:10px;">Upload a <code style="background:rgba(255,255,255,.06);padding:1px 5px;border-radius:3px;">.sql</code> file to restore data. Runs SQL statements against the current active database. Errors for individual statements are reported but do not halt the import.</p>
+                <div style="padding:10px 12px;border-radius:8px;background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.2);font-size:12px;color:var(--warning);margin-bottom:12px;">
+                    ⚠ <strong>Use with caution.</strong> This runs raw SQL against your live database. Take an export first as a backup before importing.
+                </div>
+                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                    <input type="file" id="importSqlFile" accept=".sql,text/plain" style="flex:1;min-width:0;padding:7px 10px;font-size:13px;cursor:pointer;">
+                    <button class="btn btn-danger btn-sm" onclick="importSqlDump()">⬆ Import SQL</button>
+                </div>
             </div>
 
             <div class="card">
@@ -841,7 +943,37 @@ async function loadSettings() {
         const el = document.getElementById('s-'+k);
         if (el) el.value = v;
     }
+    // Handle auto ads toggle (backed by hidden input)
+    const autoAdsChk = document.getElementById('s-adsense_auto_ads_toggle');
+    if (autoAdsChk) autoAdsChk.checked = (settings['adsense_auto_ads'] || '0') === '1';
     loadAdPlacements(settings);
+}
+
+async function importSettingsJson() {
+    const file = document.getElementById('importSettingsFile').files[0];
+    if (!file) { showAlert('importAlert', 'Please select a JSON file first.', false); return; }
+    const fd = new FormData();
+    fd.append('file', file);
+    showAlert('importAlert', '⏳ Importing settings...', true);
+    const res = await fetch('/julisunkan/api/settings/import-json', { method:'POST', body: fd });
+    const data = await res.json();
+    showAlert('importAlert', data.success ? '✅ ' + data.message : '❌ ' + (data.error || 'Import failed.'), data.success);
+    if (data.success) { document.getElementById('importSettingsFile').value = ''; loadSettings(); }
+}
+
+async function importSqlDump() {
+    const file = document.getElementById('importSqlFile').files[0];
+    if (!file) { showAlert('importAlert', 'Please select a .sql file first.', false); return; }
+    if (!confirm('⚠ This will run SQL directly against your live database. Make sure you have a backup. Continue?')) return;
+    const fd = new FormData();
+    fd.append('file', file);
+    showAlert('importAlert', '⏳ Importing SQL dump...', true);
+    const res = await fetch('/julisunkan/api/database/import-sql', { method:'POST', body: fd });
+    const data = await res.json();
+    let msg = data.success ? '✅ ' + data.message : '❌ ' + (data.error || 'Import failed.');
+    if (data.errors && data.errors.length) msg += '\n\nStatement errors:\n• ' + data.errors.join('\n• ');
+    showAlert('importAlert', msg, data.success);
+    if (data.success) document.getElementById('importSqlFile').value = '';
 }
 
 function loadAdPlacements(s) {

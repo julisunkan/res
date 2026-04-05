@@ -165,6 +165,84 @@ def export_as_mysql():
     return _export_sqlite_to_mysql_sql()
 
 
+def import_sql_dump(sql_text, cfg=None):
+    """Import a SQL dump into the current active database. Returns result dict."""
+    if cfg is None:
+        cfg = load_config()
+
+    db_type = cfg.get('db_type', 'sqlite')
+    # If MySQL is configured but we're actually using SQLite (fallback), import to SQLite
+    if db_type == 'mysql':
+        ok, _ = test_mysql_connection(
+            cfg.get('mysql_host'), cfg.get('mysql_port', 3306),
+            cfg.get('mysql_database'), cfg.get('mysql_user'), cfg.get('mysql_password')
+        )
+        if not ok:
+            db_type = 'sqlite'
+
+    if db_type == 'mysql':
+        return _import_sql_to_mysql(sql_text, cfg)
+    return _import_sql_to_sqlite(sql_text)
+
+
+def _import_sql_to_sqlite(sql_text):
+    db_path = os.path.join(os.path.dirname(DB_CONFIG_PATH), 'resume_app.db')
+    conn = sqlite3.connect(db_path)
+    executed = 0
+    errors = []
+    try:
+        # Split by semicolons, skip blank/comment lines
+        statements = [s.strip() for s in sql_text.split(';') if s.strip()]
+        for stmt in statements:
+            lines = [l for l in stmt.splitlines() if not l.strip().startswith('--')]
+            clean = '\n'.join(lines).strip()
+            if not clean:
+                continue
+            try:
+                conn.execute(clean)
+                executed += 1
+            except Exception as e:
+                errors.append(str(e)[:120])
+        conn.commit()
+    finally:
+        conn.close()
+    return {
+        'success': True,
+        'message': f'Imported into SQLite: {executed} statements executed.',
+        'errors': errors[:10],
+    }
+
+
+def _import_sql_to_mysql(sql_text, cfg):
+    import pymysql
+    conn = pymysql.connect(
+        host=cfg.get('mysql_host'), port=int(cfg.get('mysql_port', 3306)),
+        database=cfg.get('mysql_database'), user=cfg.get('mysql_user'),
+        password=cfg.get('mysql_password'), autocommit=False,
+    )
+    cur = conn.cursor()
+    executed = 0
+    errors = []
+    statements = [s.strip() for s in sql_text.split(';') if s.strip()]
+    for stmt in statements:
+        lines = [l for l in stmt.splitlines() if not l.strip().startswith('--')]
+        clean = '\n'.join(lines).strip()
+        if not clean:
+            continue
+        try:
+            cur.execute(clean)
+            executed += 1
+        except Exception as e:
+            errors.append(str(e)[:120])
+    conn.commit()
+    conn.close()
+    return {
+        'success': True,
+        'message': f'Imported into MySQL: {executed} statements executed.',
+        'errors': errors[:10],
+    }
+
+
 def _export_sqlite_to_mysql_sql():
     db_path = os.path.join(os.path.dirname(DB_CONFIG_PATH), 'resume_app.db')
     conn = sqlite3.connect(db_path)
